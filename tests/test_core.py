@@ -24,9 +24,9 @@ class MoleculeTest(object):
 
     def test_coords(self):
         """Tests the sanity of the coordinates for each atom."""
-        assert self.mol.atoms[0] == np.array([0.0, 1.0, 0.0])
-        assert self.mol.atoms[1] == np.array([1.0, 0.0, 0.0])
-        assert self.mol.atoms[2] == np.array([0.0, 0.0, 1.0])
+        assert all(self.mol.atoms[0] == np.array([0.0, 1.0, 0.0]))
+        assert all(self.mol.atoms[1] == np.array([1.0, 0.0, 0.0]))
+        assert all(self.mol.atoms[2] == np.array([0.0, 0.0, 1.0]))
 
     def test_symbol(self):
         """Tests the correctness of the atom symbol."""
@@ -36,6 +36,7 @@ class MoleculeTest(object):
 
     def test_coordarray(self):
         """Test the sanity of the coordinates array."""
-        assert self.mol.coordsarray == np.array([0.0, 1.0, 0.0,
-                                            1.0, 0.0, 0.0,
-                                            0.0, 0.0, 1.0])
+        assert all(self.mol.coordsarray ==
+                   np.array([0.0, 1.0, 0.0,
+                             1.0, 0.0, 0.0,
+                             0.0, 0.0, 1.0]))
