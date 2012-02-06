@@ -1,7 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import * # For cylinder primitive
-from widget import GLUTWidget, PyGletWidget
+from widget import GLUTWidget
 from arcball import ArcBall
 
 import numpy as np
@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 from math import sqrt, sin, cos
 
-class MolCanvas(PyGletWidget):
+class MolCanvas(GLUTWidget):
     def __init__(self, positions, bonds):
         super(MolCanvas,self).__init__()
 
