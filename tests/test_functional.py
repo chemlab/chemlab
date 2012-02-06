@@ -1,17 +1,40 @@
 """Functional tests of chemlab, they show real life examples of the
 usage of this package.
 
-These tests are meant to be ran with the utility *nosetests* and
-they require interaction with the user.
 
 """
 import chemlab as cl
 
-def test_read_and_display():
-    """Read a molecule from disk and display it with the molecular
-    viewer.
+def bond_guessing_test():
+    """Test if bonds are guessed properly."""
+    mol = cl.readgeom("tests/data/sulphoxide.xyz",format="xyz")
+    
+    assert isinstance(mol, cl.Molecule)
+    mol.guess_bonds()
+    
+    so_bond =  mol.get_bond(0, 1) # Not sure if getting a bond by
+                                    # index tuple is a good idea
 
-    """
+    assert so_bond, "The bond S-O doesn't exists"
+    
+    # Check if the bond order is 2, again, not sure if an order
+    # attribute makes sense since we'll probably not support bond
+    # orders like 2.5
+    assert so_bond.order == 2
 
-    mol = cl.read_molecule("testmol.xyz", format="tinker")
-    cl.display(mol)
+    sc_bond = mol.get_bond(1, 2)
+    assert sc_bond
+    assert sc_bond.order == 1
+    
+    ch_bond = mol.get_bond(2, 3)
+    assert ch_bond
+    assert ch_bond.order == 1
+
+    # Verify if they at least correspond
+    cc_benz_bond2 = mol.get_bond(8, 9)
+    assert cc_benz_bond2
+    assert cc_benz_bond2.order == 2
+    
+    cc_benz_bond1 = mol.get_bond(7, 8)
+    assert cc_benz_bond1
+    assert cc_benz_bond1.order == 1
