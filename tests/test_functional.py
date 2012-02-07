@@ -1,7 +1,6 @@
 """Functional tests of chemlab, they show real life examples of the
 usage of this package.
 
-
 """
 import chemlab as cl
 
@@ -38,3 +37,15 @@ def bond_guessing_test():
     cc_benz_bond1 = mol.get_bond(7, 8)
     assert cc_benz_bond1
     assert cc_benz_bond1.order == 1
+
+
+def gamess_parser_test():
+    """Test the parsing of a gamess data file."""
+    
+    # Read a gamess datafile containing a saddle point optimization
+    dfile = cl.read_datafile("tests/data/1-so.out")
+    
+    # Grab the last point and check the types
+    last = dfile["irc"][-1]
+    assert isinstance(last["geometry"], cl.Molecule)
+    assert isinstance(last["energy"], float)
