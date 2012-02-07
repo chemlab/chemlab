@@ -169,6 +169,12 @@ if __name__=='__main__':
     input=Parsing('tink.xyz')
     mol=input.guess_molecule()
     
+    f = open('tink.xyz')
+    text = f.read()
+    f.close()
+    print '\nINPUT FILE IS:'
+    print text
+    
     #atoms in the molecule are:
     print '\nATOMS IN THE MOLECULE'
     for atom in mol.atoms:
