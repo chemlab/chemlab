@@ -9,6 +9,7 @@ from OpenGL.GLU import * # For cylinder primitive
 
 from backends import GLUTBackend
 from arcball import ArcBall
+from . import colors
 
 import numpy as np
 from numpy.linalg import norm
@@ -151,8 +152,10 @@ class Viewer(GLUTBackend):
 
         glPushMatrix()
         glTranslate(x, y, z)
-        self.color(0.8, 0.0, 0.0)
-        glutSolidSphere(1, 20, 20)
+        
+        r, g, b = colors.elem_dict[atom.type]
+        self.color(r, g, b)
+        glutSolidSphere(0.3, 20, 20)
         self.color(0.2, 0.2, 0.2)
         glPopMatrix()
 
@@ -163,7 +166,6 @@ class Viewer(GLUTBackend):
         radius = 0.25
         axis_start = np.array([0,0,1])
         axis_end = b-a
-        norm = np.linalg.norm
         angle =np.degrees(np.arccos(np.dot(axis_end, axis_start)/
                                     (norm(axis_end)*norm(axis_start))))
 
