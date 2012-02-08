@@ -1,2 +1,0 @@
-"""Tests regarding gamess integration.
-"""
