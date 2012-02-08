@@ -1,3 +1,6 @@
+import re
+from .textutils import greplines, grep_split, sections
+
 # Error codes
 OK = 0
 GEOM_NOT_LOCATED = 1
