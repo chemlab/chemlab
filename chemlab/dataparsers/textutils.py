@@ -41,17 +41,19 @@ def sections(start, end, text, line=True):
     # This is a state-machine with the states MATCHING = True/False
     MATCHING = False
     section_list = []
+    sre = re.compile(start)
+    ere = re.compile(end)
     
     for line in lines:
         if MATCHING == False:
-            if re.search(start, line):
+            if sre.search(line):
                 # Start to take stuff
                 MATCHING = True
                 section = [] 
                 continue
         
         if MATCHING == True:
-            if re.search(end, line):
+            if ere.search(line):
                 MATCHING = False
                 section_list.append('\n'.join(section))
             else:
