@@ -9,44 +9,38 @@ UNKNOWN = 2
 class GamessDataParser(object):
     
     def __init__(self, filename):
-        '''Take and analyze filename'''
         
         self.text = open(filename).read()
         self.lines = self.text.splitlines()
-        self.errcode = UNKNOWN
-        self.errmsg = ""
-        self.gracefully = "gracefully" in self.text
-        
-        self.parse_params()
-        
-        if self.runtyp == "optimize" or self.runtyp == "sadpoint":
-            self.optimize = self.parse_optimize()
 
-        elif self.runtyp == "energy":
-            self.energy = self.parse_energy(self.text)
-        
-
-        
-    def parse_params(self):
-        """Parse the input strings.
-        
-        """
-
+    def get_avail_properties(self):
+        avail_props = set()
         # Get the input
         inputc = greplines("INPUT CARD>", self.lines)
         # get rid of INPUT CARD> string and join the lines in a single
         # string
         inputc = '\n'.join(l[12:] for l in inputc)
+        runtyp = parse_card("runtyp", inputc, "energy")
+        avail_props.add(runtyp)
 
-        self.runtyp = parse_card("runtyp", inputc, "energy")
-        self.tddft = parse_card("tddft", inputc)
-        
-        basstr = parse_inpsec("basis", inputc)
-        self.basis = ' '.join(basstr.split())
-
-        geomsect = parse_inpsec("data", inputc)
-        self.geomstr = geomsect.splitlines()[1]
+        return avail_props
     
+    def get_property(self, prop):
+        if prop == "irc":
+            return self._parse_irc()
+        
+    def _parse_irc(self):
+        """Parse intrinsic reaction coordinate calculation.
+        
+        """
+        irc_geoms = sections("***** NEXT POINT ON IRC FOUND *****",
+                             "INTERNUCLEAR DISTANCES (ANGS.)",
+                             self.text)
+        print irc_geoms
+        # then parse the geom in between
+        
+        
+        
     def parse_optimize(self):
         """Parse the ouput resulted of a geometry optimization. Or a
         saddle point.
