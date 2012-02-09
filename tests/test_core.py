@@ -33,10 +33,20 @@ class MoleculeTest(unittest.TestCase):
         symbols = ["O", "H", "H"]
         for i, atom in enumerate(self.mol.atoms):
             assert atom.type == symbols[i]
+            
+    def test_bonds(self):
+        """Tests if the bonds are created"""
+        print self.mol.bonds
+        assert (self.mol.bonds[0].id_bonded == [1,2])
+        assert (self.mol.bonds[1].id_bonded == [1,3])
+        
+    def test_angles(self):
+        """Test if the angles are created"""
+        pass
 
-    def test_coordarray(self):
-        """Test the sanity of the coordinates array."""
-        assert all(self.mol.coordsarray ==
-                   np.array([0.0, 1.0, 0.0,
-                             1.0, 0.0, 0.0,
-                             0.0, 0.0, 1.0]))
+  #   def test_coordarray(self):
+#         """Test the sanity of the coordinates array."""
+#         assert all(self.mol.coordsarray ==
+#                    np.array([0.0, 1.0, 0.0,
+#                              1.0, 0.0, 0.0,
+#                              0.0, 0.0, 1.0]))

@@ -34,13 +34,17 @@ class Molecule:
             
             #guessing C--H bonds
                 if     (atom1.type=='C' and atom.type=='H' and
-                       LA.norm(atom1.coordinates-atom.coordinates)<1.11):
+                       LA.norm(atom1.coords-atom.coords)<1.11):
                     self.bonds += [Bond(atom1,atom)]
             #guessing C--C bonds
                 if     (atom1.type=='C' and atom.type=='C' and
-                       LA.norm(atom1.coordinates-atom.coordinates)<1.6):
+                       LA.norm(atom1.coords-atom.coords)<1.6):
                     self.bonds += [Bond(atom1,atom)]
-         
+                    
+                if      (atom1.type=='O' and atom.type=='H' and
+                        LA.norm(atom1.coords-atom.coords)<10):
+                    self.bonds += [Bond(atom1,atom)]
+                
     
     
     
@@ -73,5 +77,5 @@ class Bond:
         
         self.atom_bonded = [atom1.type,atom2.type]
         self.id_bonded = [atom1.id,atom2.id]
-        self.lenght = LA.norm(atom1.coordinates - atom2.coordinates)
+        self.lenght = LA.norm(atom1.coords - atom2.coords)
         
