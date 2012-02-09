@@ -1,21 +1,27 @@
+"""The molecular viewer lets the user arrange and display the molecule
+datatypes in chemlab in an easy and intuitive way.
+
+"""
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import * # For cylinder primitive
-from widget import GLUTWidget
+
+from backends import GLUTBackend
 from arcball import ArcBall
+from . import colors
 
 import numpy as np
 from numpy.linalg import norm
-
 from math import sqrt, sin, cos
 
-class MolCanvas(GLUTWidget):
-    def __init__(self, positions, bonds):
-        super(MolCanvas,self).__init__()
 
+class Viewer(GLUTBackend):
+    def __init__(self):
+        super(Viewer,self).__init__()
+
+        self.molecules = []
         
-        self.bonds = bonds
-        self.positions = positions
         self.distance = 0.0
         
         self.camera_position = np.array([0.0, 0.0, -5.0])
@@ -39,6 +45,12 @@ class MolCanvas(GLUTWidget):
         self.init_perspective()
         self.init_depth()
 
+    def draw_molecule(self, mol):
+        self.molecules.append(mol)
+
+    def show(self):
+        self.main()
+    
     def init_perspective(self):
         glMatrixMode(GL_PROJECTION)
         # camera frustrum setup
@@ -130,33 +142,30 @@ class MolCanvas(GLUTWidget):
         glMultMatrixf(self.mat.reshape(16,))
 
         # Put atoms in their respective positions
-        for pos in self.positions:
-            self.display_atom(pos)
-            
-        # Put bonds in their respective positions
-        for i1, i2 in self.bonds:
-            self.display_bond(i1, i2)
+        for mol in self.molecules:
+            self.display_molecule(mol)
         
         self.swap_buffers()
 
-    def display_atom(self, pos):
-        x,y,z = pos
+    def display_atom(self, atom):
+        x,y,z = atom.coord
 
         glPushMatrix()
         glTranslate(x, y, z)
-        self.color(0.8, 0.0, 0.0)
-        glutSolidSphere(1, 20, 20)
+        
+        r, g, b = colors.elem_dict[atom.type]
+        self.color(r, g, b)
+        glutSolidSphere(0.3, 20, 20)
         self.color(0.2, 0.2, 0.2)
         glPopMatrix()
 
-    def display_bond(self, index1, index2):
-        a = self.positions[index1]
-        b = self.positions[index2]
+    def display_bond(self, bond):
+        a = bond.start.coord
+        b = bond.end.coord
         
         radius = 0.25
         axis_start = np.array([0,0,1])
         axis_end = b-a
-        norm = np.linalg.norm
         angle =np.degrees(np.arccos(np.dot(axis_end, axis_start)/
                                     (norm(axis_end)*norm(axis_start))))
 
@@ -172,9 +181,11 @@ class MolCanvas(GLUTWidget):
         
         glPopMatrix()
 
+    def display_molecule(self, mol):
+        """Handle the displaying of the molecule in terms of opengl."""
+        for atom in mol.atoms:
+            self.display_atom(atom)
+            
+        for bond in mol.bonds:
+            self.display_bond(bond)
 
-def main():
-    MolCanvas((np.array([1, 2, 0]),np.array([-1, -2, 0])), ([0,1],)).main()
-
-if __name__ == '__main__':
-    main()

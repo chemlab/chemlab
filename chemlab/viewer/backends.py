@@ -5,7 +5,7 @@ GLUT backend is supported.
 
 from OpenGL.GLUT import *
 
-class GLUTWidget(object):
+class GLUTBackend(object):
     def __init__(self):
         glutInit(sys.argv);
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
