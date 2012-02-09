@@ -148,7 +148,7 @@ class Viewer(GLUTBackend):
         self.swap_buffers()
 
     def display_atom(self, atom):
-        x,y,z = atom.coord
+        x,y,z = atom.coords
 
         glPushMatrix()
         glTranslate(x, y, z)
@@ -160,8 +160,8 @@ class Viewer(GLUTBackend):
         glPopMatrix()
 
     def display_bond(self, bond):
-        a = bond.start.coord
-        b = bond.end.coord
+        a = bond.start.coords
+        b = bond.end.coords
         
         radius = 0.25
         axis_start = np.array([0,0,1])

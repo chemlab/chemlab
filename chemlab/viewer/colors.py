@@ -12,4 +12,5 @@ elem_dict = {
 "O": red,
 "N": blue,
 "Cl": green,
+"S": yellow,
 }
