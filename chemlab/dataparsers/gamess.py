@@ -1,5 +1,6 @@
 import re
 from .textutils import greplines, grep_split, sections
+from .. import Molecule, Atom
 
 # Error codes
 OK = 0
@@ -33,13 +34,29 @@ class GamessDataParser(object):
         """Parse intrinsic reaction coordinate calculation.
         
         """
-        irc_geoms = sections("***** NEXT POINT ON IRC FOUND *****",
-                             "INTERNUCLEAR DISTANCES (ANGS.)",
+        irc_geoms = sections(re.escape("***** NEXT POINT ON IRC FOUND *****"),
+                             re.escape("INTERNUCLEAR DISTANCES (ANGS.)"),
                              self.text)
-        print irc_geoms
+        
         # then parse the geom in between
+
+        # strip the garbage
+        irc_geoms = ['\n'.join(i.splitlines()[11:-1]) for i in irc_geoms]
+        irc_geoms = [self._parse_geometry(i) for i in irc_geoms]
         
+        return {"geometries": irc_geoms}
         
+    def _parse_geometry(self, geom):
+        """Parse a geometry string and return Molecule object from
+        it.
+
+        """
+        atoms = []
+        for i, line in enumerate(geom.splitlines()):
+           sym, atno, x, y, z = line.split()
+           atoms.append(Atom(i, sym, [float(x), float(y), float(z)]))
+        
+        return Molecule(atoms, [])
         
     def parse_optimize(self):
         """Parse the ouput resulted of a geometry optimization. Or a
