@@ -25,3 +25,18 @@ class GLUTBackend(object):
     def swap_buffers(self):
         glutSwapBuffers()
 
+import pyglet
+from pyglet.window import Window
+class PyGletBackend(Window):
+    def __init__(self):
+        super(PyGletBackend,self).__init__()
+        
+        
+    def main(self):
+        pyglet.app.run()
+
+    def refresh(self):
+        pass
+        
+    def swap_buffers(self):
+        self.flip()
