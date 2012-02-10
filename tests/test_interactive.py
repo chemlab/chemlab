@@ -28,7 +28,7 @@ def test_display_molecule():
     mol.atoms = []
     for sym, pos in at_params:
         at = Mock()
-        at.coord = np.array(pos)
+        at.coords = np.array(pos)
         at.type = sym
         
         mol.atoms.append(at)
@@ -43,5 +43,5 @@ def test_display_molecule():
         mol.bonds.append(bond)
 
     vw = cl.Viewer()
-    vw.draw_molecule(mol)
+    vw.molecule = mol
     vw.show()
