@@ -16,7 +16,6 @@ class Widget(pyglet.window.Window):
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
         self._camera_position = [0.0, 0.0, -4.0]
-        
 
     def on_resize(self, width, height):
         glViewport(0, 0, width, height)
