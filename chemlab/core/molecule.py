@@ -2,8 +2,13 @@
 
 import re
 import numpy as np
-from numpy import linalg as LA
+import os
+import sys
 
+
+from numpy import linalg as LA
+from .. import data
+from ..data import symbols
 
 
 class Molecule:
@@ -20,7 +25,16 @@ class Molecule:
             self.guess_bonds()    
     
     
-    def guess_bonds(self):
+    def guess_bonds(self, threshold=0.1):
+        d = os.path.dirname(sys.modules['chemlab.data'].__file__)
+        
+        radiifile = os.path.join(d, "covalent_radii.dat")
+        radii = np.genfromtxt(radiifile,
+                              delimiter=",",
+                              dtype=[("type", "a3"),
+                                     ("single", "f"),
+                                     ("double", "f"),
+                                     ("triple","f")])
         
         #initializing bonds
         self.bonds = []
@@ -32,19 +46,16 @@ class Molecule:
             atom1 = atoms.pop(0)
             for atom in atoms:
             
-            #guessing C--H bonds
-                if     (atom1.type=='C' and atom.type=='H' and
-                       LA.norm(atom1.coords-atom.coords)<1.11):
-                    self.bonds += [Bond(atom1,atom)]
-            #guessing C--C bonds
-                if     (atom1.type=='C' and atom.type=='C' and
-                       LA.norm(atom1.coords-atom.coords)<1.6):
-                    self.bonds += [Bond(atom1,atom)]
-                    
-                if      (atom1.type=='O' and atom.type=='H' and
-                        LA.norm(atom1.coords-atom.coords)<10):
-                    self.bonds += [Bond(atom1,atom)]
+                cov_dist = (radii[atom1.atno-1][1] +
+                            radii[atom.atno-1][1])
+
+                cov_dist_inf = cov_dist - cov_dist * threshold
+                cov_dist_sup = cov_dist + cov_dist * threshold
                 
+                if  (cov_dist_inf <
+                     LA.norm(atom1.coords - atom.coords) <
+                     cov_dist_sup):
+                     self.bonds.append(Bond(atom1, atom))
     
     
     
@@ -62,7 +73,8 @@ class Atom:
         self.id = id
         self.type = type
         self.coords = np.array(coords)
-        
+
+        self.atno = symbols.symbol_list.index(type) + 1
         
 
 
