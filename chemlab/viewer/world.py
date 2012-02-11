@@ -15,13 +15,13 @@ class Widget(pyglet.window.Window):
         self.init_light()
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
-        self._camera_position = [0.0, 0.0, -4.0]
+        self._camera_position = [0.0, 0.0, -7.0]
 
     def on_resize(self, width, height):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(90, float(self.width)/self.height, 1, 100)
+        gluPerspective(50, float(self.width)/self.height, 0.1, 100)
 
     def on_draw(self):
         self.clear()
