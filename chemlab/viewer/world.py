@@ -44,7 +44,7 @@ class Widget(pyglet.window.Window):
                   0.0, 1.0, 0.0)
         
         # Rotate the scene
-        self._tball.update_modelview()        
+        self._tball.update_modelview(cm[2])        
         
         # Draw the scene
         self.on_draw_scene()
