@@ -4,6 +4,10 @@ usage of this package.
 """
 import chemlab as cl
 
+def tinker_parse_test():
+    mol = cl.readgeom("tests/data/tink.xyz", "tinkerxyz")
+    assert isinstance(mol, cl.Molecule)
+
 def bond_guessing_test():
     """Test if bonds are guessed properly."""
     mol = cl.readgeom("tests/data/sulphoxide.xyz",format="xyz")

@@ -1,26 +1,32 @@
-#! /usr/bin/env python -tt
+"""Parsers related to tinker file formats.
 
+"""
 import re
-import numpy as np
-from numpy import linalg as LA
+from .. import Molecule, Atom, Bond
 
+class TinkerXyzDataParser(object):
 
-class Parsing:
-
-    '''Parse the input file and generate a list of atoms and bonds instances'''    
+    def __init__(self, filename):
+        self.filename = filename
+        
+    def get_avail_properties(self):
+        return ["geometry"]
     
-    def __init__(self,file): 
-    
-        #a very big regex to parse and group the input file
+    def get_property(self, prop):
+        if prop == "geometry":
+            return self._parse_geom()
+
+    def _parse_geom(self):
+                #a very big regex to parse and group the input file
         r = re.compile(('\s*(\d+)\s*(\w+)\s*(-?\d+\.\d+)\s*'
                         '\s*(-?\d+\.\d+)\s*(-?\d+\.\d+)\s*(\d+)\s*(.*)')) 
         
-        f = open(file,'r')
+        f = open(self.filename,'r')
         input = f.readlines()
         f.close()
         
         
-        self.atoms=[]
+        atoms=[]
         #BUILDING ATOM OBJECTS
         #generate a list of instances of Atom class
         for line in input:
@@ -29,7 +35,7 @@ class Parsing:
             type=match.group(2)
             coords=[match.group(3),match.group(4),match.group(5)]
             coords = [float(s) for s in coords]
-            self.atoms.append(Atom(id,type,coords))
+            atoms.append(Atom(id,type,coords))
         
         
         
@@ -62,23 +68,16 @@ class Parsing:
 
         
         #BUILDING BOND OBJECTS
-        self.bonds = []
+        bonds = []
         #looping over the couples previously determined
         for couple in couples:
             #looping over the atoms to match their id with the couple 
-            for atom in self.atoms:
+            for atom in atoms:
                 if couple[0]==atom.id:
                     atom1 = atom
                 if couple[1]==atom.id:
                     atom2 = atom
-                    self.bonds += [Bond(atom1,atom2)]
+                    bonds += [Bond(atom1,atom2)]
                     break
-        
-        
-    def build_molecule(self):
-    
-        return Molecule(self.atoms,self.bonds)
-    
-    
 
-
+        return Molecule(atoms, bonds)
