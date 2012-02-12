@@ -43,9 +43,8 @@ def gamess_parser_test():
     """Test the parsing of a gamess data file."""
     
     # Read a gamess datafile containing a saddle point optimization
-    dfile = cl.read_datafile("tests/data/1-so.out")
+    dfile = cl.read_datafile("tests/data/1-so.out", "gamout")
     
     # Grab the last point and check the types
-    last = dfile["irc"][-1]
-    assert isinstance(last["geometry"], cl.Molecule)
-    assert isinstance(last["energy"], float)
+    last = dfile["irc"]["geometries"][-1]
+    assert isinstance(last, cl.Molecule)
