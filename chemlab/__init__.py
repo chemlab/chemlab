@@ -36,3 +36,11 @@ def readgeom(filename, format):
     df = DataFile(filename, format)
     return df["geometry"]
 
+def display(molecule):
+    """Display a *molecule* (that have to be an instance of the
+    Molecule class) using the chemlab viewer.
+
+    """
+    vw = Viewer()
+    vw.molecule = molecule
+    vw.show()
