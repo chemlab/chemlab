@@ -24,6 +24,9 @@ class Molecule:
         else:
             self.guess_bonds()    
     
+        
+        self.det_angles()
+    
     
     def guess_bonds(self, threshold=0.1):
         d = os.path.dirname(sys.modules['chemlab.data'].__file__)
@@ -57,7 +60,28 @@ class Molecule:
                      cov_dist_sup):
                      self.bonds.append(Bond(atom1, atom))
     
+
+    def det_angles(self):
+        
+        self.angles=[]
+        bonds=self.bonds[:]
+        
+        while bonds:
+            bond1 = bonds.pop(0)
+            
+            for bond in bonds:
+                if bond1.start.id == bond.start.id:
+                    self.angles.append([bond.end,bond.start,bond1.end])
+                if bond1.start.id == bond.end.id:
+                    self.angles.append([bond.start,bond.end,bond1.start])
+                if bond1.end.id == bond.start.id:
+                    self.angles.append([bond1.start,bond1.end,bond.end])
+                if bond1.end.id == bond.end.id:
+                    self.angles.append([bond1.start,bond1.end,bond.start])
+                    
+            
     
+  
     
 class Atom:
     '''Takes a line of the formatted input file.
