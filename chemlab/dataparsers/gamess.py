@@ -38,13 +38,16 @@ class GamessDataParser(object):
                              re.escape("INTERNUCLEAR DISTANCES (ANGS.)"),
                              self.text)
         
-        # then parse the geom in between
-
+        # get and store the energy
+        energies = [entry.splitlines()[5] for entry in irc_geoms]
+        energies = [float(entry.split()[3]) for entry in energies]
+        
         # strip the garbage
         irc_geoms = ['\n'.join(i.splitlines()[11:-1]) for i in irc_geoms]
         irc_geoms = [self._parse_geometry(i) for i in irc_geoms]
         
-        return {"geometries": irc_geoms}
+        return {"geometries": irc_geoms,
+                "energies": energies}
         
     def _parse_geometry(self, geom):
         """Parse a geometry string and return Molecule object from
