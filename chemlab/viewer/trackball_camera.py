@@ -277,12 +277,12 @@ class TrackballCamera:
         if cam_up:
             self.cam_up = cam_up
         glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        gluLookAt(
-            self.cam_eye[0],self.cam_eye[1],self.cam_eye[2],
-            self.cam_focus[0],self.cam_focus[1],self.cam_focus[2],
-            self.cam_up[0],self.cam_up[1],self.cam_up[2]
-            )
+        #glLoadIdentity()
+        #gluLookAt(
+        #    self.cam_eye[0],self.cam_eye[1],self.cam_eye[2],
+        #    self.cam_focus[0],self.cam_focus[1],self.cam_focus[2],
+        #    self.cam_up[0],self.cam_up[1],self.cam_up[2]
+        #    )
         # rotate this view by the current orientation
         m = self._matrix()
         mm = (GLfloat * len(m))(*m)  # FIXME there is prob a better way...
