@@ -4,8 +4,21 @@ from world import Widget
 import artist as art
 
 class Viewer(Widget):
+
+    @property
+    def molecule(self):
+        return self.__molecule
+    
+    @molecule.setter
+    def molecule(self, mol):
+        self.__molecule = mol
+        
+        self._centre = sum(at.coords for at in mol.atoms) / len(mol.atoms)
     
     def on_draw_scene(self):
+        
+        # Move to the geometric center
+        glTranslatef(*-self._centre)
         art.draw_molecule(self.molecule)
 
     def show(self):
