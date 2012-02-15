@@ -61,6 +61,28 @@ class Molecule:
                      self.bonds.append(Bond(atom1, atom))
     
 
+    def copy(self):
+        mol = Molecule([atom.copy() for atom in self.atoms],
+                       [])
+        
+        mol.bonds = []
+        for bond in self.bonds:
+            a1_id = bond.start.id
+            a2_id = bond.end.id
+            
+            mol.bonds.append(Bond(mol.by_id(a1_id), mol.by_id(a2_id)))
+
+        return mol
+        
+
+    def by_id(self, id):
+        
+        for atom in self.atoms:
+            if atom.id == id:
+                return atom
+        
+        raise Exception("No atom with such id: % d"%id)
+        
     def det_angles(self):
         
         self.angles=[]
@@ -99,8 +121,9 @@ class Atom:
         self.coords = np.array(coords)
 
         self.atno = symbols.symbol_list.index(type) + 1
-        
 
+    def copy(self):
+        return Atom(self.id, self.type, np.copy(self.coords))
 
 class Bond:
 
