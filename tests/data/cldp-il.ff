@@ -1,0 +1,368 @@
+name "Canongia Lopes & Padua Ionic Liquids (version 01/06/2006)"
+
+message "Ionic liquids forcefield of Canongia Lopes and Padua, converted for Aten by T. Youngs."
+message "No warranty provided! If you find a mistake, please let me know."
+
+units kj
+
+types
+#
+# Cations
+#
+# Dialkylimidazolium - JPCb 108, p2038 (2004)
+1	C1	C	"nbonds=4,-N(ring),-H,-H"			# First tetrahedral carbon in R group on ring nitrogen
+2	C2	C	"nbonds=4,-C(~[N,P]),-H(n=2),-C"		# Second carbon in R group (> ethyl)
+3	CE	C	"nbonds=4,-C(~[N,P]),-H(n=3)"			# Terminal carbon of ethyl R group
+4	CS	C	"nbonds=4,-C(n=2),-H(n=2)"			# General carbon in R group
+5	CT	C	"nbonds=4,~C(~C(-H(n=2)),~C),-H(n=3)"		# Terminal carbon in R group (> ethyl)
+6	CR	C	"nbonds=3,~N(n=2,~C(n=3)),ring(size=5)"		# Carbon adjacent to two nitrogens with alkyl groups
+7	CW	C	"nbonds=3,~N(~C,~C),~C,ring(size=5)"		# Carbon adjacent to nitrogen (with alkyl group) and carbon
+8	HA	H	"nbonds=1"					# ???
+9	HCR	H	"-C(~N(~C(n=3),n=2),ring(size=5))"		# H on carbon adjacent to two N
+10	HCW	H	"-C(~N(~C(n=3)),~C,ring(size=5))"		# H on carbon adjacent to N and C
+11	HC	H	"-C(-C,-H)"					# Hydrogen on other carbon in R group
+12	H1	H	"-C(-N(ring(size=5)),-H)"			# Hydrogen on first carbon in R group
+13	NA	N	"nbonds=3,ring(size=5,-N,-N,-C(n=3)),~C(n=3)"	# Nitrogen with alkyl group attached
+# Alkylimidazolium
+21	NAH	N	"nbonds=3,ring(size=5,~N,~C(n=3)),~C(n=2),-H"	# Nitrogen with hydrogen attached
+22	CRH	C	"nbonds=3,~N(~C,~C),~N(-H),ring(size=5)"	# Carbon adjacent to two nitrogens
+23	CWH	C	"nbonds=3,~N(~C,-H),~C,ring(size=5)"		# Carbon adjavent to N with H attached
+24	HNA	H	"-N(~C(n=2),ring(size=5))"			# Nitrogen with hydrogen attached
+# Alkylpyridinium - Perkin 2, p2365 (1999)
+31	NAP	N	"nbonds=3,ring(size=6,-C(n=5))"			
+32	CA1	C	"nbonds=3,ring(size=6),~N,~C,-H"		# Carbon in ring, adjacent to ring nitrogen (ortho)
+33	CA2	C	"nbonds=3,ring(size=6),~C,-H,~C"		# Carbon in ring, adjacent to two carbons (meta)
+34	CA3	C	"nbonds=3,ring(size=6),~C(n=2,~C(~N))"		# Carbon in ring, adjacent to two carbons (para)
+35	HAP	H	"nbonds=1,~C(ring(size=6,-C(n=5),~N),~C)"	# Hydrogen on ring carbon
+# Ammonium (also pyrrolidinium) - OPLS-AA / JACS 121, p4827 (1999) / AMBER
+41	N3	N	"nbonds=4,-H(n=3),-C"
+42	H3	H	"nbonds=1,-N"
+43      C3      C       "nbonds=4,-N,-H(n=2),-C"
+44      HC3     H       "nbonds=1,-&43"
+# ammonium oxygen from oplsa
+54     OH       O       "-H,-C"                                 "all-atom O: mono alcohols"
+55     HO       H       "-O(-C)"                                "all-atom H(O): mono alcohols"
+56     COH      C       "-O(-H)"                                "CH2-OH"
+57     HCO      H       "-&56"                                  "H2C-OH"
+# Phosphonium - OPLS-AA
+51	P3	P	"nbonds=4,-C(n=4)"				# Phosphorus with four alkyl groups
+52	C1P	C	"nbonds=4,-P(-C(n=3)),-H,-H,-C"			# First tetrahedral carbon in R group on phosphorus
+#
+# Anions
+#
+# Tetrafluoroborate
+100	B	B	"nbonds=4,-F(n=4)"				# Boron with four fluorines attached
+101	FB	F	"nbonds=1,-B(-F(n=4))"				# Fluorine attached to boron in BF4
+# Hexafluorophosphate - Perkin 2, p2365 (1999)
+110	P	P	"nbonds=6,-F(n=6)"				# Phosphorus with six fluorines attahed
+111	F	F	"nbonds=1,-P(-F(n=6))"				# Fluorine attached to phosphorus in PF6
+# Nitrate - JPCb 108, p2038 (2004)
+120	ON	O	"nbonds=1,-N(-O,-O)"				# Oxygen attached to N in NO3
+121	NN	N	"nbonds=3,-O(n=3)"				# Nitrogen with three oxygens attached
+# Chloride - JPCb 108, p2038 (2004)
+130	Cl	Cl	"unbound"					# Chloride ion
+# Bromide
+140	Br	Br	"unbound"					# Bromide ion
+# Triflate
+150	CTF	C	"nbonds=4,-F(n=3),-S(nbonds=4,~O(n=3))"		# Fluoroalkane carbon attached to sulphate
+151	FTF	F	"-&150"
+152	STF	S	"-&150"
+153	OTF	O	"~&152"
+# Bistrifylamide
+160	CBT	C	"nbonds=4,-F,-F,-F,-S"				
+161	FBT	F	"nbonds=1,-C(-F,-F,-S)"				
+162	SBT	S	"nbonds=4,=O,=O,-N,-C(-F(n=3))"				
+163	OBT	O	"nbonds=1,=&162"				
+164	NBT	N	"nbonds=2,-S,-S"
+# Dicyanamide
+170	N3	N	"nbonds=2,-C(n=2,-N(bond=triple))"
+171	CZA	C	"nbonds=2,-N(-C(-N(bond=triple))),-N(nbonds=1,bond=triple)"
+172	NZA	N	"nbonds=1,-C(bond=triple,-N(-C(-N(bond=triple))))"
+#
+# Extra params (CYANOPYRIDINIUM / MethylNapthalene)
+#
+900	Cxx	C	"nbonds=3,ring(size=6),-C,-C,-C"		# Carbon in ring with CN group attached
+901	CNx	C	"nbonds=2,-N(bond=triple),-C(ring(size=6))"	# Carbon of cyano group
+902	NCx	N	"nbonds=1,-C(bond=triple,-C(ring(size=6)))"	# Nitrogen of cyano group
+903	CWn	C	"nbonds=3,ring(size=6,-C(n=5))"			# Aromatic C in (methyl)napthalene
+904	CTn	C	"nbonds=4,-C(ring(size=6,-C(n=5)))"		# Aliphatic C in methylnapthalene
+905	HWn	H	"-C(ring(size=6,-C(n=5)))"			# Aromatic H in (methyl)napthalene
+906	HTn	H	"-C(nbonds=4,-C(ring(size=6,-C(n=5))))"		# Aliphatic H in methylnapthalene
+end
+inter  lj
+#FFID	Type	Charge	VDW1		VDW2	VDW3
+# Dialkylimidazolium
+1	C1	-0.17	0.27614		3.5
+2	C2	0.01	0.27614		3.5
+# Modified CE for Ammonium
+3	CE	-0.18	0.27614		3.5
+4	CS	-0.12	0.27614		3.5
+5	CT	-0.18	0.27614		3.5
+6	CR	-0.11	0.29288		3.55
+7	CW	-0.13	0.29288		3.55
+8	HA	0.21	0.12552		2.42
+9	HCR	0.21	0.12552		2.42
+10	HCW	0.21	0.12552		2.42
+11	HC	0.06	0.12552		2.5
+12	H1	0.13	0.12552		2.5
+13	NA	0.15	0.71128		3.25
+# Alkylimidazolium
+21	NAH	-0.21	0.71128		3.25
+22	CRH	0.00	0.29288		3.55
+23	CWH	-0.03	0.29288		3.55
+24	HNA	0.37	0.00000		0.00
+# Alkylpyridinium
+31	NAP	0.15	0.71128		3.25
+32	CA1	0.00	0.29288		3.55
+33	CA2	-0.07	0.29288		3.55
+34	CA3	0.02	0.29288		3.55
+35	HAP	0.15	0.12552		2.42
+# Ammonium
+41	N3	-0.30	0.71128		3.25
+42	H3	 0.33   0.12552		2.50
+43	C3	 0.19   0.27614		2.50
+44      HC3      0.06   0.12552         2.50
+54      OH      -0.683  0.71128         3.12
+55      HO       0.418  0.00            0.00
+56      COH      0.145  0.27614         3.5
+57      HCO      0.06   0.12552         2.5
+# Phosphonium
+51	P3	0.68	0.8368		3.74
+52	C1P	-0.31	0.27614		3.50
+# Tetrafluoroborate
+100	B	0.96	0.3975		3.58
+101	FB	-0.49	0.2552		3.12
+# Hexafluorophosphate - Perkin 2, p2365 (1999)
+110	P	1.34	0.8368		3.74
+111	F	-0.39	0.2552		3.12
+# Nitrate - JPCb 108, p2038 (2004)  modified from oplsaa(2008) tinker!
+120	ON	-0.598	0.87864		2.86
+121	NN	0.794	0.71128		3.15
+# Nitrate - from JCP 117 2718 with man works great!
+#120     ON      -0.650  0.64852         3.154
+#121     NN      0.950   0.8368          3.90
+# Chloride - JPCb 108, p2038 (2004)
+# NOTE - In ref above sigma=3.77 and epsilon = 0.62 (0.14818 kcal/mol) !!!
+# In Supporting Info from Padua himself, sigma = 3.65 and epsilon = 0.83 ?!?!?
+#130	Cl	-1.00	0.8300		3.65
+130	Cl	-1.00	0.6200		3.77
+# Bromide
+140	Br	-1.00	0.8600		3.97
+# Triflamide
+150	CTF	0.35	0.27614		3.50
+151	FTF	-0.16	0.22175		2.95
+152	STF	1.02	1.04600		3.55
+153	OTF	-0.63	0.87864		2.96
+# Bistrifylamide
+160	CBT	0.35	0.27614		3.50
+161	FBT	-0.16	0.22175		2.95
+162	SBT	1.02	1.046		3.55
+163	OBT	-0.53	0.87864		2.96
+164	NBT	-0.66	0.71128		3.25
+# Dicyanamide
+170	N3	-0.76	0.71128		3.25
+171	CZA	0.64	0.27614		3.30
+172	NZA	-0.76	0.71128		3.20
+#
+# Extra Params
+#
+900	Cxx	0.02    0.29288		3.55	# Unfinished
+901	CNx	0.00    0.29288		3.55	# Unfinished
+902	NCx	0.00    0.29288		3.55	# Unfinished
+903	CWn	0.0	0.29288		3.55
+904	CTn	0.0	0.29288		3.55
+905	HWn	0.0	0.12552		2.42
+906	HTn	0.0	0.12552		2.42
+end
+equivalents
+HA	HCW HCR HNA HAP
+HC	H1  HC3 HCO
+CT	C1 C2 CE CS C1P C3 COH
+CA	CA1 CA2 CA3
+CR	CRH
+CW	CWH
+NA	NAH NAP
+end
+bonds harmonic
+# Alkanes - OPLS-AA / JACS 118, p11225 (1996) / JPC 100, p18010 (1996)
+HC	CT	2845	1.090	#RES 2845.0
+CT	CT	2242	1.529
+# Dialkylimidazolium - JPCb 108, p2038 (2004)
+CR	HA	2845	1.080	#RES 2845.0
+CW	HA	2845	1.080	#RES 2845.0
+CR	NA	3992	1.315
+CW	NA	3574	1.378
+CW	CW	4352	1.341
+NA	CT	2820	1.466
+#alkylimidazolium - OPLS-AA
+NA	HA	3632	1.010	#RES 3632.0
+# Pyridinium - OPLS-AA / Theochem 424, p145 (1998)
+CA	HA	3071	1.080	#RES 3071.0
+CA	CA	3925	1.380
+CA	NA	4042	1.340
+NA	CT	2820	1.480
+# Ammonium (also pyrrolidinium) - OPLS-AA / JACS 121, p4827 (1999) / AMBER
+N3	CT	3071	1.471
+H3	N3	3632	1.040	#RES 3632.0
+HO      OH      4627.5  0.945
+# Phosphonium - OPLS-AA
+P3	CT	3550	1.81
+# Tetrafluoroborate	
+B	FB	3235	1.394
+# Hexafluorophosphate - Perkin 2, p2365 (1999)
+P	F	3100	1.606
+# Nitrate - JPCb 108, p2038 (2004)
+NN	ON	5307	1.256
+# Triflate
+CTF	FTF	3698	1.323
+CTF	STF	1950	1.818
+STF	OTF	5331	1.437
+# Bistriflylamide
+CBT	FBT	3698	1.323
+CBT	SBT	1950	1.818
+SBT	OBT	5331	1.437
+NBT	SBT	3137	1.570
+# Dicyanamide
+N3	CZA	4206	1.310
+CZA	NZA	7746	1.157
+end
+angles harmonic
+# Alkanes
+CT	CT	CT	488.3	112.7
+CT	CT	HC	313.8	110.7
+HC	CT	HC	276.1	107.8
+# Dialkylimidazolium
+CW	NA	CR	585.8	108.0
+CW	NA	CT	585.8	125.6
+CR	NA	CT	585.8	126.4
+NA	CR	HA	292.9	125.1
+NA	CR	NA	585.8	109.8
+NA	CW	CW	585.8	107.1
+NA	CW	HA	292.9	122.0
+CW	CW	HA	292.9	130.9
+NA	CT	HC	313.8	110.7
+NA	CT	CT	488.3	112.7
+# Alkylimlidazolium
+CR	NA	HA	292.9	125.4
+CW	NA	HA	292.9	126.6
+# Pyridinium
+CA	CA	CA	527.2	120.0
+CA	CA	HA	292.9	120.0
+CA	CA	NA	585.8	120.0
+CA	NA	CA	585.8	120.4
+CA	NA	CT	585.8	119.8
+NA	CA	HA	292.9	120.0
+NA	CT	HC	292.9	109.5
+# Ammonium (also pyrrolidinium)
+N3	CT	CT	669.4	109.5
+CT	N3	CT	418.4	109.5
+HC	CT	N3	209.2	109.5
+H3	N3	CT	418.4	109.5
+H3	N3	H3	146.44  109.5
+CT      OH      HO      460.2   108.5
+HC	CT	OH	292.9   109.5
+# Phosphosphonium
+CT	P3	CT	607.8	109.5
+HC	CT	P3	389.9	110.1
+CT	CT	P3	509.1	115.2
+# Tetrafluoroborate
+FB	B	FB	669.5	109.5
+# Hexafluorophosphate
+F	P	F	1165	90.0
+# Nitrate
+ON	NN	ON	1011	120.0
+# Triflate
+FTF	CTF	FTF	781	107.1
+FTF	CTF	STF	694	111.7
+OTF	STF	OTF	969	115.3
+CTF	STF	OTF	870	102.6
+# Bistriflylamide
+FBT	CBT	FBT	781	107.1
+FBT	CBT	SBT	694	111.7
+OBT	SBT	OBT	969	118.5
+CBT	SBT	OBT	870	102.6
+NBT	SBT	OBT	789	113.6
+NBT	SBT	CBT	764	103.5
+SBT	NBT	SBT	671	125.6
+# Dicyanamide
+CZA	N3	CZA	362	118.5
+N3	CZA	NZA	425	175.2
+end
+
+torsions cos3 0.5 0.5
+# Alkanes
+HC	CT	CT	HC	0.0000	0.0000	1.3305	0.0000
+CT	CT	CT	HC	0.0000	0.0000	1.5313	0.0000
+CT	CT	CT	CT	7.2800	-0.6569	1.1673	0.0000
+# Dialkylimidazolium
+CW	NA	CR	NA	0.0000	19.4600	0.0000	0.0000
+CW	NA	CR	HA	0.0000	19.4600	0.0000	0.0000
+CT	NA	CR	NA	0.0000	19.4600	0.0000	0.0000
+CT	NA	CR	HA	0.0000	19.4600	0.0000	0.0000
+CR	NA	CW	CW	0.0000	12.5500	0.0000	0.0000
+CR	NA	CW	HA	0.0000	12.5500	0.0000	0.0000
+CT	NA	CW	CW	0.0000	12.5500	0.0000	0.0000
+CT	NA	CW	HA	0.0000	12.5500	0.0000	0.0000
+NA	CW	CW	NA	0.0000	44.9800	0.0000	0.0000
+NA	CW	CW	HA	0.0000	44.9800	0.0000	0.0000
+HA	CW	CW	HA	0.0000	44.9800	0.0000	0.0000
+CW	NA	CT	HC	0.0000	0.0000	0.5190	0.0000
+CR	NA	CT	HC	0.0000	0.0000	0.0000	0.0000
+CW	NA	CT	CT	-7.1535	6.1064	0.7939	0.0000
+CR	NA	CT	CT	-5.2691	0.0000	0.0000	0.0000
+NA	CT	CT	CT	-7.4797	3.1642	-1.2026	0.0000
+NA	CT	CT	HC	0.0000	0.0000	0.3670	0.0000
+# Improper dialkylimidazolium ring
+#CR	CW	NA	C1	0.0000	8.3700	0.0000	0.0000
+#NA	NA	CR	HA	0.0000	9.2000	0.0000	0.0000
+#NA	CW	CW	HA	0.0000	9.2000	0.0000	0.0000
+# Alkylimidazolium ring
+HA	NA	CR	NA	0.0000	19.4600	0.0000	0.0000
+HA	NA	CR	HA	0.0000	19.4600	0.0000	0.0000
+HA	NA	CW	CW	0.0000	12.5500	0.0000	0.0000
+HA	NA	CW	HA	0.0000	12.5500	0.0000	0.0000
+# Improper alkylimidazolium ring
+#CR	CW	NA	HA	0.0000	8.3700	0.0000	0.0000
+# Improper on nitrate
+ON     ON      NN       ON      0.0000  8.3700  0.0000  0.0000
+# Pyridinium
+CA	CA	CA	CA	0.0000	30.3340	0.0000	0.0000
+NA	CA	CA	CA	0.0000	30.3340	0.0000	0.0000
+HA	CA	CA	CA	0.0000	30.3340	0.0000	0.0000
+HA	CA	CA	NA	0.0000	30.3340	0.0000	0.0000
+HA	CA	CA	HA	0.0000	30.3340	0.0000	0.0000
+CA	NA	CA	HA	0.0000	12.5520	0.0000	0.0000
+CT	NA	CA	HA	0.0000	12.5520	0.0000	0.0000
+CA	NA	CA	CA	0.0000	12.5520	0.0000	0.0000
+CT	NA	CA	CA	0.0000	12.5520	0.0000	0.0000
+HC	CT	NA	CA	0.0000	0.0000	0.0000	0.0000
+#CT	CT	NA	CA	0.0000	1.1120	0.0000	0.6900	# Cos4 term
+# Improper pyridinium ring
+#CA	CA	CA	HA	0.0000	9.2000	0.0000	0.0000
+#CA	CA	NA	HA	0.0000	9.2000	0.0000	0.0000
+#CA	CA	NA	CT	0.0000	8.3700	0.0000	0.0000
+# Ammonium (also pyrrolidinium)
+HC	CT	CT	N3	-4.2384	-2.9665	1.9790	0.0000
+CT	CT	CT	N3	10.0081	-2.8200	2.3012	0.0000
+CT	N3	CT	CT	1.7405	-0.5356	2.9079	0.0000
+HC	CT	N3	CT	0.0000	0.0000	2.3430	0.0000
+H3	N3	CT	HC	0.0000	0.0000	0.0000	0.0000
+H3	N3	CT	CT	0.0000	0.0000	0.0000	0.0000
+HC	CT	CT	OH	0.0	0.0	1.96	0.0
+HC	CT	OH	HO	0.0	0.0	1.47  	0.0
+CT      CT      OH      HO      -1.49   -0.73   2.06    0.0
+# Phosphonium
+CT	P3	CT	HC	0.0000	0.0000	0.9270	0.0000
+CT	P3	CT	CT	0.0000	0.0000	1.1330	0.0000
+P3	CT	CT	HC	0.0000	0.0000	0.4650	0.0000
+P3	CT	CT	CT	-3.2480	0.9880	-0.7150	0.0000
+# Triflate
+OTF	STF	CTF	FTF	0.0000	0.0000	1.4510	0.0000
+# Bistriflylamide
+OBT	SBT	CBT	FBT	0.0000	0.0000	1.4510	0.0000
+NBT	SBT	CBT	FBT	0.0000	0.0000	1.3220	0.0000
+OBT	SBT	NBT	SBT	0.0000	0.0000	-0.0150	0.0000
+SBT	NBT	SBT	CBT	32.7730	-10.4200	-3.1950	0.0000
+# Dicyanamide
+NZA	CZA	N3	CZA	4.0800	0.0000	0.0000	0.0000
+end
