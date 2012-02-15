@@ -43,16 +43,25 @@ class MoleculeTest(unittest.TestCase):
     def test_angles(self):
         """Test if the angles are created"""
         print self.mol.angles
-
+        
     def test_dihedrals(self):
-        pass
+        print self.mol.dihedrals
 
 class EtaneTest(unittest.TestCase):
     
     def setUp(self):
         self.mol=readgeom("tests/data/tink2.xyz","tinkerxyz")
+    
+    def test_bonds(self):
+        """Tests if the bonds are created"""
+        print [bond.id_bonded 
+               for bond in self.mol.bonds]
         
     def test_angles(self):
         """Test if the angles are created"""
         print [(angle[0].id,angle[1].id,angle[2].id)
                for angle in self.mol.angles]
+    
+    def test_dihedrals(self):
+        print [(dihedral[0].id,dihedral[1].id,dihedral[2].id,
+               dihedral[3].id) for dihedral in self.mol.dihedrals]

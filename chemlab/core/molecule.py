@@ -93,29 +93,31 @@ class Molecule:
         while bonds:
             bond1 = bonds.pop(0)
             
-            for bond in bonds:
-                if bond1.start.id == bond.start.id:
-                    self.angles.append([bond.end,bond.start,bond1.end])
-                if bond1.start.id == bond.end.id:
-                    self.angles.append([bond.start,bond.end,bond1.start])
-                if bond1.end.id == bond.start.id:
-                    self.angles.append([bond1.start,bond1.end,bond.end])
-                if bond1.end.id == bond.end.id:
-                    self.angles.append([bond1.start,bond1.end,bond.start])
+            for bond2 in bonds:
+                if bond1.start.id == bond2.start.id:
+                    self.angles.append([bond2.end,bond2.start,bond1.end])
+                if bond1.start.id == bond2.end.id:
+                    self.angles.append([bond2.start,bond2.end,bond1.start])
+                if bond1.end.id == bond2.start.id:
+                    self.angles.append([bond1.start,bond1.end,bond2.end])
+                if bond1.end.id == bond2.end.id:
+                    self.angles.append([bond1.start,bond1.end,bond2.start])
                     
             
     
     def det_dihedrals(self):
     
         self.dihedrals=[]
-        bonds=self.bonds[:]
+        angles=self.angles[:]
         
-        while bonds:
-            bond1 = bonds.pop(0)
+        while angles:
+            angle1 = angles.pop(0)
             
-            for bond in bonds:
-                
-    
+            for angle2 in angles:
+                if    (angle1[1].id == angle2[0].id and 
+                      angle1[2].id == angle2[1].id):
+                    self.dihedrals.append([angle1[0],angle1[1],
+                                           angle2[1],angle2[2]])        
     
   
     

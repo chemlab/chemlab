@@ -1,4 +1,4 @@
-"""Parsers related to tinker file formats.
+"""Parsers related to tinker file formats from Molden.
 
 """
 import re
