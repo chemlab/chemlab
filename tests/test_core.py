@@ -44,7 +44,8 @@ class MoleculeTest(unittest.TestCase):
         """Test if the angles are created"""
         print self.mol.angles
 
-
+    def test_dihedrals(self):
+        pass
 
 class EtaneTest(unittest.TestCase):
     
@@ -53,4 +54,5 @@ class EtaneTest(unittest.TestCase):
         
     def test_angles(self):
         """Test if the angles are created"""
-        print [(angle[0].id,angle[1].id,angle[2].id) for angle in self.mol.angles]
+        print [(angle[0].id,angle[1].id,angle[2].id)
+               for angle in self.mol.angles]

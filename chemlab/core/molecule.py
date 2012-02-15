@@ -26,6 +26,8 @@ class Molecule:
     
         
         self.det_angles()
+        self.det_dihedrals()
+    
     
     
     def guess_bonds(self, threshold=0.1):
@@ -80,6 +82,18 @@ class Molecule:
                     self.angles.append([bond1.start,bond1.end,bond.start])
                     
             
+    
+    def det_dihedrals(self):
+    
+        self.dihedrals=[]
+        bonds=self.bonds[:]
+        
+        while bonds:
+            bond1 = bonds.pop(0)
+            
+            for bond in bonds:
+                
+    
     
   
     
