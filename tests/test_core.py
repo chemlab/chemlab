@@ -47,6 +47,9 @@ class MoleculeTest(unittest.TestCase):
     def test_dihedrals(self):
         print self.mol.dihedrals
 
+    def test_formula(self):
+        assert self.mol.formula == "H2O"
+
 class EtaneTest(unittest.TestCase):
     
     def setUp(self):
