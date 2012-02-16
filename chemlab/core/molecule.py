@@ -7,19 +7,19 @@ import sys
 
 
 from numpy import linalg as LA
+from collections import Counter
 from .. import data
 from ..data import symbols
 
 
-class Molecule:
-
+class Molecule(object):
     '''Building the molecule with atoms and bonds'''
     
-    def __init__(self,atoms,bonds):
+    def __init__(self,atoms,bonds=None):
     
         self.atoms=atoms
         
-        if bonds:
+        if bonds != None:
             self.bonds=bonds
         else:
             self.guess_bonds()    
@@ -27,8 +27,10 @@ class Molecule:
         
         self.det_angles()
         self.det_dihedrals()
+        self._det_formula()
     
-    
+    def __repr__(self):
+        return "molecule({})".format(self.formula)
     
     def guess_bonds(self, threshold=0.1):
         d = os.path.dirname(sys.modules['chemlab.data'].__file__)
@@ -119,8 +121,26 @@ class Molecule:
                     self.dihedrals.append([angle1[0],angle1[1],
                                            angle2[1],angle2[2]])        
     
-  
-    
+    def _det_formula(self):
+        elements = [a.type for a in self.atoms]
+        c = Counter(elements)
+        formula = ''
+        if c["C"] != 0:
+            formula += "C{}".format(c["C"])
+            del c["C"]
+        
+        if c["H"] != 0:
+            formula += "H{}".format(c["H"])
+            del c["H"]
+
+        for item, count in sorted(c.items()):
+            if count ==1:
+                formula += item
+            else:
+                formula += "{}{}".format(item, count)
+        
+        self.formula = formula
+        
 class Atom:
     '''Takes a line of the formatted input file.
     
@@ -141,6 +161,9 @@ class Atom:
     def copy(self):
         return Atom(self.id, self.type, np.copy(self.coords))
 
+    def __repr__(self):
+        return "atom({}{})".format(self.type, self.id)
+
 class Bond:
 
     '''Generate bond and bond properties '''
@@ -153,4 +176,11 @@ class Bond:
         self.atom_bonded = [atom1.type,atom2.type]
         self.id_bonded = [atom1.id,atom2.id]
         self.lenght = LA.norm(atom1.coords - atom2.coords)
+<<<<<<< HEAD
         
+=======
+
+    def __repr__(self):
+        return "bond({}{}, {}{})".format(self.start.id, self.start.type,
+                                         self.end.id, self.end.type)
+>>>>>>> 290fa7bb31eda026c2f0e93679110ed4cb6448f0
