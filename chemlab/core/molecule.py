@@ -161,6 +161,9 @@ class Atom:
     def copy(self):
         return Atom(self.id, self.type, np.copy(self.coords))
 
+    def __repr__(self):
+        return "atom({}{})".format(self.type, self.id)
+
 class Bond:
 
     '''Generate bond and bond properties '''
