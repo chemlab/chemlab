@@ -176,4 +176,7 @@ class Bond:
         self.atom_bonded = [atom1.type,atom2.type]
         self.id_bonded = [atom1.id,atom2.id]
         self.lenght = LA.norm(atom1.coords - atom2.coords)
-        
+
+    def __repr__(self):
+        return "bond({}{}, {}{})".format(self.start.id, self.start.type,
+                                         self.end.id, self.end.type)
