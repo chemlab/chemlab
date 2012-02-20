@@ -12,7 +12,7 @@ def test_read_and_display():
 
     """
 
-    mol = cl.read_molecule("testmol.xyz", format="tinker")
+    mol = cl.readgeom("tests/data/tink.xyz", format="tinkerxyz")
     cl.display(mol)
 
 def test_display_molecule():
