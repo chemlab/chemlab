@@ -22,13 +22,19 @@ class GamessDataParser(object):
         # string
         inputc = '\n'.join(l[12:] for l in inputc)
         runtyp = parse_card("runtyp", inputc, "energy")
-        avail_props.add(runtyp)
+
+        supported_modes = ("energy",)
+        
+        if runtyp in supported_modes:
+            avail_props.add(runtyp)
 
         return avail_props
     
     def get_property(self, prop):
         if prop == "irc":
             return self._parse_irc()
+        if prop == "energy":
+            return self._parse_tddft()
         
     def _parse_irc(self):
         """Parse intrinsic reaction coordinate calculation.
@@ -89,39 +95,35 @@ class GamessDataParser(object):
         return Optimize(points=points)
         
 
-    def parse_energy(self, text):
-        """Parse the output resulted from a single point calculation.
+    def _parse_tddft(self):
+        """Parse the output resulted from a tddft calculation.
         
         """
-        if self.tddft == "excite":
-            energies = sections("SUMMARY OF TDDFT RESULTS",
-                                "DONE WITH TD-DFT EXCITATION ENERGIES",
-                                text)
-            
-            lines = energies[0].splitlines()
-            regex = re.compile("""
-                               \s+(\d+)   # State Number
-                               \s+([^ ])  # State sym
-                               \s+([+-]?\d+\.\d+) # Tot Energy  
-                               \s+([+-]?\d+\.\d+) # Exc Energy
-                                   (\s+([+-]?\d+\.\d+) # 
-                                    \s+([+-]?\d+\.\d+) # Dipole moment
-                                    \s+([+-]?\d+\.\d+) # 
-                                    \s+([+-]?\d+\.\d+))? # Oscillator strength
-                               """, flags=re.VERBOSE)
-            
-            states = []
-            for line in lines:
-                match = regex.match(line)
-                if match:
-                    osc_strength = float(match.group(9)) if match.group(9) else 0.000
-                    states.append(
-                        State(int(match.group(1)), match.group(2),
-                              float(match.group(3)), float(match.group(4)), osc_strength)
-                    )
-            # if all is parsed status is OK for this energy
-            self.errcode = OK
-            return Energy(states=states)
+        text = self.text
+        energies = sections("SUMMARY OF TDDFT RESULTS",
+                            "DONE WITH TD-DFT EXCITATION ENERGIES",
+                            text)
+
+        lines = energies[0].splitlines()
+        regex = re.compile("""
+                           \s+(\d+)   # State Number
+                           \s+([^ ])  # State sym
+                           \s+([+-]?\d+\.\d+) # Tot Energy  
+                           \s+([+-]?\d+\.\d+) # Exc Energy
+                               (\s+([+-]?\d+\.\d+) # 
+                                \s+([+-]?\d+\.\d+) # Dipole moment
+                                \s+([+-]?\d+\.\d+) # 
+                                \s+([+-]?\d+\.\d+))? # Oscillator strength
+                           """, flags=re.VERBOSE)
+
+        states = []
+        for line in lines:
+            match = regex.match(line)
+            if match:
+                osc_strength = float(match.group(9)) if match.group(9) else 0.000
+                states.append({"num": int(match.group(1)), "sym": match.group(4),
+                               "strength": osc_strength})
+        return {"states": states}
     
 
 
