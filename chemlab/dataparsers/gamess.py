@@ -23,7 +23,7 @@ class GamessDataParser(object):
         inputc = '\n'.join(l[12:] for l in inputc)
         runtyp = parse_card("runtyp", inputc, "energy")
 
-        supported_modes = ("energy",)
+        supported_modes = ("energy", "irc")
         
         if runtyp in supported_modes:
             avail_props.add(runtyp)
