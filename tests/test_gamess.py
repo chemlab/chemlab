@@ -22,5 +22,3 @@ def test_exc():
 
     assert gms.properties == set(["energy"])
     assert len(gms["energy"]["states"]) == 4
-    
-    

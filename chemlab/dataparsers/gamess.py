@@ -107,7 +107,7 @@ class GamessDataParser(object):
         lines = energies[0].splitlines()
         regex = re.compile("""
                            \s+(\d+)   # State Number
-                           \s+([^ ])  # State sym
+                           \s+([ ^]+)  # State sym
                            \s+([+-]?\d+\.\d+) # Tot Energy  
                            \s+([+-]?\d+\.\d+) # Exc Energy
                                (\s+([+-]?\d+\.\d+) # 
@@ -120,6 +120,10 @@ class GamessDataParser(object):
         for line in lines:
             match = regex.match(line)
             if match:
+                # Check for strange behaviour of symmetry
+                if not re.match("\w+",match.group(4)):
+                    raise ValueError("Strange symmetry string: %s"%match.group(4))
+                 
                 osc_strength = float(match.group(9)) if match.group(9) else 0.000
                 states.append({"num": int(match.group(1)), "sym": match.group(4),
                                "strength": osc_strength})
