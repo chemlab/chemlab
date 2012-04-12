@@ -44,3 +44,13 @@ def display(molecule):
     vw = Viewer()
     vw.molecule = molecule
     vw.show()
+
+def animate(molecule_list, timestep=1.0/60):
+    """Display a list of Molecule instances *molecule_list* in an
+    animation, the *timestep* attribute sets the timestep in
+    seconds.
+
+    """
+    vw = Viewer()
+    vw.animate(molecule_list, timestep)
+    vw.show()
