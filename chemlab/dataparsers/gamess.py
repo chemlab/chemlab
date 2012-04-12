@@ -38,22 +38,31 @@ class GamessDataParser(object):
         
     def _parse_irc(self):
         """Parse intrinsic reaction coordinate calculation.
-        
+        returns a dictionary containing:
+
+        geometries : a list of Molecule instances representing each point in the IRC
+        energies   : a list of total energies (Hartree)
+        distances   : distance from the starting point in mass-weighted coords (bohr \sqrt(amu))
         """
         irc_geoms = sections(re.escape("***** NEXT POINT ON IRC FOUND *****"),
                              re.escape("INTERNUCLEAR DISTANCES (ANGS.)"),
                              self.text)
         
         # get and store the energy
-        energies = [entry.splitlines()[5] for entry in irc_geoms]
+        energies = [entry.splitlines()[5] for entry in irc_geoms] # The total energy line
         energies = [float(entry.split()[3]) for entry in energies]
+
+        # get and store the distance
+        distances = [entry.splitlines()[4] for entry in irc_geoms] # The path distance line
+        distances = [float(entry.split()[5]) for entry in distances]
         
         # strip the garbage
         irc_geoms = ['\n'.join(i.splitlines()[11:-1]) for i in irc_geoms]
         irc_geoms = [self._parse_geometry(i) for i in irc_geoms]
         
         return {"geometries": irc_geoms,
-                "energies": energies}
+                "energies": energies,
+                "distances": distances}
         
     def _parse_geometry(self, geom):
         """Parse a geometry string and return Molecule object from
