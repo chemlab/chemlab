@@ -65,7 +65,7 @@ class GamessDataParser(object):
            sym, atno, x, y, z = line.split()
            atoms.append(Atom(i, sym, [float(x), float(y), float(z)]))
         
-        return Molecule(atoms, [])
+        return Molecule(atoms)
         
     def parse_optimize(self):
         """Parse the ouput resulted of a geometry optimization. Or a
