@@ -6,6 +6,7 @@ setup(
     name = "chemlab",
     version = "0.1",
     packages = find_packages(),
+    package_data = {'': ['distribute_setup.py']},
     install_requires = ["pyglet", "numpy"],
     dependency_links = [
         "http://pyglet.googlecode.com/files/pyglet-1.1.4.tar.gz"
