@@ -1,1 +1,8 @@
 *.pyc
+build/
+.emacs.desktop
+chemlab.egg-info/
+*~
+dist/
+distribute*
+tests/data/
