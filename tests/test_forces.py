@@ -3,8 +3,8 @@ from chemlab import Atom, Molecule, display
 from chemlab.forces import lennard_jones
 
 def test_1():
-    a = Atom(1, "Ne", [-1.0, 0.0, 0.0])
-    b = Atom(2, "Ne", [1.0, 0.0, 0.0])
+    a = Atom("Ne", [-1.0, 0.0, 0.0])
+    b = Atom("Ne", [1.0, 0.0, 0.0])
     
     am = Molecule([a, b])
     

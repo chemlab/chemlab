@@ -149,17 +149,21 @@ class Atom:
     - type -> type of atom we are dealing with for example C
     - coordinates -> a vector with the coordinates of the atom
     '''
-    
-    def __init__(self,id,type,coords):
+    _curid = 0
+    def __init__(self,type,coords, id=None):
+        if id != None:
+            self.id = id
+        else:
+            self.id = Atom._curid
+            Atom._curid += 1
         
-        self.id = id
         self.type = type
         self.coords = np.array(coords)
 
         self.atno = symbols.symbol_list.index(type) + 1
 
     def copy(self):
-        return Atom(self.id, self.type, np.copy(self.coords))
+        return Atom(self.type, np.copy(self.coords), self.id)
 
     def __repr__(self):
         return "atom({}{})".format(self.type, self.id)

@@ -1,6 +1,6 @@
 import pyglet
 from pyglet.gl import *
-from world import Widget
+from world import Widget, Widget2
 import artist as art
 
 class Viewer(Widget):
@@ -22,3 +22,36 @@ class Viewer(Widget):
         
         pyglet.clock.schedule_interval(update, interval)
 
+from ..gletools.shapes import Cylinder, Sphere, Arrow
+from . import colors
+import numpy as np
+import pyglet
+
+HIGHRES = 5
+
+class Viewer2(Widget2):
+    def __init__(self):
+        super(Viewer2, self).__init__()
+        self._shapes = []
+
+        
+    @property
+    def molecule(self):
+        return self._molecule 
+    @molecule.setter
+    def molecule(self, molecule):
+        self._molecule = molecule
+        
+        self._shapes = []
+        for atom in molecule.atoms:
+            color = colors.map.get(atom.type, colors.light_grey)
+            s = Sphere(0.4, atom.coords, color=color, parallels=HIGHRES, meridians=HIGHRES)
+            self._shapes.append(s)
+            
+        for bond in molecule.bonds:
+            a = Cylinder(0.1, bond.end.coords, bond.start.coords, cloves=HIGHRES)
+            self._shapes.append(a)
+
+    def on_draw_world(self):
+        for s in self._shapes:
+            s.draw()

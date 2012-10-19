@@ -40,7 +40,7 @@ class TinkerXyzDataParser(object):
             type=match.group(2)
             coords=[match.group(3),match.group(4),match.group(5)]
             coords = [float(s) for s in coords]
-            atoms.append(Atom(id,type,coords))        
+            atoms.append(Atom(type,coords, id))        
         
         
         #PARSING THE FILE TO GET THE COUPLES BONDED

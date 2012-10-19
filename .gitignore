@@ -6,3 +6,5 @@ chemlab.egg-info/
 dist/
 distribute*
 tests/data/
+fontconfig/
+.ropeproject

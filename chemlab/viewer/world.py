@@ -1,9 +1,14 @@
 from pyglet.gl import *
 import pyglet
+from pyglet.window import key
 from trackball_camera import TrackballCamera
 import numpy as np
-
+from shaders import default_program
+from ..gletools.transformations import simple_clip_matrix
+from ..gletools.camera import Camera
 GLfloat_4 = GLfloat * 4
+
+DT_SMOOTH = 1.0 / 60
 
 def norm1(x,maxx):
     """given x within [0,maxx], scale to a range [-1,1]."""
@@ -152,3 +157,85 @@ class Widget(pyglet.window.Window):
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, GLfloat_4(0.2, 0.2, 0.2, 1.0))
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
+        
+
+class Widget2(pyglet.window.Window):
+    def __init__(self):
+        super(Widget2, self).__init__(resizable=True)
+
+        # Set light direction
+        
+        self._keys = key.KeyStateHandler()
+        self.push_handlers(self._keys)
+        self._camera = Camera()
+        self._camera.moveto(np.array([0.0, 0.0, -5.0]))
+        
+        self._aspectratio = float(self.width) / self.height
+        self.fps_display = pyglet.clock.ClockDisplay()
+        glEnable(GL_MULTISAMPLE)
+    
+    def on_draw(self):
+        # Set Background
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        self.clear()
+        
+        label = pyglet.text.Label('Hello, world',
+                                  font_name='Times New Roman',
+                                  font_size=36,
+                                  x=10, y=10, color=(0, 0, 0, 255))
+        
+        #label.draw()
+        self.fps_display.draw()
+        # Set Perspective
+        self._projection_matrix = simple_clip_matrix(
+            1, 0.1, 100, self._aspectratio)
+        
+        proj = np.asmatrix(self._projection_matrix)
+        cam = np.asmatrix(self._camera.matrix)
+        
+        default_program.vars.mvproj = np.array(np.dot(proj, cam))
+        default_program.vars.lightDir = np.array([0.0, 0.0, 1.0])
+
+        # Draw UI
+        self.draw_ui()
+        
+        # Draw World
+        with default_program:
+            glEnable(GL_DEPTH_TEST)
+            glDepthFunc(GL_LESS)
+            self.on_draw_world()
+        
+    # Events that handle the camera
+    def on_key_press(self, symbol, modifiers):
+        def update_cam(dt):
+            anydown = False
+            if self._keys[key.RIGHT]:
+                anydown = True
+                self._camera.orbit(-0.3, 0)
+                
+            if self._keys[key.LEFT]:
+                anydown = True
+                self._camera.orbit(0.3, 0)
+                
+            if self._keys[key.UP]:
+                anydown = True
+                self._camera.orbit(0, 0.3)
+                
+            if self._keys[key.DOWN]:
+                anydown = True
+                self._camera.orbit(0, -0.3)
+                
+            if not anydown:
+                pyglet.clock.unschedule(update_cam)
+        if symbol in (key.RIGHT, key.LEFT, key.UP, key.DOWN):
+            pyglet.clock.schedule(update_cam)
+
+    # Methods that needs to be impelemented by subclasses
+    def draw_ui(self):
+        pass
+    
+    def on_draw_world(self):
+        pass
+        
+        
+    

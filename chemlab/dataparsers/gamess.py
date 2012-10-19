@@ -72,7 +72,7 @@ class GamessDataParser(object):
         atoms = []
         for i, line in enumerate(geom.splitlines()):
            sym, atno, x, y, z = line.split()
-           atoms.append(Atom(i, sym, [float(x), float(y), float(z)]))
+           atoms.append(Atom(sym, [float(x), float(y), float(z)], id=i))
         
         return Molecule(atoms)
         

@@ -9,18 +9,18 @@ def test_init():
     """Test initialization of the Molecule and Atom classes."""
     # Default units for coordinates are Angstroms
     
-    Molecule([Atom(1,"O", [-4.99, 2.49, 0.0]),
-             Atom(2,"H", [-4.02, 2.49, 0.0]),
-             Atom(3,"H", [-5.32, 1.98, 1.0])],[])
+    Molecule([Atom("O", [-4.99, 2.49, 0.0]),
+             Atom("H", [-4.02, 2.49, 0.0]),
+             Atom("H", [-5.32, 1.98, 1.0])],[])
 
 
 class MoleculeTest(unittest.TestCase):
     """Test various functionalities of the molecule class."""
 
     def setUp(self):
-        self.mol = Molecule([Atom(1,"O", [-4.99, 2.49, 0.0]),
-                             Atom(2,"H", [-4.02, 2.49, 0.0]),
-                             Atom(3,"H", [-5.32, 1.98, 0.75])],[])
+        self.mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
+                             Atom("H", [-4.02, 2.49, 0.0]),
+                             Atom("H", [-5.32, 1.98, 0.75])],[])
 
     def test_coords(self):
         """Tests the sanity of the coordinates for each atom."""
