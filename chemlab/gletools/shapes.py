@@ -89,15 +89,21 @@ class Cylinder(Shape):
         a0 = np.array([0,1,2, 2,1,3]) # first two triangles
         a = np.concatenate([a0 + 2*i for i in xrange(self.cloves)])
         self.indices = a
-        
+        n = self.cloves * 2 * 3
         self.tri_vertex = self.vertices[a].flatten()
         self.tri_normals = self.normals[a].flatten()
+        
+        self.vertex_list = pyglet.graphics.vertex_list(n,
+                                                       ("v3f", self.tri_vertex),
+                                                       ("n3f", self.tri_normals),
+                                                       ("c3B", self.tri_color))
 
     def draw(self):
-        draw(self.cloves * 2 * 3, pyglet.gl.GL_TRIANGLES,
-             ("v3f", self.tri_vertex),
-             ("n3f", self.tri_normals),
-             ("c3B", self.tri_color))
+        self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
+        # draw(self.cloves * 2 * 3, pyglet.gl.GL_TRIANGLES,
+        #      ("v3f", self.tri_vertex),
+        #      ("n3f", self.tri_normals),
+        #      ("c3B", self.tri_color))
                     
 
 class Sphere(Shape):
@@ -182,12 +188,18 @@ class Sphere(Shape):
         self.tri_n = len(indexed)
         self.tri_color = self.tri_n * self.color
         
+        # Save this in a vertex list
+        self.vertex_list = pyglet.graphics.vertex_list(self.tri_n,
+                                                       ("v3f", self.tri_vertex),
+                                                       ("n3f", self.tri_normals),
+                                                       ("c3B", self.tri_color))
     def draw(self):
-        draw(self.tri_n, pyglet.gl.GL_TRIANGLES,
-             ("v3f", self.tri_vertex),
-             ("n3f", self.tri_normals),
-             ("c3B", self.tri_color))
-                    
+        # draw(self.tri_n, pyglet.gl.GL_TRIANGLES,
+        #      ("v3f", self.tri_vertex),
+        #      ("n3f", self.tri_normals),
+        #      ("c3B", self.tri_color))
+        self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
+        
     def rotate(self, axis, angle):
         rotmat = rotation_matrix( angle,axis)[:3,:3]
         

@@ -158,7 +158,7 @@ class Atom:
             Atom._curid += 1
         
         self.type = type
-        self.coords = np.array(coords)
+        self.coords = np.array(coords, dtype=np.float32)
 
         self.atno = symbols.symbol_list.index(type) + 1
 
