@@ -1,25 +1,43 @@
-"""Renderers are classes that encapsulate the representation of the
-molecules by using opengl.
+"""Renderers are classes that encapsulate the representation of
+various objects by using opengl.
 
 """
 import numpy as np
+import pyglet.gl
+
+from pyglet.graphics.vertexbuffer import VertexBufferObject
 from pyglet.gl import *
 
 from . import colors
 from .optshapes import OptSphere
-from pyglet.graphics.vertexbuffer import VertexBufferObject
+from ..gletools.shapes import Arrow
 
 
-class SphereRenderer(object):
+class AbstractRenderer(object):
+    '''An AbstractRenderer is an interface for Renderers. Each
+    renderer have to implement an initialization function __init__, a
+    draw method to do the actual drawing and an update function, that
+    is used to update the data to be displayed.
+
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
+    
+    def draw(self):
+        pass
+    
+    def update(self, *args, **kwargs):
+        pass
+    
+class SphereRenderer(AbstractRenderer):
     def __init__(self, atoms):
         '''This renderer represents a list of *atoms* as simple
         spheres.
 
         *atoms*: chemlab.Atom
         '''
-
         self.set_atoms(atoms)
-    
+        
     def set_atoms(self, atoms):
         self.atoms = atoms
         n_triangles = 0
@@ -89,13 +107,13 @@ class SphereRenderer(object):
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
 
-    def update(self):
+    def update(self, rarray):
         offset = 0
         vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
         
         for i, atom in enumerate(self.atoms):
             color = colors.map.get(atom.type, colors.light_grey)
-            s = OptSphere(0.4, atom.coords, color=color)
+            s = OptSphere(0.4, rarray[i], color=color)
             n = len(s.tri_vertex)
             vertices[offset:offset+n] = s.tri_vertex
             offset += n
@@ -104,9 +122,7 @@ class SphereRenderer(object):
         self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
         self._vbo_v.unbind()
 
-from ..gletools.shapes import Arrow
-
-class ForcesRenderer(object):
+class ForcesRenderer(AbstractRenderer):
     def __init__(self, forces, atoms):
         self.set_forces(forces, atoms)
         
@@ -119,12 +135,10 @@ class ForcesRenderer(object):
             arr = Arrow(f + a.coords, a.coords)
             arr.draw()
 
-import numpy as np
-import pyglet.gl
-
-class CubeRenderer(object):
+class CubeRenderer(AbstractRenderer):
     def __init__(self, dim):
         self.dim = dim
+        
     def draw(self):
         l = self.dim
         x = l*0.5 
@@ -145,17 +159,19 @@ class CubeRenderer(object):
                                 -x,-x,x, -x,-x,-x,
                                 x,-x,x, x,-x, -x)),
                              ("n3f", (0.0,)*24*3))
+    
     def update(self):
         pass
 
-        
-class PointRenderer(object):
+
+class PointRenderer(AbstractRenderer):
+    
     def __init__(self, sys):
-        self.set_atoms(sys.atoms)
         self.sys = sys
         glPointSize(10.0)
-        glEnable(GL_POINT_SMOOTH)
-        
+        glEnable(GL_POINT_SMOOTH)        
+        self.set_atoms(self.sys.atoms)
+    
     def set_atoms(self, atoms):
         self.atoms = atoms
         
@@ -211,20 +227,14 @@ class PointRenderer(object):
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
 
-    def update(self):
-        #positions = np.zeros(self._n_points*3, dtype=np.float32)
-        positions = self.sys.rarray
-        
-        # for i, atom in enumerate(self.atoms):
-        #     color = colors.map.get(atom.type, colors.light_grey)
-        #     positions[offset:offset+3] = atom.coords
-        #     offset += 3
+    def update(self, rarray):
+        positions = rarray
         
         self._vbo_v.bind()
         self._vbo_v.set_data(positions.ctypes.data_as(POINTER(GLfloat)))
         self._vbo_v.unbind()
 
-class SphereRenderer2(object):
+class SphereRenderer2(AbstractRenderer):
     def __init__(self, atoms):
         self.atoms = atoms
         v_shadercode = '''
@@ -240,3 +250,6 @@ class SphereRenderer2(object):
     def draw(self):
         # This thing has to be done in the shaders
         return
+        
+    def update(self):
+        pass

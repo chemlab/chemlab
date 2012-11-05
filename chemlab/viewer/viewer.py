@@ -113,7 +113,7 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         for r in self._renderers:
             r.draw()
 
-# This is VERY complicated, we should write our own code to do this
+
 class RendererProxy(object):
     i = 0
     def __init__(self, ident):
@@ -144,12 +144,13 @@ proxymap = {CubeRenderer: handle_renderer,
 g_input = Queue()
 g_output = Queue()
 
-class ProcessViewer(object):
-    def __init__(self):
-        '''This is a thing that manages viewers and renderers in
-        another process.
+class ProcessViewer(AbstractViewer):
+    '''ProcessViewer is a proxy that handles a Viewer from another
+    process. This has the advantage to make the viewer responsive and
+    asyncronous while running simulations
 
-        '''
+    '''
+    def __init__(self):
         super(ProcessViewer, self).__init__()
         self.input = g_input
         self.output = g_output
