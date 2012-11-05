@@ -1,4 +1,4 @@
-from ..gletools import FragmentShader, VertexShader, ShaderProgram
+from .gletools import FragmentShader, VertexShader, ShaderProgram
 
 default_program = ShaderProgram(
     VertexShader('''

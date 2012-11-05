@@ -1,5 +1,5 @@
 from core.molecule import Molecule, Atom, Bond
-from .viewer.viewer import Viewer
+from .graphics.viewer import Viewer
 from .dataparsers import DataFile
 
 def read_datafile(filename, format):

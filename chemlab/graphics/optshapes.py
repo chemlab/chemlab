@@ -1,4 +1,4 @@
-from ..gletools.shapes import Cylinder, Sphere
+from .gletools.shapes import Sphere
 from . import colors
 import numpy as np
 import pyglet

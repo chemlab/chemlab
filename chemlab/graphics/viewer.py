@@ -4,8 +4,8 @@ import numpy as np
 from pyglet.gl import *
 from pyglet.window import key
 
-from ..gletools.transformations import simple_clip_matrix
-from ..gletools.camera import Camera
+from .gletools.transformations import simple_clip_matrix
+from .gletools.camera import Camera
 from .shaders import default_program
 from .renderers import AbstractRenderer
 
@@ -113,6 +113,8 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         for r in self._renderers:
             r.draw()
 
+from Queue import Empty
+from multiprocessing import Queue, Process
 
 class RendererProxy(object):
     i = 0
@@ -125,10 +127,6 @@ class RendererProxy(object):
 
         g_input.put((self.ident, "update", args, kwargs))
         return g_output.get()
-
-from chemlab.viewer.renderers import CubeRenderer, PointRenderer, SphereRenderer
-from Queue import Empty
-from multiprocessing import Queue, Process
 
 def handle_renderer(v, renderer):
     ident = id(renderer)

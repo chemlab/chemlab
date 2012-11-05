@@ -10,7 +10,7 @@ from pyglet.gl import *
 
 from . import colors
 from .optshapes import OptSphere
-from ..gletools.shapes import Arrow
+from .gletools.shapes import Arrow
 
 
 class AbstractRenderer(object):
