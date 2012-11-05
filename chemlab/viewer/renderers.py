@@ -250,6 +250,6 @@ class SphereRenderer2(AbstractRenderer):
     def draw(self):
         # This thing has to be done in the shaders
         return
-        
+    
     def update(self):
         pass

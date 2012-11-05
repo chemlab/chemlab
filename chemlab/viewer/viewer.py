@@ -4,10 +4,10 @@ import numpy as np
 from pyglet.gl import *
 from pyglet.window import key
 
-from .shaders import default_program
 from ..gletools.transformations import simple_clip_matrix
 from ..gletools.camera import Camera
-
+from .shaders import default_program
+from .renderers import AbstractRenderer
 
 class AbstractViewer(object):
     
@@ -137,12 +137,13 @@ def handle_renderer(v, renderer):
 
 def handle_default(v, obj):
     return
-proxymap = {CubeRenderer: handle_renderer,
-            PointRenderer: handle_renderer,
-            SphereRenderer: handle_renderer}
+
+proxymap = {AbstractRenderer: handle_renderer}
 
 g_input = Queue()
 g_output = Queue()
+import os
+import signal
 
 class ProcessViewer(AbstractViewer):
     '''ProcessViewer is a proxy that handles a Viewer from another
@@ -155,6 +156,9 @@ class ProcessViewer(AbstractViewer):
         self.input = g_input
         self.output = g_output
         self.instancemap = {}
+
+        
+        self._main_pid = os.getpid()
         
         self._p = Process(target=self._run)
         self._p.start()
@@ -162,6 +166,14 @@ class ProcessViewer(AbstractViewer):
     def _run(self):
         # Creating the first viewer instance
         v = Viewer()
+        
+        # When closing the window, kill both the parent and the other
+        def on_close():
+            curpid = os.getpid()
+            os.kill(self._main_pid, signal.SIGTERM)
+            os.kill(curpid, signal.SIGTERM)
+        v.on_close = on_close
+        
         self.instancemap["main"] = v
         
         def process_signals(dt, v=v):
@@ -171,7 +183,13 @@ class ProcessViewer(AbstractViewer):
                 # Setup Proxy object for return values
                 res = getattr(self.instancemap[id], method)(*args, **kwargs)
 
-                handler = proxymap.get(type(res), None)
+                # Getting the correct handler for the type
+                handler = None
+                for key, value in proxymap.items():
+                    if isinstance(res, key):
+                        handler = value
+                        break
+                
                 if handler is not None:
                     proxy = handler(self, res)
                 else:
