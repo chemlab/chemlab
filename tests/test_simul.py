@@ -1,3 +1,6 @@
+import pyglet
+pyglet.options['vsync'] = False
+pyglet.options['shadow_window'] = False
 from chemlab import Atom, Molecule, display
 from chemlab.molsim import integrators, forces
 from chemlab.molsim import cforces as forces
@@ -10,6 +13,7 @@ from chemlab.core.system import MonatomicSystem
 from chemlab.graphics.renderers import SphereRenderer, CubeRenderer, PointRenderer
 from chemlab.molsim.analysis import pair_correlation
 import pylab as pl
+
 
 def test_1():
     boxsize = 50.0
@@ -44,14 +48,18 @@ def test_2():
     sys = MonatomicSystem.random("Ne", nmol, boxsize)
     
     v = Viewer()
-    v.add_renderer(PointRenderer(sys))
-    v.add_renderer(CubeRenderer(boxsize))
+    pr = v.add_renderer(SphereRenderer, sys.atoms)
+    v.add_renderer(CubeRenderer, boxsize)
     
     sys.varray = np.random.rand(nmol, 3).astype(np.float32) - 0.5
     
     def iterate(dt):
+        import time
         # Let's try to make periodic boundary conditions
-        farray = forces.lennard_jones(sys.rarray, "Ne", periodic=boxsize)
+        time.sleep(1/120.0)
+        return
+        farray = forces.lennard_jones(sys.rarray, "Ar", periodic=boxsize)
+        
         # Just this time let's assume masses are 1
         sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/30.17, 0.01)
         
@@ -64,26 +72,27 @@ def test_2():
         rarray[i_toonegative] += boxsize
         
         sys.rarray = rarray
-        v.update()
+        #pr.update(rarray)
     
     import pyglet
     pyglet.clock.schedule(iterate)
     pyglet.app.run()
 
-from chemlab.graphics.viewer import ProcessViewer
+
 
 def test_3():
     '''Make this much more interactive'''
+    from chemlab.graphics.processviewer import ProcessViewer
     boxsize = 30.0
     nmol = 1000
-    sys = MonatomicSystem.random("Ne", nmol, boxsize)
+    sys = MonatomicSystem.random("Ar", nmol, boxsize)
     v = ProcessViewer()
     pr = v.add_renderer(SphereRenderer, sys.atoms)
     v.add_renderer(CubeRenderer, boxsize)
     
     for i in range(100):
         # Let's try to make periodic boundary conditions
-        farray = forces.lennard_jones(sys.rarray, "Ne", periodic=boxsize)
+        farray = forces.lennard_jones(sys.rarray, "Ar", periodic=boxsize)
         # Just this time let's assume masses are 1
         sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/30.17, 0.01)
         

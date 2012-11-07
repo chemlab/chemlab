@@ -2,6 +2,8 @@
 shapes.
 
 '''
+# TODO clean this file, you have to setup better documented interfaces
+
 import numpy as np
 import pyglet
 from geometry import distance, angle2v, normalized
@@ -126,6 +128,7 @@ class Sphere(Shape):
         self.tri_color = []
         self.tri_normals = []
         
+        self.update_vlist = False
         self._generate_vertices()
 
     def _generate_vertices(self):
@@ -188,16 +191,17 @@ class Sphere(Shape):
         self.tri_n = len(indexed)
         self.tri_color = self.tri_n * self.color
         
-        # Save this in a vertex list
+        self.update_vlist = True
+        
+    def init_vertex_list(self):
         self.vertex_list = pyglet.graphics.vertex_list(self.tri_n,
                                                        ("v3f", self.tri_vertex),
                                                        ("n3f", self.tri_normals),
                                                        ("c3B", self.tri_color))
     def draw(self):
-        # draw(self.tri_n, pyglet.gl.GL_TRIANGLES,
-        #      ("v3f", self.tri_vertex),
-        #      ("n3f", self.tri_normals),
-        #      ("c3B", self.tri_color))
+        if self.update_vlist:
+            self.init_vertex_list()
+        
         self.vertex_list.draw(pyglet.gl.GL_TRIANGLES)
         
     def rotate(self, axis, angle):

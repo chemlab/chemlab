@@ -38,16 +38,18 @@ class SphereRenderer(AbstractRenderer):
         '''
         self.set_atoms(atoms)
         
-    def set_atoms(self, atoms):
+    def set_atoms(self, atoms, scaling=1e9):
         self.atoms = atoms
         n_triangles = 0
         vertices = []
         normals = []
         colors_ = []
         
+        # Scaling atoms positions
+        
         for atom in atoms:
             color = colors.map.get(atom.type, colors.light_grey)
-            s = OptSphere(0.4, atom.coords, color=color)
+            s = OptSphere(0.3, atom.coords*scaling, color=color)
             n_triangles += s.tri_n
             vertices.append(s.tri_vertex)
             normals.append(s.tri_normals)
@@ -103,6 +105,7 @@ class SphereRenderer(AbstractRenderer):
         self._vbo_v.unbind()
         self._vbo_n.unbind()
         self._vbo_c.unbind()
+        
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)

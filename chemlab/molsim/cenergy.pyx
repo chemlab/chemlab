@@ -5,7 +5,6 @@ import numpy as np
 import math
 from libc.math cimport fabs, rint, pow
 from chemlab.data import lj
-
 cimport numpy as np
 
 # Eps in meV
@@ -17,24 +16,26 @@ lj_params = {
 }
 ctypedef np.float32_t DTYPE_t
 
-@cython.boundscheck(False)
-@cython.cdivision(True)
+#@cython.boundscheck(False)
+#@cython.cdivision(True)
 def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
-    '''Compute Lennard-Jones forces between atoms at position *coords*
+    '''Compute Lennard-Jones energy between atoms at position *coords*
     and of type *type*. Return an array of *forces* acting on each
     atom. If periodic is a number, it represents the dimension of the
-    box
+    box that is centered at 0
 
     '''
     cdef int i, j
     
+    
     cdef double eps, sigma
+    cdef double fac, rsq
+    
     eps, sigma = lj.typetolj[type]
     
-    cdef double fac, rsq
     cdef int n = len(coords)
-    cdef np.ndarray[DTYPE_t, ndim=2] forces = np.zeros_like(coords)
     cdef np.ndarray[DTYPE_t, ndim=1] d = np.zeros(3).astype(np.float32)
+    cdef double total_energy = 0.0
 
     cdef int periodic_i = int(periodic)
     
@@ -52,15 +53,8 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
             
             rsq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2]
             
-            fac = -24*eps*(2*(pow(sigma, 12) / pow(rsq, 7)) -
-                               (pow(sigma, 7) / pow(rsq, 4)))
-            
-            forces[i,0] += fac*d[0]
-            forces[i,1] += fac*d[1]
-            forces[i,2] += fac*d[2]
-            
-            forces[j,0] -= forces[i,0]
-            forces[j,1] -= forces[i,1]
-            forces[j,2] -= forces[i,2]            
+            total_energy += 4*eps*((pow(sigma, 12) / pow(rsq, 6)) -
+                               (pow(sigma, 6) / pow(rsq, 3)))
     
-    return forces
+    return total_energy
+
