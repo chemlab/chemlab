@@ -1,20 +1,13 @@
 # cython: profile=True
-from ..mathutils import direction, distance
 import cython
 import numpy as np
-import math
+
 from libc.math cimport fabs, rint, pow
 from chemlab.data import lj
+from cython.parallel import prange
 
 cimport numpy as np
 
-# Eps in meV
-# sigma in nm
-lj_params = {
-    "Ne" : { "eps"  : 3.0840,
-             "sigma": 0.2782}
-    
-}
 ctypedef np.float32_t DTYPE_t
 
 @cython.boundscheck(False)
@@ -46,9 +39,9 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
             d[2] = coords[j,2] - coords[i,2]
             if periodic_i:
                 # Let's adjust the boundary conditions
-                d[0] -= periodic_i * rint(d[0]/periodic_i)
-                d[1] -= periodic_i * rint(d[1]/periodic_i)
-                d[2] -= periodic_i * rint(d[2]/periodic_i)
+                d[0] = d[0] - periodic_i * rint(d[0]/periodic_i)
+                d[1] = d[1] - periodic_i * rint(d[1]/periodic_i)
+                d[2] = d[2] - periodic_i * rint(d[2]/periodic_i)
             
             rsq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2]
             

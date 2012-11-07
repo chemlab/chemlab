@@ -1,4 +1,5 @@
 import pyglet
+pyglet.options['vsync'] = False
 from chemlab.core.system import MonatomicSystem
 from chemlab.data import masses
 from chemlab.molsim import cforces, integrators, cenergy
@@ -94,14 +95,10 @@ sys.varray = (np.random.rand(sys.n, 3).astype(np.float32) - 0.5) * 1000
 
 from chemlab.graphics.viewer import Viewer
 from chemlab.graphics.renderers import CubeRenderer, SphereRenderer
-pyglet.options['vsync']=True
-pyglet.options['xsync']=True
-
 v = Viewer()
 v.add_renderer(CubeRenderer, sys.boxsize*1e9)
 sr = v.add_renderer(SphereRenderer, sys.atoms)
 
-pyglet.app.run()
 gen = evolve_generator(sys, t=1e-9, tstep=5e-15, periodic=True)
 
 def update(t):
