@@ -3,12 +3,13 @@ from .molecule import Atom
 
 # MAYBE: I think this thing would be just a test 
 class MonatomicSystem(object):
-    def __init__(self, atomlist):
+    def __init__(self, atomlist, dimension):
         '''This system is made of all atoms of the same types'''
         
         self.atoms = atomlist
-        
+        self.boxsize = dimension
         self.n = len(self.atoms)
+        self.type = atomlist[0].type
         self.rarray = np.array([a.coords for a in atomlist], dtype=np.float32)
         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)], dtype=np.float32)
         
@@ -25,7 +26,7 @@ class MonatomicSystem(object):
         for c in coords:
             atoms.append(Atom(type, c))
         
-        return cls(atoms)
+        return cls(atoms, dim)
         
     def get_rarray(self):
         return self.__rarray
