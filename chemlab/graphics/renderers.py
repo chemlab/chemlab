@@ -38,18 +38,18 @@ class SphereRenderer(AbstractRenderer):
         '''
         self.set_atoms(atoms)
         
-    def set_atoms(self, atoms, scaling=1e9):
+    def set_atoms(self, atoms):
+        # We expect to receive things in nanometers
+        
         self.atoms = atoms
         n_triangles = 0
         vertices = []
         normals = []
         colors_ = []
         
-        # Scaling atoms positions
-        
         for atom in atoms:
             color = colors.map.get(atom.type, colors.light_grey)
-            s = OptSphere(0.3, atom.coords*scaling, color=color)
+            s = OptSphere(0.3, atom.coords, color=color)
             n_triangles += s.tri_n
             vertices.append(s.tri_vertex)
             normals.append(s.tri_normals)

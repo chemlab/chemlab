@@ -111,3 +111,12 @@ class Viewer(pyglet.window.Window, AbstractViewer):
     def on_draw_world(self):
         for r in self._renderers:
             r.draw()
+
+    def schedule(self, function, frequency=None):
+        if not frequency:
+            pyglet.clock.schedule(lambda t: function())
+        else:
+            pyglet.clock.schedule_interval(lambda t: function(), frequency)
+        
+    def run(self):
+        pyglet.app.run()

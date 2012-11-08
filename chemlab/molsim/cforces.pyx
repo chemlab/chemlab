@@ -37,16 +37,12 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
             d[0] = coords[j,0] - coords[i,0]
             d[1] = coords[j,1] - coords[i,1]
             d[2] = coords[j,2] - coords[i,2]
-            if periodic_i:
-                # Let's adjust the boundary conditions
-                d[0] = d[0] - periodic_i * rint(d[0]/periodic_i)
-                d[1] = d[1] - periodic_i * rint(d[1]/periodic_i)
-                d[2] = d[2] - periodic_i * rint(d[2]/periodic_i)
             
             rsq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2]
-            
-            fac = -24*eps*(2*(pow(sigma, 12) / pow(rsq, 7)) -
-                               (pow(sigma, 7) / pow(rsq, 4)))
+            s6 = pow(sigma, 6)
+            s12 = s6*s6
+            fac = -24*eps*(2*(s12/pow(rsq, 7)) -
+                          (s6/pow(rsq, 4)))
             
             forces[i,0] += fac*d[0]
             forces[i,1] += fac*d[1]

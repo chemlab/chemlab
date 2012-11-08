@@ -50,7 +50,6 @@ class ProcessViewer(AbstractViewer):
         
         self._p = Process(target=self._run)
         self._p.start()
-        
     def _run(self):
         # Creating the first viewer instance
         opt = pyglet.options
@@ -103,3 +102,8 @@ class ProcessViewer(AbstractViewer):
     def update(self):
         self._q.put(("update",[], {}))
     
+    def run(self):
+        pass
+        
+    def join(self):
+        self._p.join()
