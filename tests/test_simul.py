@@ -40,39 +40,24 @@ def test_1():
     #pl.plot(x, y)
     
     #pl.show()
-    
+from chemlab.molsim.integrators import evolve_generator
 def test_2():
     # Let's try with threads
-    boxsize = 30.0
-    nmol = 1000
-    sys = MonatomicSystem.random("Ne", nmol, boxsize)
+    boxsize = 8.0
+    nmol = 200
+    sys = MonatomicSystem.random("Ar", nmol, boxsize)
     
     v = Viewer()
     pr = v.add_renderer(SphereRenderer, sys.atoms)
     v.add_renderer(CubeRenderer, boxsize)
     
-    sys.varray = np.random.rand(nmol, 3).astype(np.float32) - 0.5
+    sys.varray = (np.random.rand(nmol, 3).astype(np.float32) - 0.5)*10
+    
+    gen = evolve_generator(sys, t=100, tstep=0.002, periodic=True)
     
     def iterate(dt):
-        import time
-        # Let's try to make periodic boundary conditions
-        time.sleep(1/120.0)
-        return
-        farray = forces.lennard_jones(sys.rarray, "Ar", periodic=boxsize)
-        
-        # Just this time let's assume masses are 1
-        sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/30.17, 0.01)
-        
-        # Add more periodic conditions
-        rarray = sys.rarray
-        
-        i_toopositive = rarray > boxsize * 0.5
-        rarray[i_toopositive] -= boxsize  
-        i_toonegative = rarray < - boxsize * 0.5
-        rarray[i_toonegative] += boxsize
-        
-        sys.rarray = rarray
-        #pr.update(rarray)
+        sys, t = gen.next()
+        pr.update(sys.rarray)
     
     import pyglet
     pyglet.clock.schedule(iterate)
