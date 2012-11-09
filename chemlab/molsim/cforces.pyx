@@ -48,12 +48,18 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
             
             # let's compute the periodicity            
             if do_periodic:
-                if fabs(d[0]) > boxsize*0.5:
-                    d[0] = d[0] - copysign(boxsize, d[0])
-                if fabs(d[1]) > boxsize*0.5:
-                    d[1] = d[1] - copysign(boxsize, d[1])
-                if fabs(d[2]) > boxsize*0.5:
-                    d[2] = d[2] - copysign(boxsize, d[2])
+                # Those are equivalent periodic conditions, just to
+                # get rid of some if statements
+                d[0] = d[0] - boxsize * rint(d[0]/boxsize)
+                d[1] = d[1] - boxsize * rint(d[1]/boxsize)
+                d[2] -= d[2] - boxsize * rint(d[2]/boxsize)
+                
+                # if fabs(d[0]) > boxsize*0.5:
+                #     d[0] = d[0] - copysign(boxsize, d[0])
+                # if fabs(d[1]) > boxsize*0.5:
+                #     d[1] = d[1] - copysign(boxsize, d[1])
+                # if fabs(d[2]) > boxsize*0.5:
+                #     d[2] = d[2] - copysign(boxsize, d[2])
             
             
             rsq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2]
