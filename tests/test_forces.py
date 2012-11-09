@@ -25,7 +25,6 @@ def test_2():
     c = Atom("Ne", [-1,-1, 0])
     d = Atom("Ne", [-1, 1, 0])
     sys = MonatomicSystem([a,b,c,d])
-    sys = MonatomicSystem.random("Ne", 8, 7)
     farray = forces_lj(sys.atoms)
     
     v = Viewer()
@@ -36,10 +35,15 @@ def test_2():
     
 from chemlab.molsim import cenergy
 
-def test_periodic():
+def test_forces():
+    '''This test simply shows two atoms that are subject to a lennard
+    jones potential. you can modulate the distance between atoms and
+    see if this physically makes sense. For example two atoms at a
+    distance of about 1.5sigma should bounce.
+
+    '''
     import pyglet
     pyglet.options['vsync'] = False
-    from chemlab.graphics.processviewer import ProcessViewer
     
     # Let's say we have to store this in nm and picoseconds
     # I setup argon atoms pretty overlapping
@@ -81,6 +85,10 @@ def test_periodic():
 from chemlab.data import lj
 
 def test_energy():
+    '''This is made as a test to verify is the potential produced is
+    correct by using correct units and whatever.
+
+    '''
     arr = np.array([[0.0, 0.0, 0.0], [0.30e-9, 0.0, 0.0]], dtype=np.float32)
     
     rs = []
@@ -118,3 +126,52 @@ def test_energy():
     pl.plot(rs, myforces)
     #pl.plot(rs, forces)
     pl.show()
+    
+
+def test_periodic():
+    '''Now let's try to implement the periodic boundaries, we should
+    try to put the molecules near the border and see if one molecule
+    'passes' the wall.
+
+    '''
+    import pyglet
+    pyglet.options['vsync'] = False
+    
+    # Let's say we have to store this in nm and picoseconds
+    # I setup argon atoms pretty overlapping
+    a = Atom("Ar", [ 0.5, 0.0, 0.0])
+    b = Atom("Ar", [ -1.4, 0.0, 0.0])
+    sys = MonatomicSystem([a,b], 3.0)
+    
+    v = Viewer()
+    
+    sr = v.add_renderer(SphereRenderer, sys.atoms)
+    v.add_renderer(CubeRenderer, sys.boxsize)
+    
+    # evo takes times in picoseconds
+    evo = evolve_generator(sys, t=1e3, tstep=0.002, periodic=True)
+    
+    distances = [np.linalg.norm(sys.rarray[0] - sys.rarray[1])]
+    pitentials = [cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)]
+    
+    def update_pos():
+        try:
+            for i in range(100):
+                sys, t = evo.next()
+                
+            dist = np.linalg.norm(sys.rarray[0] - sys.rarray[1])
+            pot = cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)            
+            distances.append(dist)
+            pitentials.append(pot)
+            sr.update(sys.rarray)
+            
+        except StopIteration:
+            pass
+            #import pylab as pl
+            #pl.plot(distances, pitentials, 'o')
+            #pl.show()
+
+
+        
+    v.schedule(update_pos)
+    v.run()
