@@ -19,19 +19,38 @@ def test_1():
     f = lennard_jones(a, b)
 
 
-def test_2():
-    a = Atom("Ne", [ 1, 1, 0])
-    b = Atom("Ne", [ 1,-1, 0])
-    c = Atom("Ne", [-1,-1, 0])
-    d = Atom("Ne", [-1, 1, 0])
-    sys = MonatomicSystem([a,b,c,d])
-    farray = forces_lj(sys.atoms)
+def test_4atoms():
+    a = Atom("Ar", [ 0.5, 0.5, 0])
+    b = Atom("Ar", [ 0.5,-0.5, 0])
+    c = Atom("Ar", [-0.2,-0.5, 0])
+    d = Atom("Ar", [-0.5, 0.5, 0.5])
+    sys = MonatomicSystem([a,b,c,d], 6.0)
     
     v = Viewer()
-    v.add_renderer(ForcesRenderer(farray*10000/3, sys.atoms))
-    v.add_renderer(SphereRenderer(sys.atoms))
+    sr = v.add_renderer(SphereRenderer, sys.atoms)
+    v.add_renderer(CubeRenderer, sys.boxsize)
     
-    import pyglet; pyglet.app.run()
+    # evo takes times in picoseconds
+    evo = evolve_generator(sys, t=1e3, tstep=0.002, periodic=True)
+    
+    
+    def update_pos():
+        try:
+            for i in range(100):
+                sys, t = evo.next()
+            sr.update(sys.rarray)
+            
+        except StopIteration:
+            pass
+            #import pylab as pl
+            #pl.plot(distances, pitentials, 'o')
+            #pl.show()
+
+
+        
+    v.schedule(update_pos)
+    v.run()
+
     
 from chemlab.molsim import cenergy
 

@@ -40,23 +40,24 @@ def test_1():
     #pl.plot(x, y)
     
     #pl.show()
+
 from chemlab.molsim.integrators import evolve_generator
 def test_2():
-    # Let's try with threads
-    boxsize = 8.0
-    nmol = 200
+    boxsize = 15.0 #nm
+    nmol = 40
     sys = MonatomicSystem.random("Ar", nmol, boxsize)
     
     v = Viewer()
     pr = v.add_renderer(SphereRenderer, sys.atoms)
     v.add_renderer(CubeRenderer, boxsize)
     
-    sys.varray = (np.random.rand(nmol, 3).astype(np.float32) - 0.5)*10
+    sys.varray = (np.random.rand(nmol, 3).astype(np.float32) - 0.5)
     
-    gen = evolve_generator(sys, t=100, tstep=0.002, periodic=True)
+    gen = evolve_generator(sys, t=1000, tstep=0.002, periodic=True)
     
     def iterate(dt):
-        sys, t = gen.next()
+        for i in range(10):
+            sys, t = gen.next()
         pr.update(sys.rarray)
     
     import pyglet
