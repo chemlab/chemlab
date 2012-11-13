@@ -10,8 +10,8 @@ class MonatomicSystem(object):
         self.boxsize = dimension
         self.n = len(self.atoms)
         self.type = atomlist[0].type
-        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float32)
-        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)], dtype=np.float32)
+        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
+        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
         
     @classmethod
     def random(cls, type, number, dim=10.0):
@@ -21,7 +21,7 @@ class MonatomicSystem(object):
 
         '''
         # create random in the range 0,1   dimension dim
-        coords = np.random.rand(number, 3).astype(np.float32) * dim - dim/2
+        coords = np.random.rand(number, 3) * dim - dim/2
         atoms = []
         for c in coords:
             atoms.append(Atom(type, c))

@@ -108,7 +108,7 @@ def test_energy():
     correct by using correct units and whatever.
 
     '''
-    arr = np.array([[0.0, 0.0, 0.0], [0.30e-9, 0.0, 0.0]], dtype=np.float32)
+    arr = np.array([[0.0, 0.0, 0.0], [0.30e-9, 0.0, 0.0]])
     
     rs = []
     ens = []

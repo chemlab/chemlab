@@ -44,7 +44,7 @@ def test_1():
 from chemlab.molsim.integrators import evolve_generator
 def test_2():
     boxsize = 15.0 #nm
-    nmol = 40
+    nmol = 400
     sys = MonatomicSystem.random("Ar", nmol, boxsize)
     
     v = Viewer()

@@ -10,7 +10,7 @@ from cython.parallel import prange, parallel
 
 cimport numpy as np
 
-ctypedef np.float32_t DTYPE_t
+ctypedef np.double_t DTYPE_t
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
@@ -29,7 +29,7 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
     cdef double fac, rsq
     cdef int n = len(coords)
     cdef np.ndarray[DTYPE_t, ndim=2] forces = np.zeros_like(coords)
-    cdef np.ndarray[DTYPE_t, ndim=1] d = np.zeros(3).astype(np.float32)
+    cdef np.ndarray[DTYPE_t, ndim=1] d = np.zeros(3)
     
     cdef int do_periodic
     cdef float boxsize
