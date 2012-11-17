@@ -117,3 +117,5 @@ symbol_list = [
 "Uuh",
 "Uus",
 "Uuo"]
+
+symbol_list = [s.lower() for s in symbol_list]

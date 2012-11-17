@@ -1,4 +1,4 @@
-import hdf5
+#import hdf5
 import os
 
 def Trajectory(object):
@@ -35,10 +35,11 @@ def test_2():
     traj = read_trajectory("traj.h5")
     display_trajectory(traj)
 
-def test_3():
-    sys = 
+def test_gromacs():
+    '''Test reading a gromacs file'''
+    from chemlab.io.gro import parse_gro
+    import pyglet
+    pyglet.options['vsync'] = False
+    from chemlab.graphics import display_system
     
-def display_trajectory(traj):
-    v = Viewer()
-    v.add_renderer(...)
-
+    display_system(parse_gro("tests/data/water_nacl.gro"))

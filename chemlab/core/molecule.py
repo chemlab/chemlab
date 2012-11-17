@@ -160,7 +160,7 @@ class Atom:
         self.type = type
         self.coords = np.array(coords, dtype=np.float32)
 
-        self.atno = symbols.symbol_list.index(type) + 1
+        self.atno = symbols.symbol_list.index(type.lower()) + 1
 
     def copy(self):
         return Atom(self.type, np.copy(self.coords), self.id)

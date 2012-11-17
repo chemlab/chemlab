@@ -38,3 +38,41 @@ class MonatomicSystem(object):
             atom.coords = self.__rarray[i]
     rarray = property(get_rarray, set_rarray)
 
+class System(object):
+    def __init__(self, atomlist, dimension):
+        '''This system is made of all atoms of the same types'''
+        
+        self.atoms = atomlist
+        self.boxsize = dimension
+        self.n = len(self.atoms)
+        
+        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
+        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+        
+    @classmethod
+    def random(cls, type, number, dim=10.0):
+        '''Return a random monatomic system made of *number* molecules
+        fo type *type* arranged in a cube of dimension *dim* extending
+        in the 3 directions.
+
+        '''
+        # create random in the range 0,1   dimension dim
+        coords = np.random.rand(number, 3) * dim - dim/2
+        atoms = []
+        for c in coords:
+            atoms.append(Atom(type, c))
+        
+        return cls(atoms, dim)
+        
+    def get_rarray(self):
+        return self.__rarray
+    
+    def set_rarray(self, value):
+        self.__rarray = value
+        
+        for i, atom in enumerate(self.atoms):
+            atom.coords = self.__rarray[i]
+    rarray = property(get_rarray, set_rarray)
+    
+    def __repr__(self):
+        return "System(%d)"%self.n
