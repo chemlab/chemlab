@@ -32,19 +32,26 @@ def lennard_jones(np.ndarray[DTYPE_t, ndim=2] coords, type, periodic=False):
     cdef np.ndarray[DTYPE_t, ndim=1] d = np.zeros(3).astype(np.float32)
     cdef double total_energy = 0.0
 
-    cdef int periodic_i = int(periodic)
+    cdef int do_periodic
+    cdef float boxsize
     
+    if periodic is not False:
+        do_periodic = 1
+        boxsize = periodic
+    else:
+        do_periodic = 0
+
     # All cythonized
     for i in range(n):
         for j in range(i+1, n):
             d[0] = coords[j,0] - coords[i,0]
             d[1] = coords[j,1] - coords[i,1]
             d[2] = coords[j,2] - coords[i,2]
-            if periodic_i:
-                # Let's adjust the boundary conditions
-                d[0] = d[0] - periodic_i * rint(d[0]/periodic_i)
-                d[1] = d[1] - periodic_i * rint(d[1]/periodic_i)
-                d[2] -= d[2] - periodic_i * rint(d[2]/periodic_i)
+            
+            if do_periodic:
+                d[0] = d[0] - boxsize * rint(d[0]/boxsize)
+                d[1] = d[1] - boxsize * rint(d[1]/boxsize)
+                d[2] = d[2] - boxsize * rint(d[2]/boxsize)
             
             rsq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2]
             
