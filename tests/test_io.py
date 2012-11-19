@@ -1,39 +1,18 @@
-#import hdf5
-import os
-
-def Trajectory(object):
-    def __init__(self, filename):
-        self.hdf = hdf5.File(filename)
-        
-    def _read_sys(self, index):
-        atom_types = self.hdf["atoms"] 
-        coords = self.hdf["coords"]
-        return System.from_type_coords(zip(atom_types, coords))
-            
-    def last(self):
-        return self._read_sys(-1)
-def make_trajectory(first, filename):
-    if os.path.exists(filename):
-        # Restarting
-        t = Trajectory(filename)
-    else:
-        t = Trajectory(filename, restart=False)
-    return t
-
-def test_1():
-
-    traj = make_trajectory(MonatomicSystem(), "traj.h5", restart = True)
-
-    for i in range(10):
-        sys = traj.last()
-        sys.rarray += 1.0
-        traj.append(sys)
-        
+import h5py
+from chemlab.core.system import MonatomicSystem
+from chemlab.io.trajectory import make_trajectory
     
+def test_traj():
+    sys = MonatomicSystem.random("Ar", 64, 1.0)
+    traj = make_trajectory(sys,  "traj.hdf", restart=True)
+    
+    for i in range(1000):
+        sys.rarray += 1
+        traj.append(sys)
 
-def test_2():
-    traj = read_trajectory("traj.h5")
-    display_trajectory(traj)
+    print traj.npoints
+    #print traj._read_sys(0).rarray
+    #print traj._read_sys(1).rarray
 
 def test_gromacs():
     '''Test reading a gromacs file'''
