@@ -9,6 +9,7 @@ from pyglet.graphics.vertexbuffer import VertexBufferObject
 from pyglet.gl import *
 
 from . import colors
+from ..data.vdw import vdw_dict
 from .optshapes import OptSphere
 from .gletools.shapes import Arrow
 
@@ -52,7 +53,9 @@ class SphereRenderer(AbstractRenderer):
         
         for atom in atoms:
             color = colors.map.get(atom.type, colors.light_grey)
-            s = OptSphere(0.15, atom.coords, color=color)
+            radius = vdw_dict[atom.type.lower()]
+            
+            s = OptSphere(radius, atom.coords, color=color)
             n_triangles += s.tri_n
             vertices.append(s.tri_vertex)
             normals.append(s.tri_normals)

@@ -1,6 +1,7 @@
 from .viewer import Viewer
+from .renderers import SphereRenderer
 
-def display(mol):
-    vw = Viewer()
-    vw.draw_molecule(mol)
-    vw.show()
+def display_system(sys):
+    v = Viewer()
+    v.add_renderer(SphereRenderer, sys.atoms)
+    v.run()

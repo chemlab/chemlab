@@ -60,3 +60,7 @@ map = {
 "Li":firebrick,
 "He":pink,
 }
+# Making the guy case_insensitive
+for k,v in map.items():
+    map[k.lower()] = v
+    map[k.upper()] = v
