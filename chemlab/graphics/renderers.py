@@ -29,6 +29,9 @@ class AbstractRenderer(object):
     def update(self, *args, **kwargs):
         pass
     
+    def set_viewer(self, v):
+        self.viewer = v
+    
 class SphereRenderer(AbstractRenderer):
     def __init__(self, atoms):
         '''This renderer represents a list of *atoms* as simple
