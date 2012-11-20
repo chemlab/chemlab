@@ -11,7 +11,7 @@ class Trajectory(object):
             #Variable length string
             str_type = h5py.new_vlen(str)
             tl =hd.create_dataset('types', (sys.n,), str_type)
-            tl[:] = ["Ar"] * sys.n
+            tl[:] = [at.type for at in sys.atoms]
 
             bsize = hd.create_dataset('boxsize', (1,), 'f')
             bsize[0] = sys.boxsize
