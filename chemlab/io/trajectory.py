@@ -20,6 +20,12 @@ class Trajectory(object):
             cl = hd.create_dataset('coordlist', (1, sys.n, 3), 'f', maxshape=(None, sys.n, 3),
             compression='gzip', compression_opts=4)
             cl[0] = sys.rarray
+            
+            # The velocity list
+            vl = hd.create_dataset('velocitylist', (1, sys.n, 3), 'f', maxshape=(None, sys.n, 3),
+            compression='gzip', compression_opts=4)
+            vl[0] = sys.varray
+
 
     @property
     def npoints(self):

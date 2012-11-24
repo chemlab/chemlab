@@ -26,6 +26,9 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         # Renderers are responsible for actually drawing stuff
         self._renderers = []
         
+        # Ui elements represent user interactions
+        self._uis = []
+        
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)        
         glEnable(GL_MULTISAMPLE)
@@ -37,7 +40,7 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         self._camera.moveto(np.array([0.0, 0.0, -5.0]))
         
         self._aspectratio = float(self.width) / self.height
-        self.fps_display = pyglet.clock.ClockDisplay()
+        #self.fps_display = pyglet.clock.ClockDisplay()
         
     
         self._zoom = 1.5
@@ -68,10 +71,11 @@ class Viewer(pyglet.window.Window, AbstractViewer):
     def on_draw(self):
         from .shaders import default_program
         # Set Background
-        glClearColor(1.0, 1.0, 1.0, 1.0)
+        #glClearColor(1.0, 1.0, 1.0, 1.0)
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
         
-        self.fps_display.draw()
+        #self.fps_display.draw()
         
         # Set Perspective
         self._projection_matrix = simple_clip_matrix(
@@ -99,14 +103,30 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         self._aspectratio = float(width) / height
         
         return pyglet.event.EVENT_HANDLED
+        
+    def on_mouse_motion(self, x, y, dx, dy):
+        for ui in self._uis:
+            ui.on_mouse_motion(x, y, dx, dy)
+            
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        for ui in self._uis:
+            return
+            if ui.is_inside(x, y):
+                ui.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(*args, **kwargs)
         self._renderers.append(renderer)
         return renderer
     
+    def add_ui(self, klass, *args, **kwargs):
+        ui = klass(*args, **kwargs)
+        self._uis.append(ui)
+        return ui
+    
     def on_draw_ui(self):
-        pass
+        for u in self._uis:
+            u.draw()
         
     def on_draw_world(self):
         for r in self._renderers:

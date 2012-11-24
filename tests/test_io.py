@@ -22,3 +22,4 @@ def test_gromacs():
     from chemlab.graphics import display_system
     
     display_system(parse_gro("tests/data/water_nacl.gro"))
+

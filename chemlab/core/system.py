@@ -37,13 +37,48 @@ class MonatomicSystem(object):
         for i, atom in enumerate(self.atoms):
             atom.coords = self.__rarray[i]
     rarray = property(get_rarray, set_rarray)
+    
+    @classmethod
+    def spaced_lattice(cls, type, number, dim=10.0):
+        '''Return a spaced lattice in order to fill up the box with
+        dimension *dim*
 
+        '''
+        n_rows = int(np.ceil(number**0.3333))
+        
+        step = dim/(n_rows+1)
+        
+        coords = []
+        
+        consumed = 0
+        for i in range(1, n_rows+1):
+            for j in range(1, n_rows+1):
+                for k in range(1, n_rows+1):
+                    consumed += 1
+                    if consumed > number:
+                        break
+                    else:
+                        c = np.array([step*i, step*j, step*k])-0.5*dim
+                        # Introducing a small perturbation
+                        c += (np.random.rand() - 0.5) * 0.1
+                        coords.append(c)
+        atoms = []
+        
+        for c in coords:
+            atoms.append(Atom(type, c))
+        
+        return cls(atoms, dim)
+        
+        
 class System(object):
-    def __init__(self, atomlist, dimension):
+    def __init__(self, atomlist=None, boxsize=2.0):
         '''This system is made of all atoms of the same types'''
         
+        if atomlist is None:
+            atomlist = []
+        
         self.atoms = atomlist
-        self.boxsize = dimension
+        self.boxsize = boxsize
         self.n = len(self.atoms)
         
         self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
@@ -63,6 +98,10 @@ class System(object):
             atoms.append(Atom(type, c))
         
         return cls(atoms, dim)
+        
+    def random_add(self, body):
+        self.bodies.append(body)
+        self.rarray.extend(body.rarray)
         
     def get_rarray(self):
         return self.__rarray

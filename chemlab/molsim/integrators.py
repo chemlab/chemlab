@@ -31,7 +31,8 @@ def evolve_generator(sys, t, tstep, periodic=True, method="velocity_verlet"):
         periodic = False
     
     first_step = True
-        
+    
+    yield sys, 0.0
     for i in range(steps):
         yield sys, tstep*i*1e12
         
