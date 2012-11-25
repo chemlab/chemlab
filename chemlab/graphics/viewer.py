@@ -80,12 +80,16 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         proj = np.asmatrix(self._projection_matrix)
         cam = np.asmatrix(self._camera.matrix)
         
-        mvproj = np.array(np.dot(proj, cam))
+        self.mvproj = mvproj = np.array(np.dot(proj, cam))
+        
         default_program.vars.mvproj = mvproj
-        ldir =  np.dot(np.asarray(self._camera._rotation[:3,:3].T),
+        self.ldir = ldir =  np.dot(np.asarray(self._camera._rotation[:3,:3].T),
                        np.array([0.3, 0.2, 0.8]))
+        
         default_program.vars.lightDir = ldir
-        default_program.vars.camera = np.dot(cam[:3, :3].T, self._camera.position)
+        
+        self._camerapos = np.dot(cam[:3, :3].T, self._camera.position)
+        default_program.vars.camera = self._camerapos
         
         # Draw UI
         self.on_draw_ui()
@@ -102,6 +106,7 @@ class Viewer(pyglet.window.Window, AbstractViewer):
 
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(*args, **kwargs)
+        renderer.set_viewer(self)
         self._renderers.append(renderer)
         return renderer
     

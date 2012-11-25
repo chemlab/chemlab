@@ -20,3 +20,13 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+chemlab at a glance
+===================
+
+chemlab is designed to be a library that can be used to perform
+chemistry-relevant calculations with the flexibility and power of the
+python programming language. It aims to be well-designed and pythonic,
+taking inspiration from project such as numpy and scipy.
+
+Chemistry is much aided by visualization tools, and chemlab includes
+also a 3D molecular viewer based on pyglet.
