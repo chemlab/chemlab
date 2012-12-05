@@ -1,6 +1,8 @@
 import h5py
-from chemlab.core.system import MonatomicSystem
+from chemlab.core.system import MonatomicSystem, System
+from chemlab.core.molecule import Atom, Molecule
 from chemlab.io.trajectory import make_trajectory
+from chemlab.io.gro import write_gro
     
 def test_traj():
     sys = MonatomicSystem.random("Ar", 64, 1.0)
@@ -23,3 +25,16 @@ def test_gromacs():
     
     display_system(parse_gro("tests/data/water_nacl.gro"))
 
+
+def test_write_gromacs():
+    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'grotype': 'OW1'}),
+                      Atom('H', [0.1, 0.0, 0.0], export={'grotype': 'HW2'}),
+                      Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW3'})],
+                      export={'groname': 'WATER'})
+
+    sys = System(boxsize=1.82)
+    for i in range(216):
+        sys.random_add(water.copy(), min_distance=0.25, maxtries=1000)
+    
+    write_gro(sys, 'dummy.gro')
+    

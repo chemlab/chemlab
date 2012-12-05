@@ -5,30 +5,47 @@ import numpy as np
 import os
 import sys
 
-
 from numpy import linalg as LA
 from collections import Counter
+import numpy as np
+
 from .. import data
 from ..data import symbols
-
+from ..data import masses
 
 class Molecule(object):
     '''Building the molecule with atoms and bonds'''
     
-    def __init__(self,atoms,bonds=None):
+    def __init__(self,atoms,bonds=None, export=None):
     
         self.atoms=atoms
+        
+        self.rarray = np.array([a.coords for a in atoms], dtype=np.float64)
+        self.marray = np.array([a.mass for a in atoms])
         
         if bonds != None:
             self.bonds=bonds
         else:
             self.guess_bonds()    
-    
+        
+        # Extra data for exporting reasons
+        if export:
+            self.export = export
+        else:
+            self.export = {}
         
         self.det_angles()
         self.det_dihedrals()
         self._det_formula()
     
+    @property
+    def center_of_mass(self):
+        return ((self.marray * self.rarray)/self.marray.sum()).sum(axis=0)
+
+    @property
+    def geometric_center(self):
+        return self.rarray.sum(axis=0)/len(self.rarray)
+        
     def __repr__(self):
         return "molecule({})".format(self.formula)
     
@@ -67,7 +84,7 @@ class Molecule(object):
 
     def copy(self):
         mol = Molecule([atom.copy() for atom in self.atoms],
-                       [])
+                       [], export=self.export.copy())
         
         mol.bonds = []
         for bond in self.bonds:
@@ -150,20 +167,28 @@ class Atom:
     - coordinates -> a vector with the coordinates of the atom
     '''
     _curid = 0
-    def __init__(self,type,coords, id=None):
+    def __init__(self,type,coords, id=None, export=None):
         if id != None:
             self.id = id
         else:
             self.id = Atom._curid
             Atom._curid += 1
-        
+            
         self.type = type
         self.coords = np.array(coords, dtype=np.float32)
+        
+        # Extra data for exporting reasons
+        if export:
+            self.export = export
+        else:
+            self.export = {}
+
 
         self.atno = symbols.symbol_list.index(type.lower()) + 1
+        self.mass = masses.typetomass[type]
 
     def copy(self):
-        return Atom(self.type, np.copy(self.coords), self.id)
+        return Atom(self.type, np.copy(self.coords), self.id, export=self.export.copy())
 
     def __repr__(self):
         return "atom({}{})".format(self.type, self.id)

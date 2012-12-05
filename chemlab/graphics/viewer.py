@@ -1,4 +1,5 @@
 import pyglet
+pyglet.options['vsync']=False
 import numpy as np
 
 from pyglet.gl import *
@@ -40,7 +41,7 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         self._camera.moveto(np.array([0.0, 0.0, -5.0]))
         
         self._aspectratio = float(self.width) / self.height
-        #self.fps_display = pyglet.clock.ClockDisplay()
+        self.fps_display = pyglet.clock.ClockDisplay()
         
     
         self._zoom = 1.5
@@ -71,11 +72,11 @@ class Viewer(pyglet.window.Window, AbstractViewer):
     def on_draw(self):
         from .shaders import default_program
         # Set Background
-        #glClearColor(1.0, 1.0, 1.0, 1.0)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        #glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
         
-        #self.fps_display.draw()
+        self.fps_display.draw()
         
         # Set Perspective
         self._projection_matrix = simple_clip_matrix(
@@ -114,6 +115,12 @@ class Viewer(pyglet.window.Window, AbstractViewer):
             if ui.is_inside(x, y):
                 ui.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
+    def on_key_press(self, symbol, modifiers):
+
+        # Screenshot taking
+        if symbol == key.P:
+            pyglet.image.get_buffer_manager().get_color_buffer().save('screenshot.png')
+        
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(*args, **kwargs)
         self._renderers.append(renderer)
