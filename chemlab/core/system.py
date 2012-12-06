@@ -13,6 +13,7 @@ class MonatomicSystem(object):
         self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
         
+        
     @classmethod
     def random(cls, type, number, dim=10.0):
         '''Return a random monatomic system made of *number* molecules
@@ -79,10 +80,14 @@ class System(object):
         
         self.atoms = atomlist
         self.boxsize = boxsize
-        self.n = len(self.atoms)
+        self.bodies = []
         
-        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
+        self.rarray = np.array([a.coords for a in atomlist])
         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+
+    @property
+    def n(self):
+        return len(self.atoms)
         
     @classmethod
     def random(cls, type, number, dim=10.0):
@@ -99,9 +104,49 @@ class System(object):
         
         return cls(atoms, dim)
         
-    def random_add(self, body):
-        self.bodies.append(body)
-        self.rarray.extend(body.rarray)
+    def random_add(self, body, min_distance=0.1, maxtries=10):
+        
+        # try adding until you can 
+        while maxtries:
+            centers = []
+            for b in self.bodies:
+                centers.append(b.geometric_center)
+            centers = np.array(centers)
+
+            # Translate the molecule to its center of mass
+            
+            rar = body.rarray.copy()
+            rar -= body.center_of_mass
+            
+            # let's randomly rotate the molecule
+            from ..graphics.gletools.transformations import random_rotation_matrix
+            rar = np.dot(rar, random_rotation_matrix()[:3,:3].T)
+            
+            # randomly place the molecule
+            mol_center = (np.random.rand(3) - 0.5) * self.boxsize
+            rar += mol_center
+
+            # if it's the only one molecule here it's ok
+            if not self.bodies:
+                body.rarray = rar
+                self.bodies.append(body)
+                self.atoms.extend(body.atoms)
+                self.rarray = rar
+                
+                return
+            distsq = ((centers - mol_center)**2).sum(axis=1)
+            if all(distsq > min_distance**2):
+                # The guy is accepted
+                body.rarray = rar
+                self.bodies.append(body)
+                self.atoms.extend(body.atoms)
+                self.rarray = np.concatenate((self.rarray, rar))
+
+                return
+            else:
+                maxtries -= 1
+
+        raise Exception('Maximum tries for random insertion')
         
     def get_rarray(self):
         return self.__rarray
