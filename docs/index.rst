@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 2
    
    intro
-   core
+   graphics
 
 
 Indices and tables
