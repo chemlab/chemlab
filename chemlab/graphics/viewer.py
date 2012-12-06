@@ -71,8 +71,8 @@ class Viewer(pyglet.window.Window, AbstractViewer):
     def on_draw(self):
         from .shaders import default_program
         # Set Background
-        #glClearColor(1.0, 1.0, 1.0, 1.0)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClearColor(1.0, 1.0, 1.0, 1.0)
+        #glClearColor(0.0, 0.0, 0.0, 1.0)
         self.clear()
         
         #self.fps_display.draw()
