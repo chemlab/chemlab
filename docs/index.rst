@@ -13,6 +13,7 @@ Contents:
    
    intro
    core
+   graphics
 
 
 Indices and tables
