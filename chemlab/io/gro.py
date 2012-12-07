@@ -41,6 +41,34 @@ def parse_gro(filename):
                 boxsize = float(fields[0])
                 return System(atomlist, boxsize)
 
+def parse_gro_lines(lines):
+    '''Reusable parsing'''
+    title = lines.pop(0)
+    natoms = int(lines.pop(0))
+    atomlist = []
+    for l in lines:
+        fields = l.split()
+        if len(fields) == 6:
+            #Only positions are provided
+            molidx = int(l[0:5])
+            moltyp = l[5:10].strip()
+            attyp = l[10:15].strip()
+            atidx  = int(l[15:20])
+            rx     = float(l[20:28])
+            ry     = float(l[28:36])
+            rz     = float(l[36:42])
+
+            # Do I have to convert back the atom types, probably yes???
+            if attyp.lower() not in symbol_list:
+                attyp = gro_to_cl[attyp]
+
+            atomlist.append(Atom(attyp, [rx, ry, rz]))                
+
+        if len(fields) == 3:
+            # This is the box size
+            boxsize = float(fields[0])
+            return System(atomlist, boxsize)
+                
 def write_gro(sys, filename):
     
     lines = []
@@ -64,7 +92,7 @@ def write_gro(sys, filename):
                 raise Exception('Gromacs exporter needs the atom type as grotype')
             
             at_n += 1
-            x, y, z = a.coords + sys.boxsize*0.5
+            x, y, z = a.coords # + sys.boxsize*0.5
             
             lines.append('{:>5}{:>5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n, x, y, z))
@@ -78,3 +106,26 @@ def write_gro(sys, filename):
     
     with open(filename, 'w') as fn:
         fn.writelines(lines)
+        
+# Util functions
+def chunks(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
+
+def read_gro_traj(filename):
+    with open(filename) as fn:
+        lines = fn.readlines()
+    
+    # Compute the dimension of each frame!
+    natoms = int(lines[1])
+    dim_frame = natoms + 3
+    
+    frames = chunks(lines, dim_frame)
+    syslist = []
+    for f in frames:
+        sys = parse_gro_lines(f)
+        sys.rarray -= sys.boxsize*0.5
+        syslist.append(sys)
+        
+    return syslist
+    
+    

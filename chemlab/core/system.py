@@ -134,7 +134,13 @@ class System(object):
                 self.rarray = rar
                 
                 return
-            distsq = ((centers - mol_center)**2).sum(axis=1)
+            
+            # Minimum image convention for distance calculation
+            dx = centers - mol_center
+            minimage = abs(dx) > self.boxsize*0.5
+            dx[minimage] -= np.sign(dx[minimage]) * self.boxsize
+            distsq = (dx**2).sum(axis=1)
+            
             if all(distsq > min_distance**2):
                 # The guy is accepted
                 body.rarray = rar
