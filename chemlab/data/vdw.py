@@ -89,8 +89,9 @@ U       175
 Np      175
 Pu      175
 Am      175'''
+from utils import InsensitiveDict
 
-vdw_dict = {}
+vdw_dict = InsensitiveDict()
 for l in _table.splitlines():
     typ, vdw = l.split()
-    vdw_dict[typ.lower()] = float(vdw)/1000
+    vdw_dict[typ] = float(vdw)/1000

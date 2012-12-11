@@ -9,8 +9,14 @@ symbol_list = [s.lower() for s in symbol_list]
 
 gro_to_cl = {
 'OW' : 'O',
+'OW1': 'O',
 'HW1': 'H',
-'HW2': 'H'}
+'HW2': 'H',
+'HW3': 'H',
+'LI' : 'Li',
+'CL' : 'Cl',
+'NA' : 'Na',
+}
 
 def parse_gro(filename):
     with open(filename) as fn:
@@ -18,9 +24,22 @@ def parse_gro(filename):
         title = lines.pop(0)
         natoms = int(lines.pop(0))
         atomlist = []
-        for l in lines:
-            fields = l.split()
-            if len(fields) == 6:
+
+        # Let's parse all the natoms
+        for i, l in enumerate(lines):
+            
+            if i == natoms:
+                # This is the box size
+                fields = l.split()
+                boxsize = float(fields[0])
+                sys = System(atomlist, boxsize)
+                sys.rarray -= sys.boxsize * 0.5
+                return sys
+
+            fields = l[0:5], l[5:10], l[10:15], l[15:20], l[20:28], l[28:36], l[36:42]
+            fields = [f.strip() for f in fields]
+            
+            if len(fields) == 7:
                 #Only positions are provided
                 molidx = int(l[0:5])
                 moltyp = l[5:10].strip()
@@ -36,10 +55,6 @@ def parse_gro(filename):
                 
                 atomlist.append(Atom(attyp, [rx, ry, rz]))                
 
-            if len(fields) == 3:
-                # This is the box size
-                boxsize = float(fields[0])
-                return System(atomlist, boxsize)
 
 def parse_gro_lines(lines):
     '''Reusable parsing'''

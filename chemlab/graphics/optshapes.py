@@ -3,7 +3,7 @@ from . import colors
 import numpy as np
 import pyglet
 
-_SPHERE_MRES = Sphere(1.0, np.array([0.0, 0.0, 0.0]), parallels=20, meridians=10)
+_SPHERE_MRES = Sphere(1.0, np.array([0.0, 0.0, 0.0]), parallels=10, meridians=15)
 
 # Unit Sphere
 

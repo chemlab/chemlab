@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+import argparse
+import sys
+sys.path.append('/home/gabriele/workspace/chemlab/')
+import chemlab as cl
+import os
+
+def view(args):
+    from chemlab.io.gro import parse_gro, read_gro_traj
+    from chemlab.graphics import display_system, display_trajectory
+    
+    base, ext = os.path.splitext(args.filename)
+    
+    if ext == '.gro':
+        if not args.traj:
+            sys = parse_gro(args.filename)
+	    display_system(sys)
+	else:
+            tr = read_gro_traj(args.filename)
+            display_trajectory(tr)
+	    
+    elif ext == '.trr':
+        from chemlab.io.gro import read_gro_traj
+	from chemlab.graphics import display_trajectory
+	
+        os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
+        tr = read_gro_traj('/tmp/traj.gro')
+	display_trajectory(tr)
+
+    elif ext == '.xtc':
+        from chemlab.io.gro import read_gro_traj
+	from chemlab.graphics import display_trajectory
+
+        os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
+	tr = read_gro_traj('/tmp/traj.gro')
+	display_trajectory(tr)
+	
+
+parser = argparse.ArgumentParser()
+
+subparsers = parser.add_subparsers()
+
+view_parser = subparsers.add_parser('view')
+view_parser.add_argument('filename', type=str)
+view_parser.add_argument('--traj', action='store_true')
+view_parser.set_defaults(func=view)
+
+args = parser.parse_args(sys.argv[1:])
+args.func(args)

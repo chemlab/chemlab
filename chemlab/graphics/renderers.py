@@ -53,7 +53,7 @@ class SphereRenderer(AbstractRenderer):
         
         for atom in atoms:
             color = colors.map.get(atom.type, colors.light_grey)
-            radius = vdw_dict[atom.type.lower()]
+            radius = vdw_dict[atom.type]
             
             s = OptSphere(radius, atom.coords, color=color)
             n_triangles += s.tri_n
@@ -122,7 +122,9 @@ class SphereRenderer(AbstractRenderer):
         
         for i, atom in enumerate(self.atoms):
             color = colors.map.get(atom.type, colors.light_grey)
-            s = OptSphere(0.18, rarray[i], color=color)
+            radius = vdw_dict[atom.type]
+            
+            s = OptSphere(radius, rarray[i], color=color)
             n = len(s.tri_vertex)
             vertices[offset:offset+n] = s.tri_vertex
             offset += n
