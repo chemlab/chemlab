@@ -30,14 +30,14 @@ The user interaction is introduced in a similar fashion. The module ``chemlab.gr
 ``Widget`` classes to provide the most common user interaction using the pyglet framework. For example adding a 
 slider widget can be done in this way::
 
-from chemlab.graphics.ui import SliderUI
-slider = v.add_ui(SliderUI, x=100, y=50, width=300, height=100, range_=10)
-
-@slider.event
-def on_update(pos):
-   # Do something when the slider cursor is moved on *pos*
-   # that is an integer between 0 and *range_* - 1
-   return
+    from chemlab.graphics.ui import SliderUI
+    slider = v.add_ui(SliderUI, x=100, y=50, width=300, height=100, range_=10)
+    
+    @slider.event
+    def on_update(pos):
+       # Do something when the slider cursor is moved on *pos*
+       # that is an integer between 0 and *range_* - 1
+       return
 
 This will display a slider with 10 spaced ticks and when it is moved it will trigger the *on_update*
 callback.
