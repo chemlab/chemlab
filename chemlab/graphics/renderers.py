@@ -171,8 +171,8 @@ class CubeRenderer(AbstractRenderer):
                                 x,-x,x, x,-x, -x)),
                              ("n3f", (0.0,)*24*3))
     
-    def update(self):
-        pass
+    def update(self, boxsize):
+        self.dim = boxsize
 
 
 class PointRenderer(AbstractRenderer):

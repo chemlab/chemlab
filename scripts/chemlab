@@ -35,6 +35,10 @@ def view(args):
 	tr = read_gro_traj('/tmp/traj.gro')
 	display_trajectory(tr)
 	
+def plot(args):
+    base, ext = os.path.splitext(args.filename)
+    
+    
 
 parser = argparse.ArgumentParser()
 

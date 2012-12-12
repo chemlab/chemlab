@@ -50,12 +50,13 @@ class SliderUI(Widget):
 
     def on_drag(self, x, y, dx, dy, button, modifiers):
         # let's bin this bastard
-        snapx = np.digitize(np.array([x-self.x]), self.ranges)[0] - 1 
+        import time
+        snapx = np.searchsorted(self.ranges, x-self.x) - 1 
         self.cursor.x = snapx*self.binsize + self.x
         self.dispatch_event('on_update', snapx)
         
     def on_click(self, x, y, button, modifiers):
-        snapx = np.digitize(np.array([x-self.x]), self.ranges)[0] - 1
+        snapx = np.searchsorted(self.ranges, x-self.x) - 1 
         self.cursor.x = snapx*self.binsize + self.x
         self.dispatch_event('on_update', snapx)
 
