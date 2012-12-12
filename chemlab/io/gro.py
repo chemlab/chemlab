@@ -123,6 +123,8 @@ def write_gro(sys, filename):
         fn.writelines(lines)
         
 # Util functions
+from ..utils.progressbar import AnimatedProgressBar
+        
 def chunks(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
@@ -136,11 +138,18 @@ def read_gro_traj(filename):
     
     frames = chunks(lines, dim_frame)
     syslist = []
+    
+    ap = AnimatedProgressBar(end=len(frames), width=32,
+                             format='Reading Trajectory [%(fill)s>%(blank)s] %(progress)s%%')
+    
     for f in frames:
         sys = parse_gro_lines(f)
         sys.rarray -= sys.boxsize*0.5
         syslist.append(sys)
         
+        ap + 1
+        ap.show_progress()
+    
     return syslist
     
     

@@ -52,9 +52,6 @@ class SliderUI(Widget):
         return self.rect.is_inside(x, y)
 
     def on_drag(self, x, y, dx, dy, button, modifiers):
-
-        
-        
         # Let's limit the rate of updating
         if time.time() - self._curtime > 1/60.0:
             # let's bin this bastard
