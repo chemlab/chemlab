@@ -3,6 +3,7 @@ import pyglet
 from pyglet.graphics import draw
 from pyglet import gl
 import numpy as np
+import time
 
 pyglet.resource.path = ['@chemlab.resources', '.']
 pyglet.resource.reindex()
@@ -27,6 +28,8 @@ class SliderUI(Widget):
         self.y = y
         self.range_ = range_
         
+        self._curtime = time.time()
+        
         self.rect = RectangleUI(x, y, width, height)
         cursor_im = pyglet.image.load('circle.png',
                                       file=pyglet.resource.file('circle.png'))
@@ -49,11 +52,18 @@ class SliderUI(Widget):
         return self.rect.is_inside(x, y)
 
     def on_drag(self, x, y, dx, dy, button, modifiers):
-        # let's bin this bastard
-        import time
-        snapx = np.searchsorted(self.ranges, x-self.x) - 1 
-        self.cursor.x = snapx*self.binsize + self.x
-        self.dispatch_event('on_update', snapx)
+
+        
+        
+        # Let's limit the rate of updating
+        if time.time() - self._curtime > 1/60.0:
+            # let's bin this bastard
+            snapx = np.searchsorted(self.ranges, x-self.x) - 1 
+            self.cursor.x = snapx*self.binsize + self.x
+            self.dispatch_event('on_update', snapx)
+        
+        self._curtime = time.time()
+
         
     def on_click(self, x, y, button, modifiers):
         snapx = np.searchsorted(self.ranges, x-self.x) - 1 
