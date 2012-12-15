@@ -110,16 +110,22 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         
     def on_mouse_motion(self, x, y, dx, dy):
         for ui in self._uis:
-            ui.on_mouse_motion(x, y, dx, dy)
+            #ui.on_mouse_motion(x, y, dx, dy)
+            if ui.is_inside(x, y):
+                # I need to transform this to local coordinates
+                ui.dispatch_event('on_hover', x, y, dx, dy)
             
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         for ui in self._uis:
-            return
             if ui.is_inside(x, y):
-                ui.on_mouse_drag(x, y, dx, dy, button, modifiers)
+                ui.dispatch_event('on_drag', x, y, dx, dy, button, modifiers)
 
+    def on_mouse_press(self, x, y, button, modifiers):
+        for ui in self._uis:
+            if ui.is_inside(x, y):
+                ui.dispatch_event('on_click', x, y, button, modifiers)
+        
     def on_key_press(self, symbol, modifiers):
-
         # Screenshot taking
         if symbol == key.P:
             pyglet.image.get_buffer_manager().get_color_buffer().save('screenshot.png')

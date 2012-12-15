@@ -1,3 +1,5 @@
+from .utils import InsensitiveDict
+
 typetomass = {
 "H" : 1.0079,
 "He" : 4.0026,
@@ -86,3 +88,5 @@ typetomass = {
 "Pa" 	: 231.0359,
 "U" 	: 238.0289,
 }
+
+typetomass = InsensitiveDict(typetomass)

@@ -7,8 +7,6 @@ from chemlab.viewer.renderers import SphereRenderer
 
 def test_1():
     v = Viewer()
-
-    
     mol = cl.readgeom("tests/data/tink.xyz", format="tinkerxyz")
     v.add_renderer(SphereRenderer(mol.atoms))
     pyglet.app.run()

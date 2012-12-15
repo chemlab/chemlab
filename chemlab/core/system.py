@@ -104,7 +104,7 @@ class System(object):
         
         return cls(atoms, dim)
         
-    def random_add(self, body, min_distance=0.1, maxtries=10):
+    def random_add(self, body, min_distance=0.1, maxtries=1000):
         
         # try adding until you can 
         while maxtries:
@@ -116,7 +116,7 @@ class System(object):
             # Translate the molecule to its center of mass
             
             rar = body.rarray.copy()
-            rar -= body.center_of_mass
+            rar -= body.geometric_center
             
             # let's randomly rotate the molecule
             from ..graphics.gletools.transformations import random_rotation_matrix
@@ -137,7 +137,7 @@ class System(object):
             
             # Minimum image convention for distance calculation
             dx = centers - mol_center
-            minimage = abs(dx) > self.boxsize*0.5
+            minimage = abs(dx) > (self.boxsize*0.5)
             dx[minimage] -= np.sign(dx[minimage]) * self.boxsize
             distsq = (dx**2).sum(axis=1)
             
