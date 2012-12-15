@@ -37,8 +37,8 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         # Key pressed handling
         self._keys = key.KeyStateHandler()
         self.push_handlers(self._keys)
-        self._camera = Camera()
-        self._camera.moveto(np.array([0.0, 0.0, -5.0]))
+        self.camera = Camera()
+        self.camera.moveto(np.array([0.0, 0.0, -5.0]))
         
         self._aspectratio = float(self.width) / self.height
         self.fps_display = pyglet.clock.ClockDisplay()
@@ -47,18 +47,18 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         self._zoom = 1.5
         # TODO Pretty brutal zoom function
         def zoom(self, inc):
-            pos = self._camera.position[2]
+            pos = self.camera.position[2]
             if (( pos < -0.1 and inc > 0) or
                 ( pos > -50  and inc < 0)):
-                self._camera.zoom(inc*2)
+                self.camera.zoom(inc*2)
 
         # Handling keypresses
         angvel = 0.06
 
-        kmap = { key.LEFT : (self._camera.orbit, (-angvel, 0)),
-                 key.RIGHT: (self._camera.orbit, ( angvel, 0)),
-                 key.UP   : (self._camera.orbit, (0,  angvel)),
-                 key.DOWN : (self._camera.orbit, (0, -angvel)),
+        kmap = { key.LEFT : (self.camera.orbit, (-angvel, 0)),
+                 key.RIGHT: (self.camera.orbit, ( angvel, 0)),
+                 key.UP   : (self.camera.orbit, (0,  angvel)),
+                 key.DOWN : (self.camera.orbit, (0, -angvel)),
                  key.PLUS : (zoom,  (self, 0.1)),
                  key.MINUS: (zoom,  (self, -0.1))}
         
@@ -82,19 +82,18 @@ class Viewer(pyglet.window.Window, AbstractViewer):
         self._projection_matrix = simple_clip_matrix(
             self._zoom, 0.1, 100, self._aspectratio)
         
-        proj = np.asmatrix(self._projection_matrix)
-        cam = np.asmatrix(self._camera.matrix)
+        proj = self._projection_matrix
+        cam = self.camera.matrix
         
-        self.mvproj = mvproj = np.array(np.dot(proj, cam))
+        self.mvproj = mvproj = np.dot(proj, cam)
         
-        default_program.vars.mvproj = mvproj
-        self.ldir = ldir =  np.dot(np.asarray(self._camera._rotation[:3,:3].T),
+        default_program.vars.mvproj = np.asmatrix(mvproj)
+        self.ldir = ldir =  np.dot(np.asarray(self.camera.rotation[:3,:3].T),
                        np.array([0.3, 0.2, 0.8]))
         
         default_program.vars.lightDir = ldir
-        
-        self._camerapos = np.dot(cam[:3, :3].T, self._camera.position)
-        default_program.vars.camera = self._camerapos
+        self.camerapos = np.dot(cam[:3, :3].T, self.camera.position)
+        default_program.vars.camera = self.camerapos.tolist()
         
         # Draw UI
         self.on_draw_ui()
