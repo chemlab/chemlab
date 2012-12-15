@@ -1,0 +1,18 @@
+chemlab is a library and a set of utilities meant to handle computational chemistry data. It
+takes inspiration to other python scientific library such as numpy scipy and matplotlib, and aims
+to bring a consistent and simple API following the python guidelines.
+
+The project status is still at the stage 'proof-of-concept' and it includes basic data structures, some
+integration for reading GROMACS produced files and most notably a flexible molecular viewer. Ideally,
+chemlab will provide an effective way to write chemical scripts and applications.
+
+There is not yet a well-defined installation method, the dependencies at the moment are:
+
+- pyglet (for the molecular viewer)
+- numpy
+- scipy
+- matplotlib
+
+The documentation is hosted at readthedocs at this address:
+
+https://chemlab.readthedocs.org/en/latest/
