@@ -10,13 +10,13 @@ class Camera:
         self.origin = np.array([0.0, 0.0, 0.0])
         
         self._pretrans = translation_matrix(np.array([0.0, 0.0, -1.0]))
-        self._rotation = np.eye(4)
+        self.rotation = np.eye(4)
         
         self._haxis = np.array([0.0, 1.0, 0.0])
         self._vaxis = np.array([1.0, 0.0, 0.0])
 
     def _get_matrix(self):
-        return np.dot(self._pretrans, self._rotation)
+        return np.dot(self._pretrans, self.rotation)
     
     matrix = property(_get_matrix)
     
@@ -27,7 +27,7 @@ class Camera:
         
     def orbit(self, hor, ver):
         
-        self._rotation = self._rotation.dot(rotation_matrix(hor, self._haxis))
+        self.rotation = self.rotation.dot(rotation_matrix(hor, self._haxis))
         
         # Update rotation axis to keep him in place
         # this is like "undoing" the rotation on the axis
@@ -35,7 +35,7 @@ class Camera:
             LA.inv(rotation_matrix(hor, self._haxis)[:3,:3]),
             self._vaxis)
         
-        self._rotation = self._rotation.dot(rotation_matrix(ver, self._vaxis))
+        self.rotation = self.rotation.dot(rotation_matrix(ver, self._vaxis))
         
         self._haxis = np.dot(
             LA.inv(rotation_matrix(ver, self._vaxis)[:3,:3]),
