@@ -8,3 +8,5 @@ distribute*
 tests/data/
 fontconfig/
 .ropeproject
+docs/_build
+*.so
