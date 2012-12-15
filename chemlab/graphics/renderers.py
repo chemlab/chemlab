@@ -34,29 +34,26 @@ class AbstractRenderer(object):
         self.viewer = v
     
 class SphereRenderer(AbstractRenderer):
-    def __init__(self, atoms):
+    def __init__(self, poslist, radiuslist, colorlist):
         '''This renderer represents a list of *atoms* as simple
         spheres.
 
-        *atoms*: chemlab.Atom
         '''
-        self.set_atoms(atoms)
         
-    def set_atoms(self, atoms):
+        self.poslist = poslist
+        self.radiuslist = radiuslist
+        self.colorlist = colorlist
+        
         # We expect to receive things in nanometers
-        
-        self.atoms = atoms
         n_triangles = 0
         vertices = []
         normals = []
         colors_ = []
         
-        for atom in atoms:
-            color = colors.map.get(atom.type, colors.light_grey)
-            radius = vdw_dict[atom.type]
-            
-            s = OptSphere(radius, atom.coords, color=color)
+        for coords, radius, color in zip(poslist, radiuslist, colorlist):
+            s = OptSphere(radius, coords, color=color)
             n_triangles += s.tri_n
+            
             vertices.append(s.tri_vertex)
             normals.append(s.tri_normals)
             colors_.append(s.tri_color)
@@ -116,15 +113,15 @@ class SphereRenderer(AbstractRenderer):
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
 
-    def update(self, rarray):
+    def update_positions(self, rarray):
         offset = 0
         vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
         
-        for i, atom in enumerate(self.atoms):
-            color = colors.map.get(atom.type, colors.light_grey)
-            radius = vdw_dict[atom.type]
-            
+        for i in range(len(rarray)):
+            color = self.colorlist[i]
+            radius = self.radiuslist[i]
             s = OptSphere(radius, rarray[i], color=color)
+            
             n = len(s.tri_vertex)
             vertices[offset:offset+n] = s.tri_vertex
             offset += n
@@ -132,6 +129,30 @@ class SphereRenderer(AbstractRenderer):
         self._vbo_v.bind()
         self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
         self._vbo_v.unbind()
+        
+        self.poslist = rarray
+        
+    def update_colors(self, colorlist):
+        self.colorlist = colorlist
+        
+        colors_ = []
+        for coords, radius, color in zip(self.poslist, self.radiuslist, colorlist):
+            s = OptSphere(radius, coords, color=color)
+            colors_.append(s.tri_color)
+        
+        colors_ = np.array(colors_, dtype=np.uint8)
+        
+        self._vbo_c.bind()
+        self._vbo_c.set_data(colors_.ctypes.data_as(POINTER(GLuint)))
+        self._vbo_v.unbind()
+        
+class AtomRenderer(SphereRenderer):
+    def __init__(self, atoms):
+        radii = [vdw_dict[atom.type] for atom in atoms]
+        colorlist = [colors.map.get(atom.type, colors.light_grey) for atom in atoms]
+        poslist = [at.coords for at in atoms]
+        
+        super(AtomRenderer, self).__init__(poslist, radii, colorlist)
 
 class ForcesRenderer(AbstractRenderer):
     def __init__(self, forces, atoms):

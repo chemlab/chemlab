@@ -6,14 +6,17 @@ import chemlab as cl
 from mock import Mock
 import numpy as np
 
+from chemlab.graphics.renderers import AtomRenderer
+
+class TodoException(Exception):
+    pass
+
 def test_read_and_display():
     """Read a molecule from disk and display it with the molecular
     viewer.
 
     """
-
-    mol = cl.readgeom("tests/data/tink.xyz", format="tinkerxyz")
-    cl.display(mol)
+    raise TodoException()
 
 def test_display_molecule():
     """Display a molecule in the viewer using the viewer interface"""
@@ -25,23 +28,22 @@ def test_display_molecule():
                  ("H", (1.0, 0.0, 0.0)),
                  ("O", (1.0, 1.0, 1.0))]
     
-    mol.atoms = []
-    for sym, pos in at_params:
-        at = Mock()
-        at.coords = np.array(pos)
-        at.type = sym
-        
-        mol.atoms.append(at)
-
     bond_params = [(0, 1), (1,2), (2,3)]
-    mol.bonds = []
-    for s,e in bond_params:
-        bond = Mock()
-        bond.start = mol.atoms[s]
-        bond.end = mol.atoms[e]
-        
-        mol.bonds.append(bond)
+    raise TodoException()
 
-    vw = cl.Viewer()
-    vw.molecule = mol
-    vw.show()
+from chemlab.graphics import colors
+from chemlab.data.vdw import vdw_dict
+
+def test_single_mol():
+    v = cl.graphics.Viewer()
+    mol = cl.readgeom("tests/data/tink.xyz", format="tinkerxyz")
+    
+    mol.rarray -= mol.geometric_center
+    mol.rarray *= 0.1
+    
+    ar = v.add_renderer(AtomRenderer, mol.atoms)
+    ar.colorlist[4] = [0, 255, 255, 255]    
+    ar.update_positions(mol.rarray)
+    ar.update_colors(ar.colorlist)
+    
+    v.run()

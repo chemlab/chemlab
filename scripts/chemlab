@@ -14,10 +14,10 @@ def view(args):
     if ext == '.gro':
         if not args.traj:
             sys = parse_gro(args.filename)
-	    display_system(sys)
+	    display_system(sys, highlight=args.highlight)
 	else:
             tr = read_gro_traj(args.filename)
-            display_trajectory(tr)
+            display_trajectory(tr, highlight=args.highlight)
 	    
     elif ext == '.trr':
         from chemlab.io.gro import read_gro_traj
@@ -25,7 +25,7 @@ def view(args):
 	
         os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
         tr = read_gro_traj('/tmp/traj.gro')
-	display_trajectory(tr)
+	display_trajectory(tr, highlight=args.highlight)
 
     elif ext == '.xtc':
         from chemlab.io.gro import read_gro_traj
@@ -33,7 +33,7 @@ def view(args):
 
         os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
 	tr = read_gro_traj('/tmp/traj.gro')
-	display_trajectory(tr)
+	display_trajectory(tr, highlight=args.highlight)
 	
 def plot(args):
     base, ext = os.path.splitext(args.filename)
@@ -47,6 +47,8 @@ subparsers = parser.add_subparsers()
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
 view_parser.add_argument('--traj', action='store_true')
+view_parser.add_argument('--highlight', nargs='*', type=int)
+
 view_parser.set_defaults(func=view)
 
 args = parser.parse_args(sys.argv[1:])

@@ -1,16 +1,28 @@
 from .viewer import Viewer
-from .renderers import SphereRenderer, CubeRenderer
+from .renderers import AtomRenderer, CubeRenderer
 from .ui import SliderUI
 
-def display_system(sys):
+def display_system(sys, highlight=None):
     v = Viewer()
-    v.add_renderer(SphereRenderer, sys.atoms)
+    sr = v.add_renderer(AtomRenderer, sys.atoms)
     v.add_renderer(CubeRenderer, sys.boxsize)
+    
+    if highlight:
+        for index in highlight:
+            sr.colorlist[index] = [0, 255, 255, 255]
+            sr.update_colors(sr.colorlist)
+
     v.run()
     
-def display_trajectory(tr):
+def display_trajectory(tr, highlight=None):
     v = Viewer()
-    sr = v.add_renderer(SphereRenderer, tr[0].atoms)
+    sr = v.add_renderer(AtomRenderer, tr[0].atoms)
+    
+    if highlight:
+        for index in highlight:
+            sr.colorlist[index] = [0, 255, 255, 255]
+            sr.update_colors(sr.colorlist)
+    
     br = v.add_renderer(CubeRenderer, tr[0].boxsize)
     
     slider = v.add_ui(SliderUI, len(tr), 100, 100, 500, 20)
@@ -18,7 +30,7 @@ def display_trajectory(tr):
     @slider.event
     def on_update(frame):
         sys = tr[frame]
-        sr.update(sys.rarray)
+        sr.update_positions(sys.rarray)
         br.update(sys.boxsize)
 
     v.run()
