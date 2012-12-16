@@ -3,9 +3,73 @@ import numpy as np
 from pyglet.gl import *
 from pyglet.graphics.vertexbuffer import VertexBufferObject
 from .base import AbstractRenderer
+from .triangles import TriangleRenderer
 from ..optshapes import OptSphere
 
+
 class SphereRenderer(AbstractRenderer):
+    def __init__(self, poslist, radiuslist, colorlist):
+        '''Renders a set of spheres. The positions of the spheres
+        are determined from *poslist* which is a list of xyz coordinates,
+        the respective radii are in the list *radiuslist* and colors
+        *colorlist* as rgba where each one is in the range [0, 255].
+
+        This renderer uses vertex array objects to deliver optimal
+        performance.
+        '''
+        
+
+        self.poslist = poslist
+        self.radiuslist = radiuslist
+        self.colorlist = colorlist
+        self.n_spheres = len(poslist)
+        
+        # We expect to receive things in nanometers
+        vertices = []
+        normals = []
+        colors_ = []
+        
+        for coords, radius, color in zip(poslist, radiuslist, colorlist):
+            s = OptSphere(radius, coords, color=color)
+            vertices.append(s.tri_vertex)
+            normals.append(s.tri_normals)
+            colors_.append(s.tri_color)
+        
+        vertices = np.array(vertices)
+        vertices = vertices.reshape((s.tri_n * self.n_spheres, 3))
+        
+        self.tr = TriangleRenderer(vertices, normals, colors_)
+    
+    def draw(self):
+        self.tr.draw()
+
+    def update_positions(self, rarray):
+        offset = 0
+        vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
+        
+        for i in range(len(rarray)):
+            color = self.colorlist[i]
+            radius = self.radiuslist[i]
+            s = OptSphere(radius, rarray[i], color=color)
+            
+            n = len(s.tri_vertex)
+            vertices[offset:offset+n] = s.tri_vertex
+            offset += n
+        
+        self.tr.update_vertices(vertices)
+        self.poslist = rarray
+        
+    def update_colors(self, colorlist):
+        self.colorlist = colorlist
+        
+        colors_ = []
+        for coords, radius, color in zip(self.poslist, self.radiuslist, colorlist):
+            s = OptSphere(radius, coords, color=color)
+            colors_.append(s.tri_color)
+        
+        self.tr.update_colors(colors_)
+
+class SphereRenderer2(AbstractRenderer):
     def __init__(self, poslist, radiuslist, colorlist):
         '''Renders a set of spheres. The positions of the spheres
         are determined from *poslist* which is a list of xyz coordinates,

@@ -15,7 +15,7 @@ class CubeRenderer(AbstractRenderer):
         x = l*0.5 
         pyglet.graphics.draw(8*3, pyglet.gl.GL_LINES,
                              # Front Square
-                       ("v3f", (x, x, x,  -x, x, x,
+                             ("v3f", (x, x, x,  -x, x, x,
                                 -x, x, x, -x, -x, x,
                                 -x, -x, x, x, -x, x,
                                 x, -x, x,  x, x, x,
