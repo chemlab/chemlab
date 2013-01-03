@@ -37,6 +37,10 @@ class Molecule(object):
         self.det_angles()
         self.det_dihedrals()
         self._det_formula()
+
+    @property
+    def mass(self):
+        return self.marray.sum()
     
     @property
     def center_of_mass(self):

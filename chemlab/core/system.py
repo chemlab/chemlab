@@ -1,5 +1,6 @@
 import numpy as np
 from .molecule import Atom
+from ..data import units
 
 # MAYBE: I think this thing would be just a test 
 class MonatomicSystem(object):
@@ -82,6 +83,7 @@ class System(object):
         self.boxsize = boxsize
         self.bodies = []
         
+        
         self.rarray = np.array([a.coords for a in atomlist])
         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
 
@@ -132,7 +134,6 @@ class System(object):
                 self.bodies.append(body)
                 self.atoms.extend(body.atoms)
                 self.rarray = rar
-                
                 return
             
             # Minimum image convention for distance calculation
@@ -153,6 +154,50 @@ class System(object):
                 maxtries -= 1
 
         raise Exception('Maximum tries for random insertion')
+        
+    @classmethod
+    def lattice(cls, body, size=4, density=1.0):
+        '''Generate an FCC lattice with *body* as points of the
+        lattice. *size* is the number of primitive cells per dimension
+        (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
+        cells) and density is the required *density* required to
+        calculate volume and unit cell vectors.
+
+        '''
+        sys = cls()
+        
+        cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
+                 [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
+
+        grams =  units.convert(body.mass*len(cell)*size**3, 'amu', 'g')
+        
+        vol = grams/density
+        vol = units.convert(vol, 'cm^3', 'nm^3')
+        dim = vol**(1.0/3.0)
+        celldim = dim/size
+        sys.boxsize = dim
+        
+        cells = [size, size, size]
+        for x in range(cells[0]):
+            for y in range(cells[1]):
+                for z in range(cells[2]):
+                    for cord in cell:
+                        b = body.copy()
+                        b.rarray += (cord + np.array([float(x), float(y), float(z)]))*celldim
+                        sys.add(b)
+        sys.rarray -= sys.boxsize/2.0
+        return sys
+        
+    def add(self, body):
+        rar = body.rarray
+        if not self.bodies:
+            self.bodies.append(body)
+            self.atoms.extend(body.atoms)
+            self.rarray = rar
+        else:
+            self.bodies.append(body)
+            self.atoms.extend(body.atoms)
+            self.rarray = np.concatenate((self.rarray, rar))
         
     def get_rarray(self):
         return self.__rarray
