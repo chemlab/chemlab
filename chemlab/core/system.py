@@ -184,8 +184,9 @@ class System(object):
                     for cord in cell:
                         b = body.copy()
                         b.rarray += (cord + np.array([float(x), float(y), float(z)]))*celldim
+                        b.rarray -= sys.boxsize / 2.0
                         sys.add(b)
-        sys.rarray -= sys.boxsize/2.0
+        #sys.rarray -= sys.boxsize/2.0
         return sys
         
     def add(self, body):
@@ -198,6 +199,50 @@ class System(object):
             self.bodies.append(body)
             self.atoms.extend(body.atoms)
             self.rarray = np.concatenate((self.rarray, rar))
+        
+    def replace(self, i, body):
+        body = body.copy()
+        
+        # We have to update various things like atoms and rarray
+        atoffset = 0
+        roffset = 0
+        for j in range(i):
+            bd = self.bodies[j]
+            atoffset += len(bd.atoms)
+            roffset += len(bd.rarray)
+            
+        replaced = self.bodies[i]
+        pos = replaced.geometric_center
+        body.rarray += pos
+        
+        self.atoms = (self.atoms[:atoffset] +
+                      body.atoms +
+                      self.atoms[atoffset+len(replaced.atoms):])
+        
+        self.rarray = np.concatenate([self.rarray[:roffset],
+                                      body.rarray,
+                                      self.rarray[roffset+len(replaced.rarray):]])
+        
+        self.bodies[i] = body
+        
+    def remove(self, i):
+        atoffset = 0
+        roffset = 0
+        for j in range(i):
+            bd = self.bodies[i]
+            atoffset += len(bd.atoms)
+            roffset += len(bd.rarray)
+            
+        replaced = self.bodies[i]
+        
+        self.atoms = (self.atoms[:atoffset] +
+                      self.atoms[atoffset+len(replaced.atoms):])
+        
+        self.rarray = np.concatenate([self.rarray[:roffset],
+                                      self.rarray[roffset+len(replaced.rarray):]])
+        
+        del self.bodies[i]
+        
         
     def get_rarray(self):
         return self.__rarray

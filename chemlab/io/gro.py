@@ -116,7 +116,7 @@ def write_gro(sys, filename):
             at_n += 1
             x, y, z = a.coords + sys.boxsize*0.5
             
-            lines.append('{:>5}{:>5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
+            lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n, x, y, z))
     
     lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.boxsize, sys.boxsize, sys.boxsize))
