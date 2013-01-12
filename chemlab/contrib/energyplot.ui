@@ -13,12 +13,8 @@
   <property name="windowTitle">
    <string>g_energy Plot</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QWidget" name="widget" native="true"/>
-    </item>
-   </layout>
+  <widget class="QWidget" name="plotplaceholder">
+   <layout class="QVBoxLayout" name="verticalLayout_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
