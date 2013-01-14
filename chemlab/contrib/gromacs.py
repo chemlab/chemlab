@@ -97,6 +97,7 @@ matplotlib.rcParams['backend.qt4'] = 'PySide'
 import pylab
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
 import sys
 
@@ -117,7 +118,10 @@ class App(QApplication):
         ly = pltcontainer.layout()
         ly.addWidget(canvas)
         #canvas.setParent(self.mainwin)
-    
+        
+        tb = NavigationToolbar(canvas, self.mainwin)
+        
+        ly.addWidget(tb)
         self.mainwin.show()
         
     def plot(self, *a, **kw):
