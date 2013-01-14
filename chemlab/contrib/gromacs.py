@@ -16,9 +16,12 @@ def setup_commands(subparsers):
     
     parser.add_argument('properties', metavar='property', type=str, nargs='+',
                         help='Properties to display in the energy viewer.')
-    parser.set_defaults(func=lambda args: main(args.properties))
+    parser.add_argument('-o', help='Do not display GUI and save the plot')
+    
+    parser.set_defaults(func=lambda args: main(args.properties, args.o))
+    
 
-def main(args):
+def main(args, output=None):
     child = pexpect.spawn('g_energy')
     
     # Let's read the properties
@@ -32,7 +35,6 @@ def main(args):
         datatab += line.lower()
 
         if line == '\r\n':
-            #print 'done!'
             break
     
     data_avail = datatab.split()[1::2]
@@ -80,12 +82,17 @@ def main(args):
     # Finally display this with matplotlib
     datamat = np.loadtxt('energy.xvg', comments='@', skiprows=8, unpack=True)
 
-    
-    app = App()
-    app.plot(datamat[0], datamat[1])
-    msg = '{}   Avg: {}     Err.Est.: {}   RMSD: {}    Drift: {}'.format(*averages[0].split())
-    app.set_statusbar(msg)
-    app.exec_()
+    if output == None:
+        app = App()
+        app.plot(datamat[0], datamat[1])
+        msg = '{}   Avg: {}     Err.Est.: {}   RMSD: {}    Drift: {}'.format(*averages[0].split())
+        app.set_statusbar(msg)
+        app.exec_()
+    else:
+        from pylab import *
+        plot(datamat[0],datamat[1])
+        savefig(output)
+
     
 from PySide.QtUiTools import QUiLoader
 from PySide.QtCore import QFile
@@ -118,7 +125,6 @@ class App(QApplication):
         ly = pltcontainer.layout()
         ly.addWidget(canvas)
         #canvas.setParent(self.mainwin)
-        
         tb = NavigationToolbar(canvas, self.mainwin)
         
         ly.addWidget(tb)
@@ -130,5 +136,7 @@ class App(QApplication):
 
     def set_statusbar(self, msg):
         self.mainwin.statusBar().showMessage(msg)
+
+
 if __name__ == '__main__':
     main(['pressure'])
