@@ -11,6 +11,13 @@ import pexpect
 import difflib
 import sys
 
+def setup_commands(subparsers):
+    parser = subparsers.add_parser("gromacs")
+    
+    parser.add_argument('properties', metavar='property', type=str, nargs='+',
+                        help='Properties to display in the energy viewer.')
+    parser.set_defaults(func=lambda args: main(args.properties))
+
 def main(args):
     child = pexpect.spawn('g_energy')
     
@@ -27,12 +34,12 @@ def main(args):
         if line == '\r\n':
             #print 'done!'
             break
-
+    
     data_avail = datatab.split()[1::2]
-    print data_avail
+    
     # Selecting user input
     input_ = ''
-    for arg in sys.argv[1:]:
+    for arg in args[:]:
         match = difflib.get_close_matches(arg, data_avail)
         print 'Close Matches', match
 
@@ -43,8 +50,16 @@ def main(args):
         prop = match[0]
         ind = data_avail.index(prop) + 1
         input_ += '%d ' % ind
-    print input_
     child.sendline(input_+'\n\n')
+
+    # Now parse the average and other quantities
+    child.expect('Energy           ')
+    child.readline() # Skip two lines
+    child.readline()
+    # print child.readline().split()
+    child.expect('\r\n\r\n')
+    averages = child.before.split('\n')
+    
     child.expect(pexpect.EOF)
 
     import re
@@ -68,7 +83,8 @@ def main(args):
     
     app = App()
     app.plot(datamat[0], datamat[1])
-    
+    msg = '{}   Avg: {}     Err.Est.: {}   RMSD: {}    Drift: {}'.format(*averages[0].split())
+    app.set_statusbar(msg)
     app.exec_()
     
 from PySide.QtUiTools import QUiLoader
@@ -108,4 +124,7 @@ class App(QApplication):
         self.ax.plot(*a, **kw)
         self.canvas.draw()
 
-main(['pressure'])
+    def set_statusbar(self, msg):
+        self.mainwin.statusBar().showMessage(msg)
+if __name__ == '__main__':
+    main(['pressure'])
