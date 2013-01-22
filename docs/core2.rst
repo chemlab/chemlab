@@ -14,13 +14,22 @@ chemlab language we have to define a molecules and add this molecule to the Syst
 
 Now, imagine that we want a system comprised of multiple water molecules disposed on a line::
 
-    tpl = Molecule(...)
+    m = Molecule(...)
     space = 1.0
     for i in range(3):
         m.r_array += space
-        sys.add(m)
-    
+        s.add(m)
 
-     
+This shows a very important thing about chemlab, Molecules act as containers of data and when you add them
+to a system the data gets copied, in other words, System has no reference to the Molecule that you added.
+While this may seem conterintuitive, this was made to avoid bad side-effects and confusion. Anyway, chemlab 
+provides a simple way to track changes of a particular molecule and this is done in this way::
+
+    m = Molecule(...)
+    space = 1.0
+    ref = s.add(m)
+    
+the System.add method returns an internal reference of the molecule just added. In this way we can access 
+and change properties of the molecule, and every change will reflect the current state of the system.
 
 
