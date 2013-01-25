@@ -72,5 +72,5 @@ Molecule::
    >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
    >>> mol = Molecule([ar])
 
-Anyway, there are multiple ways to get started with a System in chemlab, to provide a
-fast way to build initial configurations for your simulation run.
+Also System exposes arrays to be used, and more molecules can be added to a System besides initialization. System,
+similarly to Molecule can expose data.
