@@ -74,3 +74,15 @@ Molecule::
 
 Also System exposes arrays to be used, and more molecules can be added to a System besides initialization. System,
 similarly to Molecule can expose data.
+
+
+
+Selecting groups in a System
+----------------------------
+
+Say you want to select the molecules around a certain point in space, you can use the function select_molecules that
+will return you a set of indices corresponding to those molecules. on a similar fashion there is select_atoms.
+
+    s.select_molecules(lambda mol: mol.geometric_centre < np.array([1.0, 1.0, 1.0]))
+    [0, 2, 3, 6, 8 ...]
+
