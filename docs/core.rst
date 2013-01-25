@@ -1,19 +1,38 @@
-In chemlab, atoms can be represented using the Atom data structure
-and molecules using the Molecule data structure. Those two kind of
-objects are easily created by initializing them with data::
+Atoms and Molecules
+-------------------
+
+In chemlab, atoms can be represented using the Atom data structure,
+and it contains some common information about our particles like type, mass
+and position. Atom instances are easily created by initializing them with data obtained in appropriate
+[[units]]::
 
     >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
-    >>> mol = Molecule([ar])
+    >>> ar.type
+    'Ar'
+    >>> ar.r
+    np.array([0.0, 0.0, 0.0])
 
-Some fields of those data structures are not mutable, for example you can't 
-add further atoms to a Molecule, we do this to avoid syncronization issues 
-when we're going to use the Molecule class in superior data structures. 
-Most of the attributes are accessible throught simple attributes::
+A Molecule is an entity composed of more atoms and most of the Molecule properties
+are inherited from the constituent atoms. To initialize a Molecule you can, for example
+pass a list of atom instances to its constructor::
 
-   >>> ar.type
-   'Ar'
-   >>> ar.coord
-   np.array([0.0, 0.0, 0.0])
+    >>> mol = Molecule([at1, at2, at3])
+
+There are two main ways to access atomic data in Molecules, by arrays or by atom.
+This is done to provide a massive increase in performance and a more straightforward
+integration with C libraries through a generous use of numpy arrays. This decision comes 
+at a cost: the data contained in the atom that you pass to the constructor is copied 
+into the molecule, this means that change in the costituents atoms are not reflected to
+the Molecule and viceversa. At first sight this may seem a big problem, but actually it
+isn't as we will see in the following examples.
+
+Manipulating Molecules
+----------------------
+
+Molecules are easily and efficiently manipulated through the use of arrays. Let's
+say we have a water molecule. And we want to displace it randomly
+
+
 
 In molecular simulations it is customary to introduce a new data structure 
 called System. This represents a collection of Molecules that will evolve 
