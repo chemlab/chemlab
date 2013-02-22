@@ -38,12 +38,12 @@ def test_single_mol():
     v = cl.graphics.Viewer()
     mol = cl.readgeom("tests/data/tink.xyz", format="tinkerxyz")
     
-    mol.rarray -= mol.geometric_center
-    mol.rarray *= 0.1
+    mol.r_array -= mol.geometric_center
+    mol.r_array *= 0.1
     
     ar = v.add_renderer(AtomRenderer, mol.atoms)
     ar.colorlist[4] = [0, 255, 255, 255]    
-    ar.update_positions(mol.rarray)
+    ar.update_positions(mol.r_array)
     ar.update_colors(ar.colorlist)
     
     v.run()

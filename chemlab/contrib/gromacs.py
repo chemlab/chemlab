@@ -9,7 +9,8 @@
 
 import pexpect
 import difflib
-import sys
+import sys, re
+import numpy as np
 
 def setup_commands(subparsers):
     parser = subparsers.add_parser("gromacs")
@@ -21,6 +22,39 @@ def setup_commands(subparsers):
     parser.set_defaults(func=lambda args: main(args.properties, args.o))
     
 
+def read_xvg(filename):
+    return parse_xvg(open(filename).read())
+    
+def parse_xvg(text):
+    
+    def parse_statement(line):
+        return 
+    
+    quantities = []
+    curline = 0
+    
+    lines = text.splitlines()
+    for line in lines:
+        curline += 1
+        if line[0] not in ['#', '@']:
+            break
+
+        if 'yaxis' in line:
+            m = re.search("\"(.*)\"", line)
+            units = m.group(1).split(', ')
+        elif re.match('@ s\d+\s+legend', line):
+            m = re.search("\"(.*)\"", line)
+            quantities.append(m.group(1))
+    
+    from StringIO import StringIO
+    datatxt = '\n'.join(lines[curline:])
+    fn = StringIO(datatxt)
+    
+    fields = np.loadtxt(fn, unpack=True)
+    
+    return fields
+    
+    
 def main(args, output=None):
     child = pexpect.spawn('g_energy')
     

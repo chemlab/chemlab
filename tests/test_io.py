@@ -9,12 +9,12 @@ def test_traj():
     traj = make_trajectory(sys,  "traj.hdf", restart=True)
     
     for i in range(1000):
-        sys.rarray += 1
+        sys.r_array += 1
         traj.append(sys)
 
     print traj.npoints
-    #print traj._read_sys(0).rarray
-    #print traj._read_sys(1).rarray
+    #print traj._read_sys(0).r_array
+    #print traj._read_sys(1).r_array
 
 def test_gromacs():
     '''Test reading a gromacs file'''

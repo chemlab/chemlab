@@ -27,7 +27,7 @@ def minimize(sys):
         return -cforces.lennard_jones(r0, sys.type).reshape(sys.n*3)
         
         
-    print opt.fmin_cg(en_func, sys.rarray.reshape(sys.n*3),
+    print opt.fmin_cg(en_func, sys.r_array.reshape(sys.n*3),
                 fprime=fprime_func)
     
     

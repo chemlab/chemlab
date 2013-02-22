@@ -24,7 +24,7 @@ def test_canonical():
     count = 0
     
     for sys, t in gen:
-        v = cenergy.lennard_jones(sys.rarray*1e-9, sys.type, periodic=sys.boxsize*1e-9)
+        v = cenergy.lennard_jones(sys.r_array*1e-9, sys.type, periodic=sys.boxsize*1e-9)
         
         m = typetomass['Ar'] * 1.660538921e-27
         k = (0.5 * m * sys.varray * sys.varray * 1e6).sum()

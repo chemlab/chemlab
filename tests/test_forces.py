@@ -38,7 +38,7 @@ def test_4atoms():
         try:
             for i in range(100):
                 sys, t = evo.next()
-            sr.update(sys.rarray)
+            sr.update(sys.r_array)
             
         except StopIteration:
             pass
@@ -77,19 +77,19 @@ def test_forces():
     
     # evo takes times in picoseconds
     evo = evolve_generator(sys, t=1e2, tstep=0.002, periodic=False)
-    distances = [np.linalg.norm(sys.rarray[0] - sys.rarray[1])]
-    pitentials = [cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)]
+    distances = [np.linalg.norm(sys.r_array[0] - sys.r_array[1])]
+    pitentials = [cenergy.lennard_jones( sys.r_array * 1e-9, 'Ar', periodic=False)]
     
     def update_pos():
         try:
             for i in range(100):
                 sys, t = evo.next()
                 
-            dist = np.linalg.norm(sys.rarray[0] - sys.rarray[1])
-            pot = cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)            
+            dist = np.linalg.norm(sys.r_array[0] - sys.r_array[1])
+            pot = cenergy.lennard_jones( sys.r_array * 1e-9, 'Ar', periodic=False)            
             distances.append(dist)
             pitentials.append(pot)
-            sr.update(sys.rarray)
+            sr.update(sys.r_array)
             
         except StopIteration:
             import pylab as pl
@@ -170,19 +170,19 @@ def test_periodic():
     # evo takes times in picoseconds
     evo = evolve_generator(sys, t=1e3, tstep=0.002, periodic=True)
     
-    distances = [np.linalg.norm(sys.rarray[0] - sys.rarray[1])]
-    pitentials = [cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)]
+    distances = [np.linalg.norm(sys.r_array[0] - sys.r_array[1])]
+    pitentials = [cenergy.lennard_jones( sys.r_array * 1e-9, 'Ar', periodic=False)]
     
     def update_pos():
         try:
             for i in range(100):
                 sys, t = evo.next()
                 
-            dist = np.linalg.norm(sys.rarray[0] - sys.rarray[1])
-            pot = cenergy.lennard_jones( sys.rarray * 1e-9, 'Ar', periodic=False)            
+            dist = np.linalg.norm(sys.r_array[0] - sys.r_array[1])
+            pot = cenergy.lennard_jones( sys.r_array * 1e-9, 'Ar', periodic=False)            
             distances.append(dist)
             pitentials.append(pot)
-            sr.update(sys.rarray)
+            sr.update(sys.r_array)
             
         except StopIteration:
             pass

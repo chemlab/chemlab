@@ -22,19 +22,19 @@ def test_1():
     #pl.plot(x, y)
     for i in range(1000):
         print "Step ", i
-        farray = forces.lennard_jones(sys.rarray, "Ne", periodic=boxsize)
+        farray = forces.lennard_jones(sys.r_array, "Ne", periodic=boxsize)
         # Just this time let's assume masses are 1
-        sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/300.17, 0.011)
+        sys.r_array, sys.varray = integrators.euler(sys.r_array, sys.varray, farray/300.17, 0.011)
         
         # Add more periodic conditions
-        rarray = sys.rarray
+        rarray = sys.r_array
         
         i_toopositive = rarray > boxsize * 0.5
         rarray[i_toopositive] -= boxsize  
         i_toonegative = rarray < - boxsize * 0.5
         rarray[i_toonegative] += boxsize
         
-        sys.rarray = rarray
+        sys.r_array = rarray
 
     #x, y = pair_correlation(sys, 20)
     #pl.plot(x, y)
@@ -58,7 +58,7 @@ def test_2():
     def iterate(dt):
         for i in range(10):
             sys, t = gen.next()
-        pr.update(sys.rarray)
+        pr.update(sys.r_array)
     
     import pyglet
     pyglet.clock.schedule(iterate)
@@ -78,19 +78,19 @@ def test_3():
     
     for i in range(100):
         # Let's try to make periodic boundary conditions
-        farray = forces.lennard_jones(sys.rarray, "Ar", periodic=boxsize)
+        farray = forces.lennard_jones(sys.r_array, "Ar", periodic=boxsize)
         # Just this time let's assume masses are 1
-        sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/30.17, 0.01)
+        sys.r_array, sys.varray = integrators.euler(sys.r_array, sys.varray, farray/30.17, 0.01)
         
         # Add more periodic conditions
-        rarray = sys.rarray
+        rarray = sys.r_array
         
         i_toopositive = rarray > boxsize * 0.5
         rarray[i_toopositive] -= boxsize  
         i_toonegative = rarray < - boxsize * 0.5
         rarray[i_toonegative] += boxsize
         
-        sys.rarray = rarray
+        sys.r_array = rarray
         pr.update(rarray)
     
     v._p.join()

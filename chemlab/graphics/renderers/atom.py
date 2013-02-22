@@ -6,13 +6,15 @@ from .sphere import SphereRenderer
 
 
 class AtomRenderer(AbstractRenderer):
-    def __init__(self, atoms):
-        radii = [vdw_dict[atom.type] for atom in atoms]
-        colorlist = [colors.map.get(atom.type, colors.light_grey)
-                     for atom in atoms]
-        poslist = [at.coords for at in atoms]
+    def __init__(self, system):
+        radii = []
+        colorlist = []
         
-        self.sr = SphereRenderer(poslist, radii, colorlist)
+        for i in range(system.n_atoms):
+            radii.append(vdw_dict[system.type_array[i]])
+            colorlist.append(colors.map.get(system.type_array[i], colors.light_grey))
+        
+        self.sr = SphereRenderer(system.r_array, radii, colorlist)
 
     def draw(self):
         self.sr.draw()

@@ -10,3 +10,4 @@ fontconfig/
 .ropeproject
 docs/_build
 *.so
+\#*

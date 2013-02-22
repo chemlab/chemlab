@@ -25,7 +25,7 @@ def test_2():
     ttime = [0]
     def animate(dt, ttime=ttime):
         ttime[0] += dt
-        sys.rarray -= sys.rarray*0.01*np.sin(ttime[0]*6)
+        sys.r_array -= sys.r_array*0.01*np.sin(ttime[0]*6)
         r.update()
         
     pyglet.clock.schedule_interval(animate, 1/30.0)

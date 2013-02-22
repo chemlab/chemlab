@@ -1,77 +1,339 @@
 import numpy as np
-from .molecule import Atom
-from ..data import units
+from .molecule import Atom, Molecule
+from ..data import units, masses
 
-# MAYBE: I think this thing would be just a test 
-class MonatomicSystem(object):
-    def __init__(self, atomlist, dimension):
-        '''This system is made of all atoms of the same types'''
+class AtomGenerator(object):
+    def __init__(self, system):
+        self._system = system
+    def __getitem__(self, index):
+        pass
+
+class SystemFast(object):
+    molecule_array_map={'mol_export': ('export', object),
+                        'mol_formula': ('formula', object)}
+    
+    molecule_concat_map={'r_array': ('r_array', np.float),
+                         'm_array': ('m_array', np.float),
+                         'type_array': ('type_array', np.object),
+                         'atom_export_array': ('atom_export_array', np.object)}
+    
+    def __init__(self, n_mol, n_atoms, boxsize=2.0):
+        # TODO set boxsize to False and do not display it
+        self.boxsize = boxsize
+        self.n_mol = n_mol
+        self.n_atoms = n_atoms
         
-        self.atoms = atomlist
-        self.boxsize = dimension
-        self.n = len(self.atoms)
-        self.type = atomlist[0].type
-        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
-        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+        self._mol_counter = 0
+        self._at_counter = 0
+
+        # Initialize molecule arrays
         
+        # Special arrays
+        self.mol_indices = np.zeros((n_mol,), dtype=np.int)
+        self.mol_n_atoms = np.zeros((n_mol,), dtype=np.int)
+        
+        # Setting molecule-wise attributes
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+            setattr(self, arr_name, np.zeros((n_mol,), dtype=dtyp))
+
+        # Initialize atom arrays
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            # Special case
+            if arr_name == 'r_array':
+                val = np.zeros((n_atoms,3), dtype=dtyp)
+            else:
+                val = np.zeros((n_atoms,), dtype=dtyp)
+            
+            setattr(self, arr_name, val)
+
+    @classmethod
+    def from_arrays(cls, **kwargs):
+        inst = cls.__new__(SystemFast)
+        
+        if kwargs.get('m_array', None) == None:
+            inst.m_array = np.array([masses.typetomass[t] for t in kwargs['type_array']])
+        else:
+            inst.m_array = kwargs['m_array']
+
+        special_cases = ['m_array']
+        for arr_name, field_name in cls.atom_map():
+            if arr_name in special_cases:
+                continue
+            setattr(inst, arr_name, kwargs[arr_name])
+        
+        for arr_name, field_name in cls.molecule_map():
+            setattr(inst, arr_name, kwargs[arr_name])
+        
+        n_atoms = len(kwargs['r_array'])
+        # Special guys here
+        inst.mol_indices = kwargs['mol_indices']
+        # Calculate n_atoms
+        shifted_indices = np.append(inst.mol_indices[1:], n_atoms)
+        inst.mol_n_atoms = shifted_indices - inst.mol_indices
+        
+        inst.boxsize = kwargs.get('boxsize', 2.0)
+        inst.n_mol = len(inst.mol_indices)
+        inst.n_atoms = n_atoms
+        
+        return inst
         
     @classmethod
-    def random(cls, type, number, dim=10.0):
-        '''Return a random monatomic system made of *number* molecules
-        fo type *type* arranged in a cube of dimension *dim* extending
-        in the 3 directions.
-
-        '''
-        # create random in the range 0,1   dimension dim
-        coords = np.random.rand(number, 3) * dim - dim/2
-        atoms = []
-        for c in coords:
-            atoms.append(Atom(type, c))
-        
-        return cls(atoms, dim)
-        
-    def get_rarray(self):
-        return self.__rarray
-    
-    def set_rarray(self, value):
-        self.__rarray = value
-        
-        for i, atom in enumerate(self.atoms):
-            atom.coords = self.__rarray[i]
-    rarray = property(get_rarray, set_rarray)
+    def molecule_map(cls):
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+            yield arr_name, field_name
     
     @classmethod
-    def spaced_lattice(cls, type, number, dim=10.0):
-        '''Return a spaced lattice in order to fill up the box with
-        dimension *dim*
+    def atom_map(cls):
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            yield arr_name, field_name
+            
+    def add(self, mol):
+        mc = self._mol_counter
+        ac = self._at_counter
+        
+        if ac == self.n_atoms:
+            raise Exception("No more space for further atoms")
+        if mc == self.n_mol:
+            raise Exception('No more space for further molecules')
+        
+        if mc == 0:
+            self.mol_indices[0] = 0
+            self.mol_n_atoms[0] = mol.n_atoms
+        else:
+            m_idx = self.mol_indices[mc-1] + self.mol_n_atoms[mc-1]
+            self.mol_indices[mc] = m_idx
+            self.mol_n_atoms[mc] = mol.n_atoms
+        
+        # Setting molecule-wise attributes
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+            attr = getattr(self, arr_name)
+            attr[mc] = getattr(mol, field_name)
+        
+        # Setting atom-wise attributes
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            attr = getattr(self, arr_name)
+            attr[ac:ac+mol.n_atoms] = getattr(mol, field_name).copy()
+        
+        self._mol_counter += 1
+        self._at_counter += mol.n_atoms
+        return
+    
+    def walk(self):
+        for i in range(self.n_mol):
+            for j in range(self.mol_n_atoms[i]):
+                yield i, j, self.mol_indices[i]+j
+        
+    def sort(self):
+        '''
+        Sort the molecules in the system according to their
+        brute formula.
 
         '''
-        n_rows = int(np.ceil(number**0.3333))
+        # We do have to sort by formula
+        sorted_index = sorted(enumerate(self.mol_formula),
+                              key=lambda x: x[1])
+        sorted_index = np.array(zip(*sorted_index)[0])
+
+        old_indices = self.mol_indices.copy()
+        old_n_atoms = self.mol_n_atoms.copy()
+
+        # We have to shuffle everything regarding atoms
         
-        step = dim/(n_rows+1)
+        old_atom_arrays = {} # Storing old-ordered coordinates etc...
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            attr = getattr(self, arr_name)
+            old_atom_arrays[arr_name] = attr.copy()
         
-        coords = []
+        offset = 0
+        for k,(o_i,o_n) in enumerate(zip(old_indices[sorted_index],
+                                         old_n_atoms[sorted_index])):
+
+            for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+                attr = getattr(self, arr_name)
+                attr[offset: offset+o_n] = old_atom_arrays[arr_name][o_i: o_i+o_n]
+
+            self.mol_indices[k] = offset
+            self.mol_n_atoms[k] = o_n
+            offset += o_n
+
+        # Setting molecule-wise attributes
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+            attr = getattr(self, arr_name)
+            attr[:] = attr[sorted_index]
+
+            
+            
+    def get_molecule(self, index):
+        start_index, end_index = self._get_start_end_index(index)
         
-        consumed = 0
-        for i in range(1, n_rows+1):
-            for j in range(1, n_rows+1):
-                for k in range(1, n_rows+1):
-                    consumed += 1
-                    if consumed > number:
-                        break
-                    else:
-                        c = np.array([step*i, step*j, step*k])-0.5*dim
-                        # Introducing a small perturbation
-                        c += (np.random.rand() - 0.5) * 0.1
-                        coords.append(c)
-        atoms = []
+        kwargs = {}
+
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            kwargs[arr_name] = getattr(self, arr_name)[start_index:end_index]
+
+        for sys_field, (mol_field, dtyp) in Molecule.molecule_array_map:
+            kwargs[mol_field] = getattr(self, sys_field)[index]
         
-        for c in coords:
-            atoms.append(Atom(type, c))
-        
-        return cls(atoms, dim)
+        return Molecule.from_arrays(**kwargs)
+
+    def _get_start_end_index(self, i):
+        start_index = self.mol_indices[i]
+        end_index = start_index + self.mol_n_atoms[i]
+        return start_index, end_index
         
         
+        
+def lattice(mol, size=1, density=1.0):
+    '''Generate an FCC lattice with *body* as points of the
+    lattice. *size* is the number of primitive cells per dimension
+    (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
+    cells) and density is the required *density* required to
+    calculate volume and unit cell vectors.
+
+    '''
+    nmol = 4*size**3
+    nat = nmol * mol.n_atoms
+    
+    sys = SystemFast(nmol, nat)
+
+    cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
+                     [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
+
+    grams =  units.convert(mol.mass*len(cell)*size**3, 'amu', 'g')
+
+    vol = grams/density
+    vol = units.convert(vol, 'cm^3', 'nm^3')
+    dim = vol**(1.0/3.0)
+    celldim = dim/size
+    sys.boxsize = dim
+
+    cells = [size, size, size]
+    for x in range(cells[0]):
+        for y in range(cells[1]):
+            for z in range(cells[2]):
+                for cord in cell:
+                    dx = (cord + np.array([float(x), float(y), float(z)]))*celldim
+                    mol.r_array += dx
+                    mol.r_array -= sys.boxsize / 2.0
+                    sys.add(mol)
+                    mol.r_array += sys.boxsize / 2.0
+                    mol.r_array -= dx
+                    
+    #sys.rarray -= sys.boxsize/2.0
+    return sys
+
+
+
+# Functions to operate on systems
+    
+def select_atoms(sys, mask):
+    '''Generate a subsystem containing the atoms specified by
+    *mask*. If an atom belongs to a molecule, the molecules is also
+    selected.
+    
+    Parameters:
+
+    sys: System
+       Origin system
+    mask: list of True/False
+       A mask to select certain atoms   
+
+    '''
+    # Which atom belongs to which molecule
+    seq = np.array(range(sys.n_atoms))
+    atomic_ids = seq[mask]
+    molecule_ids = np.digitize(atomic_ids, sys.mol_indices)-1
+    molecule_ids = np.unique(molecule_ids)
+
+    return extract_subsystem(sys, molecule_ids)
+
+def extract_subsystem(sys, index):
+    '''Generate a system containing the molecules specifide by *indices*.
+
+    Parameters:
+
+    sys: System
+        The system from where to extract the subsystem
+    index: list of int
+        A list of integers representing the molecules to pick.
+    
+    '''
+    nmol = len(index)
+    natom = np.sum(sys.mol_n_atoms[index])
+    ret = SystemFast(nmol, natom)
+    
+    offset = 0
+    for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[index],
+                                     sys.mol_n_atoms[index])):
+
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            o_attr = getattr(sys, arr_name)
+            attr = getattr(ret, arr_name)
+
+            attr[offset: offset+o_n] = o_attr[o_i: o_i+o_n]
+
+        ret.mol_indices[k] = offset
+        ret.mol_n_atoms[k] = o_n
+        offset += o_n
+
+    # Setting molecule-wise attributes
+    for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+        o_attr = getattr(sys, arr_name)
+        attr = getattr(ret, arr_name)
+        attr[:] = o_attr[index]
+
+    return ret
+
+def merge_systems(sysa, sysb):
+    '''Generate a system by overlapping *sysa* and *sysb*, overlapping
+    molecules are removed, based on the size of the box.
+
+    '''
+    # Delete overlaps.
+    minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
+    maxx, maxy, maxz = np.max(sysb.r_array[:, 0]), np.max(sysb.r_array[:,1]), np.max(sysb.r_array[:,2])
+
+    maxx += 0.3
+    maxy += 0.3
+    maxz += 0.3
+    
+    minx -= 0.3
+    miny -= 0.3
+    minz -= 0.3
+    
+    xmask = (minx < sysa.r_array[:,0]) & (sysa.r_array[:,0] < maxx) 
+    ymask = (miny < sysa.r_array[:,1]) & (sysa.r_array[:,1] < maxy) 
+    zmask = (minz < sysa.r_array[:,2]) & (sysa.r_array[:,2] < maxz) 
+    
+    # Rebuild sysa without water molecules
+    sysa = select_atoms(sysa, np.logical_not(xmask & ymask & zmask))
+    
+    sysres = SystemFast(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
+    
+    # each atom attribute
+    for attr_name in SystemFast.molecule_concat_map.keys():
+        val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
+        setattr(sysres, attr_name, val)
+    
+    # each molecule attribute
+    for attr_name in SystemFast.molecule_array_map.keys():
+        val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
+        setattr(sysres, attr_name, val)
+    
+    # edit the mol_indices and n_mol
+    offset = sysa.mol_indices[-1] + sysa.mol_n_atoms[-1]
+    sysres.mol_indices[0:sysa.n_mol] = sysa.mol_indices.copy()
+    sysres.mol_indices[sysa.n_mol:] = sysb.mol_indices.copy() + offset
+    sysres.mol_n_atoms = np.concatenate([sysa.mol_n_atoms, sysb.mol_n_atoms])
+
+    
+    maxx, maxy, maxz = np.max(sysres.r_array[:, 0]), np.max(sysres.r_array[:,1]), np.max(sysres.r_array[:,2])
+    
+    sysres.boxsize = max(maxx, maxy, maxz)*2 + 0.3
+    
+    return sysres
+
+    
 class System(object):
     def __init__(self, atomlist=None, boxsize=2.0):
         '''This system is made of all atoms of the same types'''
@@ -80,17 +342,29 @@ class System(object):
             atomlist = []
         
         self.atoms = atomlist
+
         self.boxsize = boxsize
         self.bodies = []
         
         
         self.rarray = np.array([a.coords for a in atomlist])
         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+        
+        for atom in self.atoms:
+            atom.system = self
 
     @property
     def n(self):
-        return len(self.atoms)
+        return len(self.rarray)
+
+    # Add body may be the same as add_molecule
+    def add_body(self, body):
+        # Should add each atom with its own coordinates
         
+        # Should bind this guy's coordinates with my rarray
+        
+        pass
+    
     @classmethod
     def random(cls, type, number, dim=10.0):
         '''Return a random monatomic system made of *number* molecules
@@ -167,7 +441,7 @@ class System(object):
         sys = cls()
         
         cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
-                 [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
+                         [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
 
         grams =  units.convert(body.mass*len(cell)*size**3, 'amu', 'g')
         
@@ -198,19 +472,18 @@ class System(object):
         else:
             self.bodies.append(body)
             self.atoms.extend(body.atoms)
-            self.rarray = np.concatenate((self.rarray, rar))
+            self.__rarray = np.concatenate((self.rarray, rar))
+        
+        for atom in body.atoms:
+            atom.system = self
         
     def replace(self, i, body):
         body = body.copy()
         
         # We have to update various things like atoms and rarray
-        atoffset = 0
-        roffset = 0
-        for j in range(i):
-            bd = self.bodies[j]
-            atoffset += len(bd.atoms)
-            roffset += len(bd.rarray)
-            
+        atoffset = roffset = self.atoms.index(self.bodies[i].atoms[0])
+
+        
         replaced = self.bodies[i]
         pos = replaced.geometric_center
         body.rarray += pos
@@ -224,6 +497,8 @@ class System(object):
                                       self.rarray[roffset+len(replaced.rarray):]])
         
         self.bodies[i] = body
+        for atom in body.atoms:
+            atom.system = self
         
     def remove(self, i):
         atoffset = 0
@@ -249,10 +524,85 @@ class System(object):
     
     def set_rarray(self, value):
         self.__rarray = value
-        
+        return
         for i, atom in enumerate(self.atoms):
             atom.coords = self.__rarray[i]
+        
     rarray = property(get_rarray, set_rarray)
     
     def __repr__(self):
         return "System(%d)"%self.n
+        
+
+
+
+        
+# MAYBE: I think this thing would be just a test 
+class MonatomicSystem(object):
+    def __init__(self, atomlist, dimension):
+        '''This system is made of all atoms of the same types'''
+        
+        self.atoms = atomlist
+        self.boxsize = dimension
+        self.n = len(self.atoms)
+        self.type = atomlist[0].type
+        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
+        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+        
+        
+    @classmethod
+    def random(cls, type, number, dim=10.0):
+        '''Return a random monatomic system made of *number* molecules
+        fo type *type* arranged in a cube of dimension *dim* extending
+        in the 3 directions.
+
+        '''
+        # create random in the range 0,1   dimension dim
+        coords = np.random.rand(number, 3) * dim - dim/2
+        atoms = []
+        for c in coords:
+            atoms.append(Atom(type, c))
+        
+        return cls(atoms, dim)
+        
+    def get_rarray(self):
+        return self.__rarray
+    
+    def set_rarray(self, value):
+        self.__rarray = value
+        
+        for i, atom in enumerate(self.atoms):
+            atom.coords = self.__rarray[i]
+    
+    rarray = property(get_rarray, set_rarray)
+    
+    @classmethod
+    def spaced_lattice(cls, type, number, dim=10.0):
+        '''Return a spaced lattice in order to fill up the box with
+        dimension *dim*
+
+        '''
+        n_rows = int(np.ceil(number**0.3333))
+        
+        step = dim/(n_rows+1)
+        
+        coords = []
+        
+        consumed = 0
+        for i in range(1, n_rows+1):
+            for j in range(1, n_rows+1):
+                for k in range(1, n_rows+1):
+                    consumed += 1
+                    if consumed > number:
+                        break
+                    else:
+                        c = np.array([step*i, step*j, step*k])-0.5*dim
+                        # Introducing a small perturbation
+                        c += (np.random.rand() - 0.5) * 0.1
+                        coords.append(c)
+        atoms = []
+        
+        for c in coords:
+            atoms.append(Atom(type, c))
+        
+        return cls(atoms, dim)

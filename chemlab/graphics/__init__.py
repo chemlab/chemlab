@@ -4,7 +4,7 @@ from .ui import SliderUI
 
 def display_system(sys, highlight=None):
     v = Viewer()
-    sr = v.add_renderer(AtomRenderer, sys.atoms)
+    sr = v.add_renderer(AtomRenderer, sys)
     v.add_renderer(CubeRenderer, sys.boxsize)
     
     if highlight:

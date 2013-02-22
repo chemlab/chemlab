@@ -16,19 +16,19 @@ def evolve(sys, t, tstep, periodic, callback=None):
         # It SHOULD be in joule
         if callback != None:
             callback(sys, i*tstep)
-        farray = cforces.lennard_jones(sys.rarray, sys.type, periodic=sys.boxsize)
+        farray = cforces.lennard_jones(sys.r_array, sys.type, periodic=sys.boxsize)
         
-        sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/m, tstep)
+        sys.r_array, sys.varray = integrators.euler(sys.r_array, sys.varray, farray/m, tstep)
         
         # Add more periodic conditions
-        rarray = sys.rarray
+        rarray = sys.r_array
         if periodic:
             i_toopositive = rarray > boxsize * 0.5
             rarray[i_toopositive] -= boxsize  
             i_toonegative = rarray < - boxsize * 0.5
             rarray[i_toonegative] += boxsize
         
-        sys.rarray = rarray
+        sys.r_array = rarray
     return sys
 
 def evolve_generator(sys, t, tstep, periodic):
@@ -39,18 +39,18 @@ def evolve_generator(sys, t, tstep, periodic):
     for i in range(steps):
         yield sys, tstep*i        
         
-        farray = cforces.lennard_jones(sys.rarray, sys.type, periodic=sys.boxsize)        
-        sys.rarray, sys.varray = integrators.euler(sys.rarray, sys.varray, farray/m, tstep)
+        farray = cforces.lennard_jones(sys.r_array, sys.type, periodic=sys.boxsize)        
+        sys.r_array, sys.varray = integrators.euler(sys.r_array, sys.varray, farray/m, tstep)
         
         # Add more periodic conditions
-        rarray = sys.rarray
+        rarray = sys.r_array
         if periodic:
             i_toopositive = rarray > boxsize * 0.5
             rarray[i_toopositive] -= boxsize  
             i_toonegative = rarray < - boxsize * 0.5
             rarray[i_toonegative] += boxsize
         
-        sys.rarray = rarray
+        sys.r_array = rarray
 
     
     
@@ -80,7 +80,7 @@ energies = []
 times = []
 
 def callback(sys, t):
-    en = cenergy.lennard_jones(sys.rarray, sys.type, periodic=sys.boxsize)
+    en = cenergy.lennard_jones(sys.r_array, sys.type, periodic=sys.boxsize)
     m = masses.typetomass[sys.type] * 1.660538921e-27 # Mass in Kg
     k = kinetic(sys.varray, m)
     print "Potential", en, "Kinetic", k
@@ -105,7 +105,7 @@ gen = evolve_generator(sys, t=1e-9, tstep=5e-15, periodic=True)
 def update(t):
     sys, t = gen.next()
     callback(sys, t)
-    sr.update(sys.rarray * 1e9)
+    sr.update(sys.r_array * 1e9)
 
 pyglet.clock.schedule(update)
 pyglet.app.run()
