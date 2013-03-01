@@ -1,21 +1,53 @@
 import numpy as np
 from .molecule import Atom, Molecule
 from ..data import units, masses
+from collections import namedtuple
+
+
+class MoleculeGenerator(object):
+    def __init__(self, system):
+        self.system = system
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            ind = range(*key.indices(self.system.n_mol))
+            ret = []
+            for i in ind:
+                ret.append(self.system.get_molecule(i))
+            
+            return ret
+            
+        if isinstance(key, int):
+            return self.system.get_molecule(key)
+
 
 class AtomGenerator(object):
     def __init__(self, system):
-        self._system = system
-    def __getitem__(self, index):
-        pass
+        self.system = system
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            ind = range(*key.indices(self.system.n_mol))
+            ret = []
+            for i in ind:
+                ret.append(self.system.get_atom(i))
+            
+            return ret
+            
+        if isinstance(key, int):
+            return self.system.get_atom(key)
+    
+AttrData = namedtuple('AttrData', ['name', 'type'])
+
 
 class SystemFast(object):
-    molecule_array_map={'mol_export': ('export', object),
-                        'mol_formula': ('formula', object)}
+    molecule_inherited={'mol_export': AttrData(name='export', type=object),
+                        'mol_formula': AttrData(name='formula', type=object)}
     
-    molecule_concat_map={'r_array': ('r_array', np.float),
-                         'm_array': ('m_array', np.float),
-                         'type_array': ('type_array', np.object),
-                         'atom_export_array': ('atom_export_array', np.object)}
+    atom_inherited={'r_array': AttrData(name='r_array', type=np.float),
+                    'm_array': AttrData(name='m_array', type=np.float),
+                    'type_array': AttrData(name='type_array', type=np.object),
+                    'atom_export_array': AttrData(name='atom_export_array', type=np.object)}
     
     def __init__(self, n_mol, n_atoms, boxsize=2.0):
         # TODO set boxsize to False and do not display it
@@ -26,23 +58,26 @@ class SystemFast(object):
         self._mol_counter = 0
         self._at_counter = 0
 
+        self.molecules = MoleculeGenerator(self)
+        self.atoms = AtomGenerator(self)
         # Initialize molecule arrays
         
         # Special arrays
         self.mol_indices = np.zeros((n_mol,), dtype=np.int)
         self.mol_n_atoms = np.zeros((n_mol,), dtype=np.int)
         
-        # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
-            setattr(self, arr_name, np.zeros((n_mol,), dtype=dtyp))
+        cls = type(self)
+        # Initializing derived array attributes
+        for arr_name, field in cls.molecule_inherited.iteritems():
+            setattr(self, arr_name, np.zeros((n_mol,), dtype=field.type))
 
-        # Initialize atom arrays
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        # Initialize derived atom arrays
+        for arr_name, field in cls.atom_inherited.iteritems():
             # Special case
             if arr_name == 'r_array':
-                val = np.zeros((n_atoms,3), dtype=dtyp)
+                val = np.zeros((n_atoms,3), dtype=field.type)
             else:
-                val = np.zeros((n_atoms,), dtype=dtyp)
+                val = np.zeros((n_atoms,), dtype=field.type)
             
             setattr(self, arr_name, val)
 
@@ -56,12 +91,12 @@ class SystemFast(object):
             inst.m_array = kwargs['m_array']
 
         special_cases = ['m_array']
-        for arr_name, field_name in cls.atom_map():
+        for arr_name, field in cls.atom_inherited.items():
             if arr_name in special_cases:
                 continue
             setattr(inst, arr_name, kwargs[arr_name])
         
-        for arr_name, field_name in cls.molecule_map():
+        for arr_name, field_name in cls.atom_inherited.items():
             setattr(inst, arr_name, kwargs[arr_name])
         
         n_atoms = len(kwargs['r_array'])
@@ -79,12 +114,12 @@ class SystemFast(object):
         
     @classmethod
     def molecule_map(cls):
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
             yield arr_name, field_name
     
     @classmethod
     def atom_map(cls):
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
             yield arr_name, field_name
             
     def add(self, mol):
@@ -105,12 +140,12 @@ class SystemFast(object):
             self.mol_n_atoms[mc] = mol.n_atoms
         
         # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[mc] = getattr(mol, field_name)
         
         # Setting atom-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[ac:ac+mol.n_atoms] = getattr(mol, field_name).copy()
         
@@ -118,6 +153,39 @@ class SystemFast(object):
         self._at_counter += mol.n_atoms
         return
     
+    def remove_molecules(self, indices):
+        
+        # Molecule arrays
+        for arr in SystemFast.molecule_inherited.keys():
+            setattr(self,arr, np.delete(getattr(self, arr), indices, axis=0))
+            
+        # Atomic arrays
+        at_indices = self.mol_to_atom_indices(indices)
+        for arr in SystemFast.atom_inherited.keys():
+            setattr(self, arr, np.delete(getattr(self, arr), at_indices, axis=0))
+        
+        # Now the hard part, change mol_indices and mol_n_atoms
+        self.mol_n_atoms = np.delete(self.mol_n_atoms, indices)
+        
+        size = len(self.mol_n_atoms)
+        self.mol_indices = np.zeros(size, dtype=int)
+        for i,n in enumerate(self.mol_n_atoms[:-1]):
+            self.mol_indices[i+1] = self.mol_indices[i] + self.mol_n_atoms[i]
+        
+        self.n_mol = len(self.mol_n_atoms)
+        self.n_atoms = len(self.r_array)
+        
+    def mol_to_atom_indices(self, indices):
+        rng = np.arange(self.n_atoms)
+        ind = []
+        
+        for i in indices:
+            s = self.mol_indices[i]
+            e = s + self.mol_n_atoms[i]
+            ind.append(rng[s:e])
+        
+        return np.array(ind).flatten()
+            
     def walk(self):
         for i in range(self.n_mol):
             for j in range(self.mol_n_atoms[i]):
@@ -140,7 +208,7 @@ class SystemFast(object):
         # We have to shuffle everything regarding atoms
         
         old_atom_arrays = {} # Storing old-ordered coordinates etc...
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
             attr = getattr(self, arr_name)
             old_atom_arrays[arr_name] = attr.copy()
         
@@ -148,7 +216,7 @@ class SystemFast(object):
         for k,(o_i,o_n) in enumerate(zip(old_indices[sorted_index],
                                          old_n_atoms[sorted_index])):
 
-            for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+            for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
                 attr = getattr(self, arr_name)
                 attr[offset: offset+o_n] = old_atom_arrays[arr_name][o_i: o_i+o_n]
 
@@ -157,25 +225,34 @@ class SystemFast(object):
             offset += o_n
 
         # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[:] = attr[sorted_index]
 
-            
-            
+    def get_derived_molecule_array(self, attribute):
+        arr = []
+        for i in range(self.n_mol):
+            arr.append(getattr(self.get_molecule(i), attribute))
+        
+        return np.array(arr)
+        
     def get_molecule(self, index):
         start_index, end_index = self._get_start_end_index(index)
         
         kwargs = {}
 
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
             kwargs[arr_name] = getattr(self, arr_name)[start_index:end_index]
 
-        for sys_field, (mol_field, dtyp) in Molecule.molecule_array_map:
+        for sys_field, (mol_field, dtyp) in Molecule.atom_inherited.items():
             kwargs[mol_field] = getattr(self, sys_field)[index]
         
         return Molecule.from_arrays(**kwargs)
-
+        
+    def get_atom(self, index):
+        return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],
+                                type=self.type_array[index], mass=self.m_array)
+        
     def _get_start_end_index(self, i):
         start_index = self.mol_indices[i]
         end_index = start_index + self.mol_n_atoms[i]
@@ -266,7 +343,7 @@ def extract_subsystem(sys, index):
     for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[index],
                                      sys.mol_n_atoms[index])):
 
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_concat_map.iteritems():
+        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
             o_attr = getattr(sys, arr_name)
             attr = getattr(ret, arr_name)
 
@@ -277,14 +354,14 @@ def extract_subsystem(sys, index):
         offset += o_n
 
     # Setting molecule-wise attributes
-    for arr_name, (field_name, dtyp) in SystemFast.molecule_array_map.iteritems():
+    for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
         o_attr = getattr(sys, arr_name)
         attr = getattr(ret, arr_name)
         attr[:] = o_attr[index]
 
     return ret
 
-def merge_systems(sysa, sysb):
+def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by overlapping *sysa* and *sysb*, overlapping
     molecules are removed, based on the size of the box.
 
@@ -293,13 +370,13 @@ def merge_systems(sysa, sysb):
     minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
     maxx, maxy, maxz = np.max(sysb.r_array[:, 0]), np.max(sysb.r_array[:,1]), np.max(sysb.r_array[:,2])
 
-    maxx += 0.3
-    maxy += 0.3
-    maxz += 0.3
+    maxx += bounding
+    maxy += bounding
+    maxz += bounding
     
-    minx -= 0.3
-    miny -= 0.3
-    minz -= 0.3
+    minx -= bounding
+    miny -= bounding
+    minz -= bounding
     
     xmask = (minx < sysa.r_array[:,0]) & (sysa.r_array[:,0] < maxx) 
     ymask = (miny < sysa.r_array[:,1]) & (sysa.r_array[:,1] < maxy) 
@@ -311,12 +388,12 @@ def merge_systems(sysa, sysb):
     sysres = SystemFast(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     
     # each atom attribute
-    for attr_name in SystemFast.molecule_concat_map.keys():
+    for attr_name in SystemFast.atom_inherited.keys():
         val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
         setattr(sysres, attr_name, val)
     
     # each molecule attribute
-    for attr_name in SystemFast.molecule_array_map.keys():
+    for attr_name in SystemFast.molecule_inherited.keys():
         val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
         setattr(sysres, attr_name, val)
     
@@ -329,7 +406,7 @@ def merge_systems(sysa, sysb):
     
     maxx, maxy, maxz = np.max(sysres.r_array[:, 0]), np.max(sysres.r_array[:,1]), np.max(sysres.r_array[:,2])
     
-    sysres.boxsize = max(maxx, maxy, maxz)*2 + 0.3
+    sysres.boxsize = max(maxx, maxy, maxz)*2 + bounding
     
     return sysres
 

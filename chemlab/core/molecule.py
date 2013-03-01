@@ -24,17 +24,18 @@ class Molecule(object):
 
     '''
     # Association between the Molecule array attribute and the atom one
-    atom_array_map = {'r_array': ('r', np.float64),
+    atom_inherited = {'r_array': ('r', np.float64),
                       'type_array': ('type', object),
                       'm_array': ('mass', np.float64),
                       'atom_export_array': ('export', object)}
     
-    fields = ('export', 'formula')
+    fields = ('export',)
+    derived = ('formula',)
     
     def __init__(self,atoms,bonds=None, export=None):
         self.n_atoms = len(atoms)
         
-        for arr_name, (field_name, dtyp) in Molecule.atom_array_map.iteritems():
+        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.iteritems():
             setattr(self, arr_name,
                     np.array([getattr(a, field_name) for a in atoms], dtype=dtyp))
             # Example:
@@ -50,22 +51,24 @@ class Molecule(object):
     @classmethod
     def from_arrays(cls, **kwargs):
         # Test for required fields:
-        if set(('r_array', 'type_array')) <= set(kwargs):
+        if not (set(('r_array', 'type_array')) <= set(kwargs.keys())):
             raise Exception('r_array and type_array are required arguments.')
         
         inst = cls.__new__(Molecule)
 
-        for arr_name, (field_name, dtyp) in Molecule.atom_array_map.items():
+        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.items():
             # Special cases
             if kwargs.get('m_array', None) == None:
                 inst.m_array = np.array([masses.typetomass[t] for t in kwargs['type_array']])            
             else:
                 setattr(inst, arr_name, kwargs[arr_name])
         
-        for field in Molecule.fields.items():
+        for field in Molecule.fields:
             # Special cases
             if kwargs.get('export', None) == None:
                 inst.export = {}
+            elif kwargs.get('formula', None) == None:
+                pass
             else:
                 setattr(inst, field, kwargs[field])
 
@@ -99,24 +102,7 @@ class Molecule(object):
         return mol
         
     def _det_formula(self):
-        elements = self.type_array
-        c = Counter(elements)
-        formula = ''
-        if c["C"] != 0:
-            formula += "C{}".format(c["C"])
-            del c["C"]
-        
-        if c["H"] != 0:
-            formula += "H{}".format(c["H"])
-            del c["H"]
-
-        for item, count in sorted(c.items()):
-            if count ==1:
-                formula += item
-            else:
-                formula += "{}{}".format(item, count)
-        
-        return formula
+        return make_formula(self.type_array)
     formula = property(_det_formula)
 
 def make_formula(elements):
@@ -164,9 +150,21 @@ class Atom(object):
         self.atno = symbols.symbol_list.index(type.lower()) + 1
         self.mass = masses.typetomass[type]
 
+    @classmethod
+    def from_fields(cls, **kwargs):
+        self = cls.__new__(cls)
+        
+        if not (set(Atom.fields) <= set(kwargs)):
+            raise Exception('Not all fields are passed to make an Atom %s missing' %
+                              (set(Atom.fields) - set(kwargs)))
+        for f in Atom.fields:
+            setattr(self,f, kwargs[f])
+        
+        return self
+            
     def copy(self):
         return Atom(self.type, np.copy(self.r), self.id, export=self.export.copy())
 
     def __repr__(self):
-        return "atom({}{})".format(self.type, self.id)
+        return "atom({})".format(self.type)
 

@@ -36,7 +36,8 @@ def parse_gro_lines(lines):
     datalist = []
     for l in lines:
         fields = l.split()
-        if len(fields) >= 6:
+        line_length = len(l)
+        if line_length == 45:
             #Only positions are provided
             molidx = int(l[0:5])
             moltyp = l[5:10].strip()
@@ -58,7 +59,7 @@ def parse_gro_lines(lines):
             #if attyp.lower() not in symbol_list:
             #    attyp = gro_to_cl[attyp]
             datalist.append((molidx, moltyp, attyp, rx, ry, rz))
-        if len(fields) == 3:
+        else:
             # This is the box size
             boxsize = float(fields[0])
             break
@@ -122,7 +123,7 @@ def write_gro(sys, filename):
                 raise Exception('Gromacs exporter needs the atom type as grotype')
             
             at_n += 1
-            x, y, z = sys.r_array[offset+j]
+            x, y, z = sys.r_array[offset+j] + sys.boxsize / 2.0
             
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n%99999, x, y, z))
