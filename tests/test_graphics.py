@@ -1,6 +1,7 @@
 '''Tests for the graphics harnessing'''
 from chemlab.graphics import Viewer
 from chemlab.core import Atom, Molecule
+from chemlab.graphics.qtviewer import QtViewer
 
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         AtomRenderer)
@@ -13,7 +14,7 @@ def test_triangle_renderer():
     blue = [[0, 255, 255, 255]]
     colors = blue * 3
     
-    v = Viewer()
+    v = QtViewer()
     tr = v.add_renderer(TriangleRenderer, vertices, normals, colors)
     v.run()
 
@@ -24,7 +25,7 @@ def test_sphere_renderer():
     radii = [[1.0]]
     colors = [[0, 255, 255, 255]]
     
-    v = Viewer()
+    v = QtViewer()
     sr = v.add_renderer(SphereRenderer, centers, radii, colors)
     v.run()
 
