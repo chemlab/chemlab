@@ -1,9 +1,9 @@
-from .viewer import Viewer
+from .qtviewer import QtViewer
 from .renderers import AtomRenderer, CubeRenderer
 from .ui import SliderUI
 
 def display_system(sys, highlight=None):
-    v = Viewer()
+    v = QtViewer()
     sr = v.add_renderer(AtomRenderer, sys)
     v.add_renderer(CubeRenderer, sys.boxsize)
     

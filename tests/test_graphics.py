@@ -1,14 +1,15 @@
 '''Tests for the graphics harnessing'''
-from chemlab.graphics import Viewer
 from chemlab.core import Atom, Molecule
 from chemlab.graphics.qtviewer import QtViewer
 
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         AtomRenderer)
 
+import numpy as np
+
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
-    vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]
+    vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
     normals = [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]
     
     blue = [[0, 255, 255, 255]]
@@ -27,6 +28,34 @@ def test_sphere_renderer():
     
     v = QtViewer()
     sr = v.add_renderer(SphereRenderer, centers, radii, colors)
+    
+    cr = np.array(centers)
+    def update(cr=cr):
+        cr[0][0] += 0.01
+        sr.update_positions(cr)
+        v.widget.repaint()
+        
+    v.schedule(update)
+    
+    v.run()
+
+def test_sphere_imp_renderer():
+    '''To see if we can render a sphere'''
+    centers = [[0.0, 0.0, 0.0]]
+    radii = [[1.0]]
+    colors = [[0, 255, 255, 255]]
+    
+    v = QtViewer()
+    sr = v.add_renderer(SphereRenderer, centers, radii, colors)
+    
+    cr = np.array(centers)
+    def update(cr=cr):
+        cr[0][0] += 0.01
+        sr.update_positions(cr)
+        v.widget.repaint()
+        
+    v.schedule(update)
+    
     v.run()
 
 def test_atom_renderer():
@@ -36,7 +65,7 @@ def test_atom_renderer():
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
     
-    v = Viewer()
-    ar = v.add_renderer(AtomRenderer, mol.atoms)
+    v = QtViewer()
+    ar = v.add_renderer(AtomRenderer, mol)
     v.run()
 

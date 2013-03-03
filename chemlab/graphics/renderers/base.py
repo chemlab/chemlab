@@ -1,12 +1,21 @@
-from OpenGL.GL import shaders
+from OpenGL.GL import (shaders,
+                       GL_VERTEX_SHADER, GL_FRAGMENT_SHADER,
+                       glGetUniformLocation, glUseProgram, GL_FALSE,
+glUniform3f, glUniformMatrix4fv, GLfloat, GL_TRUE)
+from ctypes import POINTER
+import numpy as np
 import pkgutil
 
 def set_uniform(prog, uni, typ, value):
     location = glGetUniformLocation(prog, uni)
     if typ == '1f':
-        glUniform1f()
+        glUniform1f(location, value)
+    if typ == '3f':
+        glUniform3f(location, *value)
+    if type == '4f':
+        glUniform3f(location, *value)
     if typ == '4fv':
-        pass
+        glUniformMatrix4fv(location, 1, GL_TRUE, value.astype(np.float32))
 
 class AbstractRenderer(object):
     '''An AbstractRenderer is an interface for Renderers. Each
@@ -15,10 +24,14 @@ class AbstractRenderer(object):
     is used to update the data to be displayed.
 
     '''
-    def __init_(self, *args, **kwargs):
-        self.VERTEX_SHADER = pkgutil.get_data(".shaders", "default_persp.vert")
-        self.FRAGMENT_SHADER = pkgutil.get_data(".shaders", "default_light.frag")
-    
+    def __init__(self, *args, **kwargs):
+
+        self.VERTEX_SHADER = pkgutil.get_data("chemlab.graphics.renderers.shaders",
+                                              "default_persp.vert")
+        self.FRAGMENT_SHADER = pkgutil.get_data("chemlab.graphics.renderers.shaders",
+                                                "default_light.frag")
+        
+        
     def draw(self):
         pass
     
@@ -32,10 +45,12 @@ class AbstractRenderer(object):
         vertex = shaders.compileShader(self.VERTEX_SHADER,GL_VERTEX_SHADER)
         fragment = shaders.compileShader(self.FRAGMENT_SHADER, GL_FRAGMENT_SHADER)
         
-        self.shader = shaders.compileProgram(self.VERTEX_SHADER, self.FRAGMENT_SHADER)
+        self.shader = shaders.compileProgram(vertex, fragment)
 
     def setup_shader(self):
+        glUseProgram(self.shader)
         # Setup the uniforms
         set_uniform(self.shader, "mvproj", "4fv", self.viewer.mvproj)
         set_uniform(self.shader, "lightDir", "3f", self.viewer.ldir)
         set_uniform(self.shader, "camera", "3f", self.viewer.camera.position)
+

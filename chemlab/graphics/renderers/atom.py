@@ -6,7 +6,7 @@ from .sphere import SphereRenderer
 
 
 class AtomRenderer(AbstractRenderer):
-    def __init__(self, system):
+    def __init__(self, viewer, system):
         radii = []
         colorlist = []
         
@@ -14,7 +14,7 @@ class AtomRenderer(AbstractRenderer):
             radii.append(vdw_dict[system.type_array[i]])
             colorlist.append(colors.map.get(system.type_array[i], colors.light_grey))
         
-        self.sr = SphereRenderer(system.r_array, radii, colorlist)
+        self.sr = SphereRenderer(viewer, system.r_array, radii, colorlist)
 
     def draw(self):
         self.sr.draw()

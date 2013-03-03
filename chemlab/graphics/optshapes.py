@@ -14,7 +14,7 @@ class OptSphere:
         olddim = len(_SPHERE_MRES.tri_vertex)
         vertex = _SPHERE_MRES.tri_vertex.reshape((olddim/3, 3))
         
-        self.tri_vertex = vertex * radius - position
+        self.tri_vertex = vertex * radius + position
         self.tri_vertex = self.tri_vertex.reshape(olddim)
         
         _SPHERE_MRES.tri_vertex.reshape(olddim)
