@@ -42,5 +42,6 @@ void main()
         actual_vertex.z,
         actual_vertex.w);
     
-    gl_Position = projection_mat * actual_vertex;                                   gl_FrontColor = gl_Color;
+    gl_Position = projection_mat * actual_vertex;       
+    gl_FrontColor = gl_Color;
 }

@@ -89,7 +89,7 @@ class FpsDraw(object):
 class QtViewer(QMainWindow):
     
     def __init__(self):
-
+        self.app = QApplication([])
         QMainWindow.__init__(self)
         widget = GLWidget(self)
         self.setCentralWidget(widget)
@@ -98,7 +98,6 @@ class QtViewer(QMainWindow):
         self.show()
         
     def run(self):
-        self.app = QApplication([])
         self.app.exec_()
         
     def schedule(self, callback, timeout=100):

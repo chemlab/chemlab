@@ -1,8 +1,8 @@
 '''Tests for the graphics harnessing'''
 from chemlab.core import Atom, Molecule
 from chemlab.graphics.qtviewer import QtViewer
-
-from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
+from chemlab.graphics.colors import orange, blue, forest_green
+from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer, SphereImpostorRenderer,
                                         AtomRenderer)
 
 import numpy as np
@@ -39,14 +39,15 @@ def test_sphere_renderer():
     
     v.run()
 
+    
 def test_sphere_imp_renderer():
     '''To see if we can render a sphere'''
-    centers = [[0.0, 0.0, 0.0]]
-    radii = [[1.0]]
-    colors = [[0, 255, 255, 255]]
-    
+    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    radii = [0.5, 0.1, 0.5]
+    colors = [orange, blue, forest_green]
+
     v = QtViewer()
-    sr = v.add_renderer(SphereRenderer, centers, radii, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     
     cr = np.array(centers)
     def update(cr=cr):

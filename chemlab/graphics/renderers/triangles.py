@@ -4,18 +4,16 @@ triangle vertices and we got the result.
 '''
 import numpy as np
 
-from .base import AbstractRenderer
+from .base import DefaultRenderer
 from ..buffers import VertexBuffer
 
 from OpenGL.GL import (GL_DYNAMIC_DRAW, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY,
                        GL_COLOR_ARRAY, GL_UNSIGNED_BYTE, GL_FLOAT, GL_TRIANGLES,
                        glEnableClientState, glDrawArrays)
 
-class TriangleRenderer(AbstractRenderer):
+class TriangleRenderer(DefaultRenderer):
     def __init__(self, viewer, vertices, normals, colors):
-        AbstractRenderer.__init__(self)
-        self.viewer = viewer
-        self.compile_shader()
+        super(TriangleRenderer, self).__init__(viewer)
         
         n_triangles = len(vertices)
         # Convert arrays to numpy arrays, float32 precision,
@@ -27,16 +25,12 @@ class TriangleRenderer(AbstractRenderer):
         # Store vertices, colors and normals in 3 different vertex
         # buffer objects
         self._vbo_v = VertexBuffer(vertices, GL_DYNAMIC_DRAW)
-        
         self._vbo_n = VertexBuffer(normals, GL_DYNAMIC_DRAW)
-
         self._vbo_c = VertexBuffer(colors, GL_DYNAMIC_DRAW)
         
         self._n_triangles = n_triangles
 
-    def draw(self):
-        self.setup_shader()
-        
+    def draw_vertices(self):
         # Draw all the vbo defined in set_atoms
         glEnableClientState(GL_VERTEX_ARRAY)
         self._vbo_v.bind_vertexes(3, GL_FLOAT)
@@ -61,4 +55,3 @@ class TriangleRenderer(AbstractRenderer):
         colors = np.array(colors, dtype=np.float32)
         self._vbo_c.set_data(colors)
 
-        

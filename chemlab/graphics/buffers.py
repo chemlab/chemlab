@@ -2,7 +2,6 @@ from OpenGL.GL import *
 from OpenGL.raw import GL
 from OpenGL.arrays import ArrayDatatype as ADT
 
-
 class VertexBuffer(object):
 
   def __init__(self, data, usage):
@@ -48,3 +47,7 @@ class VertexBuffer(object):
   def bind_vertexes(self, size, type, stride=0):
     self.bind()
     glVertexPointer(size, type, stride, None)
+    
+  def bind_attrib(self, attribute, size, type, normalized=GL_FALSE, stride=0):
+    self.bind()
+    glVertexAttribPointer(attribute, size, type, normalized, stride, None)
