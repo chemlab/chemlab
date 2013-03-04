@@ -96,7 +96,7 @@ class SystemFast(object):
                 continue
             setattr(inst, arr_name, kwargs[arr_name])
         
-        for arr_name, field_name in cls.atom_inherited.items():
+        for arr_name, field_name in cls.molecule_inherited.items():
             setattr(inst, arr_name, kwargs[arr_name])
         
         n_atoms = len(kwargs['r_array'])
@@ -161,6 +161,7 @@ class SystemFast(object):
             
         # Atomic arrays
         at_indices = self.mol_to_atom_indices(indices)
+        print at_indices
         for arr in SystemFast.atom_inherited.keys():
             setattr(self, arr, np.delete(getattr(self, arr), at_indices, axis=0))
         
@@ -182,7 +183,7 @@ class SystemFast(object):
         for i in indices:
             s = self.mol_indices[i]
             e = s + self.mol_n_atoms[i]
-            ind.append(rng[s:e])
+            ind.extend(rng[s:e])
         
         return np.array(ind).flatten()
             
@@ -359,6 +360,10 @@ def extract_subsystem(sys, index):
         attr = getattr(ret, arr_name)
         attr[:] = o_attr[index]
 
+    # Boxsize
+    mval = max(abs(ret.r_array.flatten()))
+    ret.boxsize = mval*2
+    
     return ret
 
 def merge_systems(sysa, sysb, bounding=0.2):

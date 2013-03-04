@@ -37,7 +37,8 @@ def parse_gro_lines(lines):
     for l in lines:
         fields = l.split()
         line_length = len(l)
-        if line_length == 45:
+        
+        if line_length == 45 or line_length == 69:
             #Only positions are provided
             molidx = int(l[0:5])
             moltyp = l[5:10].strip()
@@ -48,7 +49,7 @@ def parse_gro_lines(lines):
             rz     = float(l[36:44])
             
             hasvel = False
-            if len(fields) == 9:
+            if line_length == 69:
                 hasvel = True
                 # Provide velocities
                 vx     = float(l[44:52])
