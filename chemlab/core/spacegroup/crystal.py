@@ -52,7 +52,6 @@ def crystal(positions, molecules, group,
     c = Counter(kind)
     n_at = 0
     n_mol = 0
-    print c
     for el in c.keys():
         n_at += c[el]*molecules[el].n_atoms 
         n_mol += c[el]
