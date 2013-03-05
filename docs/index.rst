@@ -6,6 +6,21 @@
 Welcome to chemlab's documentation!
 ===================================
 
+chemlab is designed to be a library that can be used to perform
+chemistry-relevant calculations with the flexibility and power of the
+python programming language. It aims to be well-designed and pythonic,
+taking inspiration from project such as numpy and scipy.
+
+Features:
+
+* array oriented: most operations and data structures are based on numpy arrays.
+               This let you write compact and efficient code.
+* visualization: chemlab includes a 3D molecular viewer. It is designed to be easily extendable
+               and to write your own tools in a programmatic way.
+* convenience: chemlab aim is to be interoperable with other chemistry programs, making it useful to 'glue toghether'
+               different functions.
+
+
 Contents:
 
 .. toctree::
@@ -22,13 +37,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-chemlab at a glance
-===================
-
-chemlab is designed to be a library that can be used to perform
-chemistry-relevant calculations with the flexibility and power of the
-python programming language. It aims to be well-designed and pythonic,
-taking inspiration from project such as numpy and scipy.
-
-Chemistry is much aided by visualization tools, and chemlab includes
-also a 3D molecular viewer based on pyglet.
