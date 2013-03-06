@@ -62,7 +62,8 @@ def parse_gro_lines(lines):
             datalist.append((molidx, moltyp, attyp, rx, ry, rz))
         else:
             # This is the box size
-            boxsize = float(fields[0])
+            a, b, c = fields
+            box_vectors = np.array([[a,0,0], [0,b,0], [0,0,c]])
             break
     
     dataarr = np.array(datalist, dtype=np.dtype([('f0', int), ('f1', object),
@@ -95,8 +96,10 @@ def parse_gro_lines(lines):
                                  type_array=type_array,
                                  atom_export_array=atom_export_array,
                                  mol_export=mol_export,
-                                 mol_formula=mol_formula, boxsize=boxsize)
-    sys.r_array -= boxsize/2.0
+                                 mol_formula=mol_formula,
+                                 box_vectors=box_vectors)
+    
+    #sys.r_array -= boxsize/2.0
     
     return sys
                 
@@ -124,12 +127,14 @@ def write_gro(sys, filename):
                 raise Exception('Gromacs exporter needs the atom type as grotype')
             
             at_n += 1
-            x, y, z = sys.r_array[offset+j] + sys.boxsize / 2.0
+            x, y, z = sys.r_array[offset+j]# + sys.boxsize / 2.0
             
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n%99999, x, y, z))
     
-    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.boxsize, sys.boxsize, sys.boxsize))
+    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0,0],
+                                                      sys.box_vectors[1,1],
+                                                      sys.box_vectors[2,2]))
     
     #for line in lines:
     #    print line
@@ -161,7 +166,7 @@ def read_gro_traj(filename):
     
     for f in frames:
         sys = parse_gro_lines(f)
-        sys.rarray -= sys.boxsize*0.5
+        #sys.rarray -= sys.boxsize*0.5
         syslist.append(sys)
         
         ap + 1

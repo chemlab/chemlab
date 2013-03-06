@@ -14,10 +14,10 @@ def view(args):
     if ext == '.gro':
         if not args.traj:
             sys = parse_gro(args.filename)
-	    display_system(sys, highlight=args.highlight)
+	    display_system(sys)
 	else:
             tr = read_gro_traj(args.filename)
-            display_trajectory(tr, highlight=args.highlight)
+            display_trajectory(tr)
 	    
     elif ext == '.trr':
         from chemlab.io.gro import read_gro_traj

@@ -70,9 +70,8 @@ def crystal(positions, molecules, group,
                     tpl.move_to(s[0]*a +s[1]*b + s[2]*c + a*x + b*y + c*z)
                     cry.add(tpl)
 
-    # Computing the boxsize
-    l = max(cellpar[0:3])
-    cry.boxsize = max(l*nx, l*ny, l*nz)
+    # Computing the box_vectors
+    cry.box_vectors = np.array([a*nx, b*ny, c*nz])
     
     return cry
 

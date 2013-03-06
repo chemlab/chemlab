@@ -49,9 +49,14 @@ class SystemFast(object):
                     'type_array': AttrData(name='type_array', type=np.object),
                     'atom_export_array': AttrData(name='atom_export_array', type=np.object)}
     
-    def __init__(self, n_mol, n_atoms, boxsize=2.0):
+    
+    def __init__(self, n_mol, n_atoms, boxsize=None, box_vectors=None):
         # TODO set boxsize to False and do not display it
-        self.boxsize = boxsize
+        if boxsize:
+            self.boxsize = boxsize
+        else:
+            self.box_vectors = box_vectors
+        
         self.n_mol = n_mol
         self.n_atoms = n_atoms
         
@@ -106,7 +111,13 @@ class SystemFast(object):
         shifted_indices = np.append(inst.mol_indices[1:], n_atoms)
         inst.mol_n_atoms = shifted_indices - inst.mol_indices
         
-        inst.boxsize = kwargs.get('boxsize', 2.0)
+        inst.boxsize = kwargs.get('boxsize', None)
+        inst.box_vectors = kwargs.get('box_vectors', None)
+        if inst.boxsize:
+            inst.box_vectors = np.array([[inst.boxsize, 0, 0],
+                                         [0, inst.boxsize, 0],
+                                         [0, 0, inst.boxsize]])
+        
         inst.n_mol = len(inst.mol_indices)
         inst.n_atoms = n_atoms
         
@@ -254,6 +265,20 @@ class SystemFast(object):
         return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],
                                 type=self.type_array[index], mass=self.m_array)
         
+    @property
+    def boxsize(self):
+        return self._boxsize
+    
+    @boxsize.setter
+    def boxsize(self, value):
+        if value == None:
+            self._boxsize = None
+        else:
+            self._boxsize = value
+            self.box_vectors = np.array([[value, 0, 0],
+                                         [0, value, 0],
+                                         [0, 0, value]])
+        
     def _get_start_end_index(self, i):
         start_index = self.mol_indices[i]
         end_index = start_index + self.mol_n_atoms[i]
@@ -283,7 +308,7 @@ def lattice(mol, size=1, density=1.0):
     vol = units.convert(vol, 'cm^3', 'nm^3')
     dim = vol**(1.0/3.0)
     celldim = dim/size
-    sys.boxsize = dim
+    sys.boxsize = celldim*size
 
     cells = [size, size, size]
     for x in range(cells[0]):
@@ -361,8 +386,11 @@ def extract_subsystem(sys, index):
         attr[:] = o_attr[index]
 
     # Boxsize
-    mval = max(abs(ret.r_array.flatten()))
-    ret.boxsize = mval*2
+    x = max(abs(ret.r_array[:,0]))
+    y = max(abs(ret.r_array[:,1]))
+    z = max(abs(ret.r_array[:,2]))
+    
+    ret.box_vectors = np.array([[x,0,0], [0,y,0], [0,0,z]])
     
     return ret
 
@@ -409,9 +437,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
     sysres.mol_n_atoms = np.concatenate([sysa.mol_n_atoms, sysb.mol_n_atoms])
 
     
-    maxx, maxy, maxz = np.max(sysres.r_array[:, 0]), np.max(sysres.r_array[:,1]), np.max(sysres.r_array[:,2])
-    
-    sysres.boxsize = max(maxx, maxy, maxz)*2 + bounding
+    sysres.box_vectors = sysa.box_vectors
     
     return sysres
 
@@ -615,76 +641,3 @@ class System(object):
     def __repr__(self):
         return "System(%d)"%self.n
         
-
-
-
-        
-# MAYBE: I think this thing would be just a test 
-class MonatomicSystem(object):
-    def __init__(self, atomlist, dimension):
-        '''This system is made of all atoms of the same types'''
-        
-        self.atoms = atomlist
-        self.boxsize = dimension
-        self.n = len(self.atoms)
-        self.type = atomlist[0].type
-        self.rarray = np.array([a.coords for a in atomlist], dtype=np.float64)
-        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
-        
-        
-    @classmethod
-    def random(cls, type, number, dim=10.0):
-        '''Return a random monatomic system made of *number* molecules
-        fo type *type* arranged in a cube of dimension *dim* extending
-        in the 3 directions.
-
-        '''
-        # create random in the range 0,1   dimension dim
-        coords = np.random.rand(number, 3) * dim - dim/2
-        atoms = []
-        for c in coords:
-            atoms.append(Atom(type, c))
-        
-        return cls(atoms, dim)
-        
-    def get_rarray(self):
-        return self.__rarray
-    
-    def set_rarray(self, value):
-        self.__rarray = value
-        
-        for i, atom in enumerate(self.atoms):
-            atom.coords = self.__rarray[i]
-    
-    rarray = property(get_rarray, set_rarray)
-    
-    @classmethod
-    def spaced_lattice(cls, type, number, dim=10.0):
-        '''Return a spaced lattice in order to fill up the box with
-        dimension *dim*
-
-        '''
-        n_rows = int(np.ceil(number**0.3333))
-        
-        step = dim/(n_rows+1)
-        
-        coords = []
-        
-        consumed = 0
-        for i in range(1, n_rows+1):
-            for j in range(1, n_rows+1):
-                for k in range(1, n_rows+1):
-                    consumed += 1
-                    if consumed > number:
-                        break
-                    else:
-                        c = np.array([step*i, step*j, step*k])-0.5*dim
-                        # Introducing a small perturbation
-                        c += (np.random.rand() - 0.5) * 0.1
-                        coords.append(c)
-        atoms = []
-        
-        for c in coords:
-            atoms.append(Atom(type, c))
-        
-        return cls(atoms, dim)

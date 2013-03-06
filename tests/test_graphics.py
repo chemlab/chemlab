@@ -3,7 +3,7 @@ from chemlab.core import Atom, Molecule
 from chemlab.graphics.qtviewer import QtViewer
 from chemlab.graphics.colors import orange, blue, forest_green
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer, SphereImpostorRenderer,
-                                        AtomRenderer)
+                                        AtomRenderer, BoxRenderer)
 
 import numpy as np
 
@@ -70,3 +70,9 @@ def test_atom_renderer():
     ar = v.add_renderer(AtomRenderer, mol)
     v.run()
 
+def test_box_renderer():
+    vectors = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    v = QtViewer()
+    ar = v.add_renderer(BoxRenderer, vectors)
+    v.run()
+    

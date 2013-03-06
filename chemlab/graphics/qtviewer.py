@@ -14,6 +14,7 @@ class AbstractViewer(object):
     def add_renderer(self, renderer):
         pass
 
+app = QApplication([])
 class GLWidget(QGLWidget):
     
     def initializeGL(self):
@@ -89,7 +90,7 @@ class FpsDraw(object):
 class QtViewer(QMainWindow):
     
     def __init__(self):
-        self.app = QApplication([])
+        #self.app = QApplication([])
         QMainWindow.__init__(self)
         widget = GLWidget(self)
         self.setCentralWidget(widget)
@@ -98,7 +99,8 @@ class QtViewer(QMainWindow):
         self.show()
         
     def run(self):
-        self.app.exec_()
+        app.exec_()
+        
         
     def schedule(self, callback, timeout=100):
         timer = QTimer(self)
@@ -113,6 +115,20 @@ class QtViewer(QMainWindow):
         return renderer
         
     # Events
+        
+    def mousePressEvent(self, evt):
+        self._last_mouse_right = evt.button() == Qt.RightButton
+        self._last_mouse_pos = evt.pos()
+        
+    def mouseMoveEvent(self, evt):
+        if self._last_mouse_right:
+            if bool(evt.buttons() & Qt.RightButton):
+                point =  evt.pos() - self._last_mouse_pos
+                dx, dy = point.x(), point.y()
+                self.widget.camera.position -= np.array([-dx, -dy, 0.0])*0.001 
+                self.widget.repaint()
+                
+        
     def keyPressEvent(self, evt):
         angvel = 0.3
         

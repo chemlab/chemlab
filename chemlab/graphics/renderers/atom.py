@@ -21,3 +21,6 @@ class AtomRenderer(AbstractRenderer):
 
     def draw(self):
         self.sr.draw()
+    
+    def update_positions(self, r_array):
+        self.sr.update_positions(r_array)
