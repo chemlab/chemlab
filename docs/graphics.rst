@@ -1,5 +1,6 @@
-Graphics
-========
+==========================
+Graphics and Visualization
+==========================
 
 The ``chemlab.graphics`` package is one of the most interesting aspects of chemlab, that sets him apart from similar 
 programs.
