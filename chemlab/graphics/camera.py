@@ -8,6 +8,9 @@ class Camera:
     def __init__(self):
         self.position = np.array([0.0, 0.0, 5.0]) # Position in real coordinates
         
+        
+        self.pivot = np.array([0.0, 0.0, 0.0])
+        
         # Those are the direction fo the three axis of the camera in
         # world coordinates, used to compute the rotations necessary
         self.a = np.array([1.0, 0.0, 0.0])
@@ -15,16 +18,31 @@ class Camera:
         self.c = np.array([0.0, 0.0, -1.0])
         
     def orbit_y(self, angle):
+        
+        # Subtract pivot point
+        self.position -= self.pivot
+        
+        # Rotate
         rot = rotation_matrix(-angle, self.b)[:3,:3]
         self.position = np.dot(rot, self.position)
+        
+        # Add again the pivot point
+        self.position += self.pivot
         
         self.a = np.dot(rot, self.a)
         self.b = np.dot(rot, self.b)
         self.c = np.dot(rot, self.c)        
         
     def orbit_x(self, angle):
+        # Subtract pivot point
+        self.position -= self.pivot
+        
+        # Rotate
         rot = rotation_matrix(-angle, self.a)[:3,:3]
         self.position = np.dot(rot, self.position)
+        
+        # Add again the pivot point
+        self.position += self.pivot
         
         self.a = np.dot(rot, self.a)
         self.b = np.dot(rot, self.b)

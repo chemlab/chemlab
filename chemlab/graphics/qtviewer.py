@@ -125,9 +125,25 @@ class QtViewer(QMainWindow):
             if bool(evt.buttons() & Qt.RightButton):
                 point =  evt.pos() - self._last_mouse_pos
                 dx, dy = point.x(), point.y()
-                self.widget.camera.position -= np.array([-dx, -dy, 0.0])*0.001 
+                cam = self.widget.camera
+                cam.position += (-cam.a * dx + cam.b * dy)*0.001
+                cam.pivot += (-cam.a * dx + cam.b * dy)*0.001
+                
                 self.widget.repaint()
                 
+    def wheelEvent(self, evt):
+        z = evt.delta()
+        # TODO Pretty brutal zoom function
+        def zoom(self, inc):
+            pos = np.dot(self.camera.position, self.camera.position)**0.5
+            if (( pos > 0.1 and inc > 0) or
+                ( pos < 50  and inc < 0)):
+                self.camera.position = self.camera.position - self.camera.position*inc/3
+                
+        zoom(self.widget, z*0.01)
+
+        self.widget.repaint()
+
         
     def keyPressEvent(self, evt):
         angvel = 0.3
