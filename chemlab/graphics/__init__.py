@@ -2,9 +2,9 @@ from .qtviewer import QtViewer
 from .renderers import AtomRenderer, BoxRenderer
 from .ui import SliderUI
 
-def display_system(sys):
+def display_system(sys, renderer='sphere'):
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, backend='impostor')
+    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
     
     if sys.box_vectors is not None:
         v.add_renderer(BoxRenderer, sys.box_vectors)
@@ -13,11 +13,9 @@ def display_system(sys):
     
 def display_trajectory(sys, coords_list):
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, backend='impostor')
+    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
     
-    #slider = v.add_ui(SliderUI, len(tr), 100, 100, 500, 20)
-    #@slider.event
     i = [0]
     def on_update():
         r_array = coords_list[i[0]%len(coords_list)]

@@ -35,7 +35,7 @@ class GLWidget(QGLWidget):
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
         
-        glClearColor(1.0, 1.0, 1.0, 1.0)
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glColor3f(1.0, 1.0, 1.0)
         

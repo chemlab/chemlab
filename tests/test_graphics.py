@@ -2,7 +2,8 @@
 from chemlab.core import Atom, Molecule
 from chemlab.graphics.qtviewer import QtViewer
 from chemlab.graphics.colors import orange, blue, forest_green
-from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer, SphereImpostorRenderer,
+from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
+                                        SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer)
 
 import numpy as np
@@ -17,6 +18,17 @@ def test_triangle_renderer():
     
     v = QtViewer()
     tr = v.add_renderer(TriangleRenderer, vertices, normals, colors)
+    v.run()
+
+def test_point_renderer():
+    '''To see if we're able to render a triangle'''
+    vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
+    blue = [[0, 255, 255, 255]]
+    
+    colors = blue * 3
+    
+    v = QtViewer()
+    tr = v.add_renderer(PointRenderer, vertices, colors)
     v.run()
 
     

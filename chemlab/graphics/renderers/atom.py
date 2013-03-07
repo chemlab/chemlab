@@ -4,9 +4,10 @@ from ...data.vdw import vdw_dict
 from .base import AbstractRenderer
 from .sphere import SphereRenderer
 from .sphere_imp import SphereImpostorRenderer
+from .point import PointRenderer
 
 class AtomRenderer(AbstractRenderer):
-    def __init__(self, viewer, system, backend='polygons'):
+    def __init__(self, viewer, system, type='polygons'):
         radii = []
         colorlist = []
         
@@ -14,10 +15,12 @@ class AtomRenderer(AbstractRenderer):
             radii.append(vdw_dict[system.type_array[i]])
             colorlist.append(colors.map.get(system.type_array[i], colors.light_grey))
         
-        if backend == 'polygons':
+        if type == 'polygons':
             self.sr = SphereRenderer(viewer, system.r_array, radii, colorlist)
-        elif backend == 'impostor':
+        elif type == 'impostor':
             self.sr = SphereImpostorRenderer(viewer, system.r_array, radii, colorlist)
+        elif type == 'points':
+            self.sr = PointRenderer(viewer, system.r_array, colorlist)
 
     def draw(self):
         self.sr.draw()

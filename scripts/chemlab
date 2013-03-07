@@ -4,6 +4,8 @@ import sys
 sys.path.append('/home/gabriele/workspace/chemlab/')
 import chemlab as cl
 import os
+from pyxdr import XTCReader
+import time
 
 def view(args):
     from chemlab.io.gro import parse_gro, read_gro_traj
@@ -16,24 +18,19 @@ def view(args):
             sys = parse_gro(args.filename)
 	    display_system(sys)
 	else:
-            tr = read_gro_traj(args.filename)
-            display_trajectory(tr)
-	    
-    elif ext == '.trr':
-        from chemlab.io.gro import read_gro_traj
-	from chemlab.graphics import display_trajectory
-	
-        os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
-        tr = read_gro_traj('/tmp/traj.gro')
-	display_trajectory(tr, highlight=args.highlight)
-
-    elif ext == '.xtc':
-        from chemlab.io.gro import read_gro_traj
-	from chemlab.graphics import display_trajectory
-
-        os.system('trjconv -f %s -o /tmp/traj.gro' % args.filename)
-	tr = read_gro_traj('/tmp/traj.gro')
-	display_trajectory(tr, highlight=args.highlight)
+            print 'Parsing'
+            t0 = time.time()
+            sys = parse_gro(args.filename)
+            t0 = time.time() - t0
+            print 'Elapsed', t0
+            
+            print 'Trajectory parsing'
+            frames = []
+            for frame in XTCReader(args.traj):
+                frames.append(frame.coords)
+            t0 = time.time() - t0
+            print 'Elapsed', t0
+            display_trajectory(sys, frames)
 	
 def plot(args):
     base, ext = os.path.splitext(args.filename)
@@ -48,7 +45,7 @@ gromacs.setup_commands(subparsers)
 
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
-view_parser.add_argument('--traj', action='store_true')
+view_parser.add_argument('--traj', action='store', type=str)
 view_parser.add_argument('--highlight', nargs='*', type=int)
 
 view_parser.set_defaults(func=view)

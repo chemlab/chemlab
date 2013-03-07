@@ -24,19 +24,10 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         self.n_spheres = len(poslist)
         self.ldir = np.array([0.0, 10.0, 10.0, 1.0])
         
-        vertices = []
-        radii = []
-        colors = []
-        for c, radius, color in zip(self.poslist, self.radiuslist,
-                                    self.colorlist):
-            vertices.append(np.tile(c,4))
-            radii.append([radius]*4)
-            colors.append(np.tile(color,4))
-        
-        #vertices = np.array(vertices, dtype=np.float32)
         vertices = np.repeat(poslist, 4, axis=0).astype(np.float32)
-        radii = np.array(radii, dtype=np.float32)
-        colors = np.array(colors, dtype=np.uint8)
+        radii = np.repeat(radiuslist, 4, axis=0).astype(np.float32)
+        colors = np.repeat(colorlist, 4, axis=0).astype(np.uint8)
+        
         mapping = np.tile([1.0, 1.0,-1.0, 1.0,-1.0,-1.0,1.0, -1.0,],
                           self.n_spheres).astype(np.float32)
         

@@ -20,6 +20,7 @@ class BoxRenderer(ShaderBaseRenderer):
     def draw_vertices(self):
         # We need 8 vertices to draw a box, front and back
         a, b, c = self.vectors
+
         f1 = c 
         f2 = c + b
         f3 = c + a + b
