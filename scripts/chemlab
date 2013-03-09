@@ -21,15 +21,16 @@ def view(args):
             print 'Parsing'
             t0 = time.time()
             sys = parse_gro(args.filename)
-            t0 = time.time() - t0
-            print 'Elapsed', t0
+            print 'Elapsed', time.time() - t0
+            t0 = time.time()
             
             print 'Trajectory parsing'
             frames = []
             for frame in XTCReader(args.traj):
                 frames.append(frame.coords)
-            t0 = time.time() - t0
-            print 'Elapsed', t0
+            print 'Elapsed', time.time() - t0
+            t0 = time.time()
+
             display_trajectory(sys, frames)
 	
 def plot(args):

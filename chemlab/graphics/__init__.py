@@ -17,11 +17,16 @@ def display_trajectory(sys, coords_list):
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
     
     i = [0]
+    
     def on_update():
-        r_array = coords_list[i[0]%len(coords_list)]
+        
+        nframes = len(coords_list)
+        r_array = coords_list[i[0]%nframes]
         i[0] += 1
+        
         sr.update_positions(r_array)
         br.update(sys.box_vectors)
         v.widget.repaint()
-    v.schedule(on_update, 1000)
+    
+    v.schedule(on_update, 10)
     v.run()
