@@ -21,14 +21,7 @@ instances to its constructor::
     >>> mol = Molecule([at1, at2, at3])
 
 There are two main ways to access atomic data in Molecules, by arrays
-or by atom.  This is done to provide a massive increase in performance
-and a more straightforward integration with C libraries through a
-generous use of numpy arrays. This decision comes at a cost: the data
-contained in the atom that you pass to the constructor is copied into
-the molecule, this means that change in the costituents atoms are not
-reflected to the Molecule and viceversa. At first sight this may seem
-a big problem, but actually it isn't as we will see in the following
-examples.
+or by atom.  
 
 Manipulating Molecules
 ----------------------
@@ -67,6 +60,14 @@ molecule about 90 degrees around the z-axis::
     # numpy efficient trick to do the same:
     # wat.r_array = M * wat.r_array.transpose()
 
+The array-based interaction is done provide a massive increase in performance
+and a more straightforward integration with C libraries through a
+generous use of numpy arrays. This decision comes at a cost: the data
+contained in the atom that you pass to the constructor is copied into
+the molecule, this means that change in the costituents atoms are not
+reflected to the Molecule and viceversa. At first sight this may seem
+a big problem, but actually it isn't because it limits unexpected 
+side effects making the code more predictable.
 
 Systems
 -------
