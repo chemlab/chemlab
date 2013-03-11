@@ -110,7 +110,7 @@ def test_unproject():
         h = v.widget.height()
         x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
         
-        start =  v.widget.camera.unproject(x,y,1.0)
+        start =  v.widget.camera.unproject(x,y,-1.0)
         print x,y, 0.0
         print start
         vectors[1] = [0.0, 0.0, 0.0]
@@ -118,11 +118,40 @@ def test_unproject():
         
         ar.update_positions(np.array(vectors))
         v.widget.repaint()
-        
-        
-        
     v.mousePressEvent = mouse_move # Super Hack
+    v.run()
     
+def test_arcball():
+    v = QtViewer()
     
+    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+                    Atom("H", [-0.402, 0.249, 0.0]),
+                    Atom("H", [-0.532, 0.198, 0.10])])
     
+    ar = v.add_renderer(AtomRenderer, mol)
+
+    def mouse_move(evt):
+        pos = v._last_mouse_pos
+        x,y =  pos.x(), pos.y()
+
+        
+        pos = evt.pos()
+        v._last_mouse_pos  = pos
+        x2, y2 = pos.x(), pos.y()
+        
+        w = v.widget.width()
+        h = v.widget.height()
+        x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+        
+        x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
+        
+
+        from chemlab.graphics import camera
+        dx = x2 - x
+        dy = y2 - y
+        camera.arcball(x, y, x2-x, y2-y, v.widget.camera)
+        v.widget.repaint()
+        
+        
+    v.mouseMoveEvent = mouse_move # Super Hack
     v.run()

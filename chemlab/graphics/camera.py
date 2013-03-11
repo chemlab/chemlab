@@ -95,12 +95,13 @@ class Camera:
         ret = np.eye(4)
         ret[:3,:3] = mrot
         return ret
-
         
-    def unproject(self, x, y, z=1.0):
+    def unproject(self, x, y, z=-1.0):
         """Receive x and y as screen coordinates, between -1 and 1
         and returns a point in world coordinates. This is useful for
-        picking.
+        picking. The z also goes from -1 to 1, where -1 is the
+        "projection" plane, that is the plane nearest to us.
+        
         """
 
         source = np.array([x,y,z,1.0])
@@ -111,3 +112,40 @@ class Camera:
         res = np.dot(IM, source)
         
         return res[0:3]/res[3]
+
+from .gletools.transformations import vector_product, angle_between_vectors
+
+def map_to_arcball(x, y):
+    # Find intersection between sphere and arcball
+
+    # Sphere radius 3.0
+    # the point of intersection is that:
+    r = 1.0
+    D = x*x + y*y
+    rsq = r*r
+    if D < rsq:
+        z = (rsq - D)**0.5
+    else: # Fallback on hyperbolic sheet
+        z = (rsq/2.0) / D**0.5
+    
+    return np.array([x,y,z])
+    
+def arcball(x, y, dx, dy, cam):
+    print x, y, dx, dy
+    start = map_to_arcball(x,y)
+    end = map_to_arcball(x + dx, x + dy)
+
+    print start, end
+    axis = vector_product(end, start)
+    angle = angle_between_vectors(end, start)
+    
+    rot = rotation_matrix(angle, axis)[:3, :3]
+    print angle, axis
+    
+    cam.position -= cam.pivot
+    cam.position = rot.dot(cam.position)
+    cam.position += cam.pivot
+    
+    cam.a = rot.dot(cam.a)
+    cam.b = rot.dot(cam.b)
+    cam.c = rot.dot(cam.c)
