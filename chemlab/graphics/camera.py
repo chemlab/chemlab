@@ -110,4 +110,4 @@ class Camera:
         matrix = camera.dot(projection)
         IM = LA.inv(matrix)
         res = np.dot(IM, source)
-        return res
+        return res[0:3]/res[3]

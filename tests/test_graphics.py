@@ -4,7 +4,7 @@ from chemlab.graphics.qtviewer import QtViewer
 from chemlab.graphics.colors import orange, blue, forest_green
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
-                                        AtomRenderer, BoxRenderer)
+                                        AtomRenderer, BoxRenderer, LineRenderer)
 
 import numpy as np
 
@@ -87,4 +87,13 @@ def test_box_renderer():
     v = QtViewer()
     ar = v.add_renderer(BoxRenderer, vectors)
     v.run()
+
+def test_line_renderer():
+    vectors = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],
+                        [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    colors = [blue, orange, orange, orange]
     
+    v = QtViewer()
+    ar = v.add_renderer(LineRenderer, vectors, colors)
+    v.run()
+
