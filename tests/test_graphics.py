@@ -130,10 +130,17 @@ def test_arcball():
     
     ar = v.add_renderer(AtomRenderer, mol)
 
+    
+    vectors = [[0.0, 0.0, 0.0]]*4
+    colors = [blue]*4
+
+    ln = v.add_renderer(LineRenderer, vectors, colors)
+    
     def mouse_move(evt):
+        cam = v.widget.camera
+        
         pos = v._last_mouse_pos
         x,y =  pos.x(), pos.y()
-
         
         pos = evt.pos()
         v._last_mouse_pos  = pos
@@ -147,11 +154,35 @@ def test_arcball():
         
 
         from chemlab.graphics import camera
-        dx = x2 - x
-        dy = y2 - y
         camera.arcball(x, y, x2-x, y2-y, v.widget.camera)
+        
+        start = map_to_arcball(x,y)
+        end = map_to_arcball(x2, y2)
+
+        start = cam.unproject(start[0], start[1], -start[2])
+        end = cam.unproject(end[0], end[1], -end[2])
+        
+        vectors[1] = start
+        vectors[3] = end
+        
+        ln.update_positions(vectors)
+        
         v.widget.repaint()
         
-        
+    
+    from chemlab.graphics.camera import map_to_arcball        
+    
+    # cam = v.widget.camera
+    # crd = np.linspace(-1, 1, 50)
+    # points = []
+    # for i in crd:
+    #     for j in crd:
+    #         x, y, z = map_to_arcball(i,j)
+    #         #print x, y, z
+    #         p = cam.unproject(x, y, -z)
+    #         points.append(p)
+    
+    # v.add_renderer(PointRenderer, points, [blue]*len(points))
+
     v.mouseMoveEvent = mouse_move # Super Hack
     v.run()

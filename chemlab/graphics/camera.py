@@ -127,20 +127,28 @@ def map_to_arcball(x, y):
         z = (rsq - D)**0.5
     else: # Fallback on hyperbolic sheet
         z = (rsq/2.0) / D**0.5
+        #z = 0.0
     
     return np.array([x,y,z])
     
 def arcball(x, y, dx, dy, cam):
-    print x, y, dx, dy
     start = map_to_arcball(x,y)
-    end = map_to_arcball(x + dx, x + dy)
+    end = map_to_arcball(x + dx, y + dy)
 
-    print start, end
+    start = cam.unproject(start[0], start[1], -start[2])
+    end = cam.unproject(end[0], end[1], -end[2])
+    
     axis = vector_product(end, start)
     angle = angle_between_vectors(end, start)
     
-    rot = rotation_matrix(angle, axis)[:3, :3]
-    print angle, axis
+    # Sometimes when you go outside the window with the mouse
+    # you get zero displacement, and therefore zero axis and zero
+    # angle. This causes an error.
+    if np.allclose(axis, np.zeros(3)) or np.equal(angle, 0.0):
+        # Do not alter anything
+        return
+    
+    rot = rotation_matrix(angle, axis)[:3, :3].T
     
     cam.position -= cam.pivot
     cam.position = rot.dot(cam.position)
