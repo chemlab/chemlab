@@ -110,18 +110,60 @@ class QtViewer(QMainWindow):
         
     def mousePressEvent(self, evt):
         self._last_mouse_right = evt.button() == Qt.RightButton
+        self._last_mouse_left = evt.button() == Qt.LeftButton
+        
         self._last_mouse_pos = evt.pos()
         
     def mouseMoveEvent(self, evt):
         
         if self._last_mouse_right:
+            # Translation of the camera
             if bool(evt.buttons() & Qt.RightButton):
-                point =  evt.pos() - self._last_mouse_pos
-                dx, dy = point.x(), point.y()
+                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
+                x2, y2 = evt.pos().x(), evt.pos().y()
+                self._last_mouse_pos = evt.pos()
+                
+                # Converting to world coordinates
+                w = self.widget.width()
+                h = self.widget.height()
+                
+                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
+                dx, dy = x2 - x, y2 - y
+
                 cam = self.widget.camera
-                cam.position += (-cam.a * dx + cam.b * dy)*0.001
-                cam.pivot += (-cam.a * dx + cam.b * dy)*0.001
+                
+                # Convert to world coordinates
+                #x, y, z = cam.unproject(x, y, 0.0)
+                #x2, y2, z2 = cam.unproject(x2, y2, 0.0)
+                #dx, dy, dz = x2 - x, y2 - y, z2 - z
+                
+                # Project those values to the camera axes to get
+                # the displacement along the camera vectors
+                
+                
+                cam.position += (-cam.a * dx  + -cam.b * dy) * 10
+                cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
                 self.widget.repaint()
+        if self._last_mouse_left:
+            # Arcball Rotation
+            if bool(evt.buttons() & Qt.LeftButton):
+                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
+                x2, y2 = evt.pos().x(), evt.pos().y()
+                self._last_mouse_pos = evt.pos()
+                
+                # Converting to world coordinates
+                w = self.widget.width()
+                h = self.widget.height()
+                
+                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
+                dx, dy = x2 - x, y2 - y
+                
+                cam = self.widget.camera
+                cam.arcball_rotation(x, y, dx, dy, scale=1000.0)
+                self.widget.repaint()
+            
                 
     def wheelEvent(self, evt):
         z = evt.delta()

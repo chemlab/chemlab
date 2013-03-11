@@ -153,8 +153,7 @@ def test_arcball():
         x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
         
 
-        from chemlab.graphics import camera
-        camera.arcball(x, y, x2-x, y2-y, v.widget.camera)
+        cam.arcball_rotation(x, y, x2-x, y2-y)
         
         start = map_to_arcball(x,y)
         end = map_to_arcball(x2, y2)
@@ -172,17 +171,5 @@ def test_arcball():
     
     from chemlab.graphics.camera import map_to_arcball        
     
-    # cam = v.widget.camera
-    # crd = np.linspace(-1, 1, 50)
-    # points = []
-    # for i in crd:
-    #     for j in crd:
-    #         x, y, z = map_to_arcball(i,j)
-    #         #print x, y, z
-    #         p = cam.unproject(x, y, -z)
-    #         points.append(p)
-    
-    # v.add_renderer(PointRenderer, points, [blue]*len(points))
-
     v.mouseMoveEvent = mouse_move # Super Hack
     v.run()

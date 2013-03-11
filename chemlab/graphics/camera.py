@@ -1,7 +1,7 @@
 '''Module to provide a nice camera for 3d applications'''
 from .gletools.transformations import rotation_matrix, translation_matrix
 from .gletools.transformations import simple_clip_matrix, clip_matrix
-
+from .gletools.transformations import vector_product, angle_between_vectors
 
 import numpy as np
 import numpy.linalg as LA
@@ -113,12 +113,39 @@ class Camera:
         
         return res[0:3]/res[3]
 
-from .gletools.transformations import vector_product, angle_between_vectors
+    def arcball_rotation(self, x, y, dx, dy, scale=1.0):
+        start = map_to_arcball(x,y)
+        end = map_to_arcball(x + dx, y + dy)
+            
+        start = self.unproject(start[0], start[1], -start[2])
+        end = self.unproject(end[0], end[1], -end[2])
+    
+        axis = vector_product(end, start)
+        angle = angle_between_vectors(end, start)
+    
+        # Sometimes when you go outside the window with the mouse
+        # you get zero displacement, and therefore zero axis and zero
+        # angle. This causes an error.
+        if np.allclose(axis, np.zeros(3)) or np.equal(angle, 0.0):
+            # Do not alter anything
+            return
+
+        # It is the inverse rotation anyway, to rotate the object in a
+        # certain way we have to rotate the camera the opposite way
+        rot = rotation_matrix(angle*scale, axis)[:3, :3].T
+
+        self.position -= self.pivot
+        self.position = rot.dot(self.position)
+        self.position += self.pivot
+
+        self.a = rot.dot(self.a)
+        self.b = rot.dot(self.b)
+        self.c = rot.dot(self.c)
+
 
 def map_to_arcball(x, y):
     # Find intersection between sphere and arcball
 
-    # Sphere radius 3.0
     # the point of intersection is that:
     r = 1.0
     D = x*x + y*y
@@ -127,33 +154,6 @@ def map_to_arcball(x, y):
         z = (rsq - D)**0.5
     else: # Fallback on hyperbolic sheet
         z = (rsq/2.0) / D**0.5
-        #z = 0.0
     
     return np.array([x,y,z])
     
-def arcball(x, y, dx, dy, cam):
-    start = map_to_arcball(x,y)
-    end = map_to_arcball(x + dx, y + dy)
-
-    start = cam.unproject(start[0], start[1], -start[2])
-    end = cam.unproject(end[0], end[1], -end[2])
-    
-    axis = vector_product(end, start)
-    angle = angle_between_vectors(end, start)
-    
-    # Sometimes when you go outside the window with the mouse
-    # you get zero displacement, and therefore zero axis and zero
-    # angle. This causes an error.
-    if np.allclose(axis, np.zeros(3)) or np.equal(angle, 0.0):
-        # Do not alter anything
-        return
-    
-    rot = rotation_matrix(angle, axis)[:3, :3].T
-    
-    cam.position -= cam.pivot
-    cam.position = rot.dot(cam.position)
-    cam.position += cam.pivot
-    
-    cam.a = rot.dot(cam.a)
-    cam.b = rot.dot(cam.b)
-    cam.c = rot.dot(cam.c)
