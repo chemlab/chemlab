@@ -1,6 +1,5 @@
 import numpy as np
 
-from .gletools.transformations import simple_clip_matrix
 from .camera import Camera
 
 from PySide.QtGui import QMainWindow, QApplication
@@ -15,6 +14,7 @@ class AbstractViewer(object):
         pass
 
 app = QApplication([])
+
 class GLWidget(QGLWidget):
     
     def initializeGL(self):
@@ -29,8 +29,7 @@ class GLWidget(QGLWidget):
         glEnable(GL_MULTISAMPLE)
         
         self.camera = Camera()
-
-        self._aspectratio = float(self.width()) / self.height()
+        self.camera.aspectration = float(self.width()) / self.height()
     
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
@@ -39,13 +38,7 @@ class GLWidget(QGLWidget):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glColor3f(1.0, 1.0, 1.0)
         
-        # Matrix to convert from homogeneous coordinates to 
-        # 2d coordinates args = (scale, znear, zfar, aspect_ratio)
-        
-        self._projection_matrix = simple_clip_matrix(
-              1.0, 0.1, 100, self._aspectratio)
-        
-        proj = self._projection_matrix
+        proj = self.camera.projection
         cam = self.camera.matrix
         
         self.mvproj = mvproj = np.dot(proj, cam)
@@ -58,7 +51,7 @@ class GLWidget(QGLWidget):
          
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)
-        self._aspectratio = float(self.width()) / self.height()
+        self.camera.aspectratio = float(self.width()) / self.height()
         
         
     def on_draw_ui(self):
@@ -87,20 +80,6 @@ class FpsDraw(object):
         self.parent.renderText(50, 50, '%f' % (1/elapsed) )
         
 
-def unproject(x, y, z, projection, camera):
-    # Take a point in screen coordinates, now we have to 
-    # like normalize it, so that x, y, z are all in the range
-    # 0.0-1.0
-    source = np.array([x,y,z])
-    np.dot()
-    # Invert the combined matrix
-    matrix = camera.dot(projection)
-    IM = matrix.inv()
-    res = np.dot(IM, source)
-    return res
-
-
-    
 class QtViewer(QMainWindow):
     
     def __init__(self):
@@ -134,6 +113,7 @@ class QtViewer(QMainWindow):
         self._last_mouse_pos = evt.pos()
         
     def mouseMoveEvent(self, evt):
+        
         if self._last_mouse_right:
             if bool(evt.buttons() & Qt.RightButton):
                 point =  evt.pos() - self._last_mouse_pos
