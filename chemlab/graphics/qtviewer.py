@@ -117,7 +117,7 @@ class QtViewer(QMainWindow):
     def mouseMoveEvent(self, evt):
         
         if self._last_mouse_right:
-            # Translation of the camera
+            # Panning
             if bool(evt.buttons() & Qt.RightButton):
                 x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
                 x2, y2 = evt.pos().x(), evt.pos().y()
@@ -132,15 +132,6 @@ class QtViewer(QMainWindow):
                 dx, dy = x2 - x, y2 - y
 
                 cam = self.widget.camera
-                
-                # Convert to world coordinates
-                #x, y, z = cam.unproject(x, y, 0.0)
-                #x2, y2, z2 = cam.unproject(x2, y2, 0.0)
-                #dx, dy, dz = x2 - x, y2 - y, z2 - z
-                
-                # Project those values to the camera axes to get
-                # the displacement along the camera vectors
-                
                 
                 cam.position += (-cam.a * dx  + -cam.b * dy) * 10
                 cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
@@ -172,7 +163,7 @@ class QtViewer(QMainWindow):
             pos = np.dot(self.camera.position, self.camera.position)**0.5
             if (( pos > 0.1 and inc > 0) or
                 ( pos < 50  and inc < 0)):
-                self.camera.position = self.camera.position - self.camera.position*inc/3
+                self.camera.position -= self.camera.position*inc/5
                 
         zoom(self.widget, z*0.01)
 
