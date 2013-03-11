@@ -44,9 +44,9 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         
         
         set_uniform(self.shader, 'projection_mat', 'mat4fv',
-                    self.viewer._projection_matrix)
+                    self.viewer.camera.projection)
         set_uniform(self.shader, 'mvproj', 'mat4fv',
-                    self.viewer._projection_matrix)
+                    self.viewer.camera.projection)
         
         set_uniform(self.shader, 'light_dir', '3f', self.ldir[:3])
         
