@@ -97,3 +97,32 @@ def test_line_renderer():
     ar = v.add_renderer(LineRenderer, vectors, colors)
     v.run()
 
+def test_unproject():
+    v = QtViewer()
+    
+    vectors = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    colors = [blue, blue]
+    ar = v.add_renderer(LineRenderer, vectors, colors)
+
+    def mouse_move(evt):
+        x,y =  evt.x(), evt.y()
+        w = v.widget.width()
+        h = v.widget.height()
+        x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+        
+        start =  v.widget.camera.unproject(x,y,1.0)
+        print x,y, 0.0
+        print start
+        vectors[1] = [0.0, 0.0, 0.0]
+        vectors[0] = start
+        
+        ar.update_positions(np.array(vectors))
+        v.widget.repaint()
+        
+        
+        
+    v.mousePressEvent = mouse_move # Super Hack
+    
+    
+    
+    v.run()

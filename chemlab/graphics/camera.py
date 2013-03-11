@@ -1,6 +1,6 @@
 '''Module to provide a nice camera for 3d applications'''
 from .gletools.transformations import rotation_matrix, translation_matrix
-from .gletools.transformations import simple_clip_matrix
+from .gletools.transformations import simple_clip_matrix, clip_matrix
 
 
 import numpy as np
@@ -15,7 +15,7 @@ class Camera:
         self.pivot = np.array([0.0, 0.0, 0.0])
         
         # Perspective parameters
-        self.scale = 2.0
+        self.scale = 1.0
         self.aspectratio = 1.0
         self.z_near = 0.1
         self.z_far = 100.0
@@ -60,7 +60,6 @@ class Camera:
     def _get_projection_matrix(self):
         # Matrix to convert from homogeneous coordinates to 
         # 2d coordinates args = (scale, znear, zfar, aspect_ratio)
-
         return simple_clip_matrix(self.scale, self.z_near,
                                   self.z_far, self.aspectratio)
         
@@ -98,16 +97,17 @@ class Camera:
         return ret
 
         
-    def unproject(self, x, y, z=0.0):
+    def unproject(self, x, y, z=1.0):
         """Receive x and y as screen coordinates, between -1 and 1
         and returns a point in world coordinates. This is useful for
         picking.
         """
 
-        source = np.array([x,y,z, 1.0])
+        source = np.array([x,y,z,1.0])
     
         # Invert the combined matrix
-        matrix = camera.dot(projection)
+        matrix = self.projection.dot(self.matrix)
         IM = LA.inv(matrix)
         res = np.dot(IM, source)
+        
         return res[0:3]/res[3]
