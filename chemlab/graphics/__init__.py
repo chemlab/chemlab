@@ -28,5 +28,5 @@ def display_trajectory(sys, coords_list):
         br.update(sys.box_vectors)
         v.widget.repaint()
     
-    v.schedule(on_update, 10)
+    v.schedule(on_update, 100)
     v.run()
