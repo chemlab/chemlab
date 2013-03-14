@@ -2,8 +2,6 @@ import numpy as np
 
 from .base import AbstractRenderer
 from .triangles import TriangleRenderer
-#from ..optshapes import OptSphere
-
 
 
 class SphereRenderer(AbstractRenderer):
@@ -78,7 +76,7 @@ class SphereRenderer(AbstractRenderer):
         
         self.tr.update_colors(colors_)
 
-from ..gletools.geometry import distance, angle2v, normalized
+from ..transformations import distance, normalized
 
 class Sphere(object):
     def __init__(self, radius, center, parallels=20, meridians=15, color=[0.0, 0.0, 0.0, 0.0]):
