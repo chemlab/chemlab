@@ -2,7 +2,7 @@ import numpy as np
 
 from .base import AbstractRenderer
 from .triangles import TriangleRenderer
-from ..optshapes import OptSphere
+
 
 class SphereRenderer(AbstractRenderer):
     def __init__(self, viewer, poslist, radiuslist, colorlist):
@@ -14,6 +14,10 @@ class SphereRenderer(AbstractRenderer):
         This renderer uses vertex array objects to deliver optimal
         performance.
         '''
+        
+
+        
+        
         self.viewer = viewer
 
         self.poslist = poslist
@@ -21,167 +25,147 @@ class SphereRenderer(AbstractRenderer):
         self.colorlist = colorlist
         self.n_spheres = len(poslist)
         
-        # We expect to receive things in nanometers
-        vertices = []
-        normals = []
-        colors_ = []
         
-        self._n_triangles = 0
-        for coords, radius, color in zip(poslist, radiuslist, colorlist):
-            s = OptSphere(radius, coords, color=color)
-            vertices.append(s.tri_vertex)
-            normals.append(s.tri_normals)
-            colors_.append(s.tri_color)
-            
-            self._n_triangles += len(s.tri_vertex)/3
+        # Initialize a sphere object with radius 1 that contains our
+        # triangles. We use that to generate the vertices and normals
+        _SPHERE_MRES = Sphere(1.0, np.array([0.0, 0.0, 0.0]), parallels=10, meridians=15)
         
-        vertices = np.array(vertices)
-        vertices = vertices.reshape((s.tri_n * self.n_spheres, 3))
+        sp_verts = _SPHERE_MRES.tri_vertex.astype(np.float32)
+        sp_norms = _SPHERE_MRES.tri_normals.astype(np.float32)
         
-        self.tr = TriangleRenderer(viewer, vertices, normals, colors_)
+        verts_one_sphere = len(sp_verts)
+        
+
+        # To produce a general sphere from a sphere radius 1 centered
+        # in origin, we have to multiply each vertex of the sphere by the radius
+        # and then translate that by the position of the sphere
+
+        # We do that in a tight numpy operation
+        self.sp_verts = sp_verts#reshape((sp_verts.shape[0]/3, 3))
+        
+        # Correct
+        sphs_verts = np.tile(self.sp_verts, self.n_spheres)
+        sphs_verts = sphs_verts.reshape((self.n_spheres, len(self.sp_verts)/3, 3))
+        
+        sphs_verts *= np.array(radiuslist).reshape(self.n_spheres, 1, 1)
+        self.sphs_verts_radii = sphs_verts.copy()
+        sphs_verts += np.array(poslist).reshape(self.n_spheres, 1, 3)
+        
+        self._n_triangles = len(sp_verts)/3 * self.n_spheres
+        
+        vertices = sphs_verts
+        
+        
+        normals = np.tile(sp_norms, self.n_spheres)
+        colors_ = np.repeat(colorlist, verts_one_sphere/3, axis=0)
+
+
+        self.tr = TriangleRenderer(viewer, vertices.flatten(), normals.flatten(), colors_)
     
     def draw(self):
         self.tr.draw()
 
-    def update_positions(self, rarray):
-        offset = 0
-        vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
-        
-        for i in range(len(rarray)):
-            color = self.colorlist[i]
-            radius = self.radiuslist[i]
-            s = OptSphere(radius, rarray[i], color=color)
-            
-            n = len(s.tri_vertex)
-            vertices[offset:offset+n] = s.tri_vertex
-            offset += n
-        
-        self.tr.update_vertices(vertices)
-        self.poslist = rarray
+    def update_positions(self, r_array):
+        sphs_verts = self.sphs_verts_radii.copy()
+        sphs_verts += r_array.reshape(self.n_spheres, 1, 3)
+
+        self.tr.update_vertices(sphs_verts)
+        self.poslist = r_array
         
     def update_colors(self, colorlist):
-        self.colorlist = colorlist
-        
-        colors_ = []
-        for coords, radius, color in zip(self.poslist, self.radiuslist, colorlist):
-            s = OptSphere(radius, coords, color=color)
-            colors_.append(s.tri_color)
         
         self.tr.update_colors(colors_)
 
-# class SphereRenderer2(AbstractRenderer):
-#     def __init__(self, poslist, radiuslist, colorlist):
-#         '''Renders a set of spheres. The positions of the spheres
-#         are determined from *poslist* which is a list of xyz coordinates,
-#         the respective radii are in the list *radiuslist* and colors
-#         *colorlist* as rgba where each one is in the range [0, 255].
+from ..transformations import distance, normalized
 
-#         This renderer uses vertex array objects to deliver optimal
-#         performance.
-#         '''
-        
-#         self.poslist = poslist
-#         self.radiuslist = radiuslist
-#         self.colorlist = colorlist
-        
-#         # We expect to receive things in nanometers
-#         n_triangles = 0
-#         vertices = []
-#         normals = []
-#         colors_ = []
-        
-#         for coords, radius, color in zip(poslist, radiuslist, colorlist):
-#             s = OptSphere(radius, coords, color=color)
-#             n_triangles += s.tri_n
-            
-#             vertices.append(s.tri_vertex)
-#             normals.append(s.tri_normals)
-#             colors_.append(s.tri_color)
-        
-#         # Convert arrays to numpy arrays, float32 precision,
-#         # compatible with opengl, and cast to ctypes
-#         vertices = np.array(vertices, dtype=np.float32)
-#         normals = np.array(normals, dtype=np.float32)
-#         colors_ = np.array(colors_, dtype=np.uint8)
+class Sphere(object):
+    def __init__(self, radius, center, parallels=20, meridians=15, color=[0.0, 0.0, 0.0, 0.0]):
+        '''Create a Sphere object specifying its radius its center point. You can modulate its smoothness using the
+        parallel and meridians settings.
 
-#         # Store vertices, colors and normals in 3 different vertex
-#         # buffer objects
-#         self._vbo_v = VertexBufferObject(n_triangles*3*sizeof(GLfloat),
-#                                          GL_ARRAY_BUFFER,
-#                                          GL_DYNAMIC_DRAW)
-#         self._vbo_v.bind()
-#         self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
-#         self._vbo_v.unbind()
+        '''
+        self.radius = radius
+        self.center = center
+        self.parallels = parallels
+        self.meridians = meridians
+        self.color = color
         
-#         self._vbo_n = VertexBufferObject(n_triangles*3*sizeof(GLfloat),
-#                                          GL_ARRAY_BUFFER,
-#                                          GL_DYNAMIC_DRAW)
-#         self._vbo_n.bind()
-#         self._vbo_n.set_data(normals.ctypes.data_as(POINTER(GLfloat)))
-#         self._vbo_n.unbind()
+        self.vertices = []
+        self.indices = []
+        self.normals = []
 
-#         self._vbo_c= VertexBufferObject(n_triangles*4*sizeof(GLubyte),
-#                                         GL_ARRAY_BUFFER,
-#                                         GL_DYNAMIC_DRAW)
-#         self._vbo_c.bind()
-#         self._vbo_c.set_data(colors_.ctypes.data_as(POINTER(GLuint)))
-#         self._vbo_c.unbind()
+        self.tri_vertex = []
+        self.tri_color = []
+        self.tri_normals = []
         
-#         self._n_triangles = n_triangles
-    
-#     def draw(self):
-#         # Draw all the vbo defined in set_atoms
-#         glEnableClientState(GL_VERTEX_ARRAY)
-#         self._vbo_v.bind()
-#         glVertexPointer(3, GL_FLOAT, 0, 0)
-        
-#         glEnableClientState(GL_NORMAL_ARRAY)
-#         self._vbo_n.bind()
-#         glNormalPointer(GL_FLOAT, 0, 0)
-        
-#         glEnableClientState(GL_COLOR_ARRAY)
-#         self._vbo_c.bind()
-#         glColorPointer(4, GL_UNSIGNED_BYTE, 0, 0)
-        
-#         glDrawArrays(GL_TRIANGLES, 0, self._n_triangles)
-        
-#         self._vbo_v.unbind()
-#         self._vbo_n.unbind()
-#         self._vbo_c.unbind()
-        
-#         glDisableClientState(GL_VERTEX_ARRAY)
-#         glDisableClientState(GL_NORMAL_ARRAY)
-#         glDisableClientState(GL_COLOR_ARRAY)
+        self.update_vlist = False
+        self._generate_vertices()
 
-#     def update_positions(self, rarray):
-#         offset = 0
-#         vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
+    def _generate_vertices(self):
+        # Tip of the sphere
+        tip = np.array([0.0, 0.0, self.radius])
+        # Bottom of the sphere
+        bottom = np.array([0.0, 0.0, -self.radius])
         
-#         for i in range(len(rarray)):
-#             color = self.colorlist[i]
-#             radius = self.radiuslist[i]
-#             s = OptSphere(radius, rarray[i], color=color)
-            
-#             n = len(s.tri_vertex)
-#             vertices[offset:offset+n] = s.tri_vertex
-#             offset += n
+        dphi = np.pi/self.parallels 
+        dtheta = 2*np.pi/self.meridians
         
-#         self._vbo_v.bind()
-#         self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
-#         self._vbo_v.unbind()
+        self.vertices.append(tip)
+        for j in xrange(1, self.parallels):
+            point_z = self.radius*np.cos(dphi*j)
+            for i in xrange(self.meridians+1):
+                point_x = np.sin(dphi*j)*np.cos(i*dtheta)*self.radius
+                point_y = np.sin(dphi*j)*np.sin(i*dtheta)*self.radius
+                self.vertices.append(np.array([point_x, point_y, point_z]))
+        self.vertices.append(bottom)
         
-#         self.poslist = rarray
         
-#     def update_colors(self, colorlist):
-#         self.colorlist = colorlist
+        self.vertices = np.array(self.vertices)
+
+        # Normals, this is quite easy since they are the vertices
+        for vertex in self.vertices:
+            self.normals.append(normalized(vertex))
+        self.normals = np.array(self.normals) # Numpyize
         
-#         colors_ = []
-#         for coords, radius, color in zip(self.poslist, self.radiuslist, colorlist):
-#             s = OptSphere(radius, coords, color=color)
-#             colors_.append(s.tri_color)
+        # Translate the sphere
+        for i, vertex in enumerate(self.vertices):
+            self.vertices[i] -= self.center 
+
+        # Generating triangles!!
+        # Draw each triangle in order to form the sphere
+        m = self.meridians
         
-#         colors_ = np.array(colors_, dtype=np.uint8)
+        # Cap of the sphere
+        cap_i = [np.array([0, 1, 2]) + np.array([0, 1, 1])*i for i in xrange(m)] # Up to the last point minus 1
+        cap_i = np.array(cap_i).flatten()
+        indexed = cap_i
         
-#         self._vbo_c.bind()
-#         self._vbo_c.set_data(colors_.ctypes.data_as(POINTER(GLuint)))
-#         self._vbo_v.unbind()
+        # Body of the sphere
+        for k in xrange(self.parallels-2):
+            offset = 1 + k*(m+1)
+            body_0 = offset + np.array([0, m+1, 1, 1, m + 1, m + 2]) # first two triangles
+            body_i = np.concatenate([body_0 + i for i in xrange(m)])
+            indexed = np.concatenate((indexed, body_i))
+        
+        # Bottom of the sphere
+        offset += m
+
+        last = len(self.vertices) - 1
+        bot_i = [np.array([last, 1 + offset, 2 + offset]) +
+                 np.array([0, 1, 1])*i for i
+                 in xrange(m)]
+        indexed = np.concatenate((indexed, np.array(bot_i).flatten()))
+        self.tri_vertex = self.vertices[indexed].flatten()
+        self.tri_normals = self.normals[indexed].flatten()
+
+        self.tri_n = len(indexed)
+        self.tri_color = self.tri_n * self.color
+        
+        
+    def rotate(self, axis, angle):
+        rotmat = rotation_matrix( angle,axis)[:3,:3]
+        
+        # Rototranslate the vertices and others
+        for i, vertex in enumerate(self.vertices):
+            self.vertices[i] = np.dot(rotmat, vertex - self.center) + self.center
+            self.normals[i] = np.dot(rotmat, self.normals[i])

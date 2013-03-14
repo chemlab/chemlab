@@ -1753,6 +1753,15 @@ def vector_norm(data, axis=None, out=None):
         numpy.sum(data, axis=axis, out=out)
         numpy.sqrt(out, out)
 
+# TODO: unit_vector duplicated
+def normalized(x):
+    '''Return the x vector normalized'''
+    return x/numpy.linalg.norm(x)
+
+def distance(x1, x2):
+    '''Distance between two points in space
+    '''
+    return numpy.linalg.norm(x2 - x1)
 
 def unit_vector(data, axis=None, out=None):
     """Return ndarray normalized by length, i.e. eucledian norm, along axis.
@@ -1863,6 +1872,7 @@ def angle_between_vectors(v0, v1, directed=True, axis=0):
     dot = numpy.sum(v0 * v1, axis=axis)
     dot /= vector_norm(v0, axis=axis) * vector_norm(v1, axis=axis)
     return numpy.arccos(dot if directed else numpy.fabs(dot))
+
 
 
 def inverse_matrix(matrix):

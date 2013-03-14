@@ -15,7 +15,11 @@ class VertexBuffer(object):
     
 
   def __del__(self):
-    glDeleteBuffers(1, GL.GLuint(self.buffer))
+    # this causes an error otherwise
+    if bool(glDeleteBuffers):
+      glDeleteBuffers(1, GL.GLuint(self.buffer))
+    else:
+      return
 
   def bind(self):
     glBindBuffer(GL_ARRAY_BUFFER_ARB, self.buffer)

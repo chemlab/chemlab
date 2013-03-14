@@ -121,6 +121,7 @@ def test_unproject():
     v.mousePressEvent = mouse_move # Super Hack
     v.run()
     
+# TODO: cleanup This test doesn't work...
 def test_arcball():
     v = QtViewer()
     

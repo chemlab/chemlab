@@ -1,7 +1,7 @@
 '''Module to provide a nice camera for 3d applications'''
-from .gletools.transformations import rotation_matrix, translation_matrix
-from .gletools.transformations import simple_clip_matrix, clip_matrix
-from .gletools.transformations import vector_product, angle_between_vectors
+from transformations import rotation_matrix, translation_matrix
+from transformations import simple_clip_matrix, clip_matrix
+from transformations import vector_product, angle_between_vectors
 
 import numpy as np
 import numpy.linalg as LA
