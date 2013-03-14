@@ -16,7 +16,13 @@ gro_to_cl = {
 'LI' : 'Li',
 'CL' : 'Cl',
 'NA' : 'Na',
-'BR' : 'Br'
+'BR' : 'Br',
+
+    # Methane
+    'Me1': 'C',
+    'O2': 'O',
+    'H3': 'H'
+
 }
 
 import numpy as np

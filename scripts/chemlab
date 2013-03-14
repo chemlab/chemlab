@@ -4,7 +4,7 @@ import sys
 sys.path.append('/home/gabriele/workspace/chemlab/')
 import chemlab as cl
 import os
-from pyxdr import XTCReader
+
 import time
 
 def view(args):
@@ -18,6 +18,7 @@ def view(args):
             sys = parse_gro(args.filename)
 	    display_system(sys)
 	else:
+            from pyxdr import XTCReader
             print 'Parsing'
             t0 = time.time()
             sys = parse_gro(args.filename)
