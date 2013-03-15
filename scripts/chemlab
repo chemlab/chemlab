@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 import sys
-sys.path.append('/home/gabriele/workspace/chemlab/')
 import chemlab as cl
 import os
 
@@ -42,13 +41,12 @@ parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()
 
 # Contrib plugins
-from chemlab.contrib import gromacs
-gromacs.setup_commands(subparsers)
+#from chemlab.contrib import gromacs
+#gromacs.setup_commands(subparsers)
 
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
 view_parser.add_argument('--traj', action='store', type=str)
-view_parser.add_argument('--highlight', nargs='*', type=int)
 
 view_parser.set_defaults(func=view)
 

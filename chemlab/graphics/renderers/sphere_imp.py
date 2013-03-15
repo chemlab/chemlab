@@ -4,9 +4,6 @@ import pkgutil
 from ..shaders import set_uniform
 from ..buffers import VertexBuffer
 from OpenGL.GL import *
-from pyglet.graphics import draw
-#from pyglet.graphics.vertexbuffer import VertexBufferObject
-#from pyglet import gl
 import numpy as np
 
 class SphereImpostorRenderer(ShaderBaseRenderer):

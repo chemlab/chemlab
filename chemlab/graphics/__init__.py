@@ -20,7 +20,7 @@ def _system_auto_scale(sys, camera):
 
 def display_system(sys, renderer='sphere'):
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
+    sr = v.add_renderer(AtomRenderer, sys, backend='impostors')
     
     _system_auto_scale(sys, v.widget.camera)
     

@@ -1,18 +1,61 @@
-chemlab is a library and a set of utilities meant to handle computational chemistry data. It
-takes inspiration to other python scientific library such as numpy scipy and matplotlib, and aims
-to bring a consistent and simple API following the python guidelines.
+chemlab - the python chemistry package you were waiting for
+-----------------------------------------------------------
 
-The project status is still at the stage 'proof-of-concept' and it includes basic data structures, some
-integration for reading GROMACS produced files and most notably a flexible molecular viewer. Ideally,
-chemlab will provide an effective way to write chemical scripts and applications.
+- Version: --
+- Author:  Gabriele Lanaro
+- Email:   gabriele.lanaro@gmail.com
+- Website: http://chemlab.github.com/chemlab
+- Docs:    http://chemlab.rtfd.org
+- Github:  http://github.com/chemlab/chemlab
 
-There is not yet a well-defined installation method, the dependencies at the moment are:
 
-- pyglet (for the molecular viewer)
-- numpy
-- scipy
-- matplotlib
+chemlab is a ptyhon library and a set of utilities built to ease the
+life of the computational chemist. It takes inspiration from other
+python scientific library such as numpy scipy and matplotlib, and aims
+to bring a consistent and simple API by following the python
+guidelines.
 
-The documentation is hosted at readthedocs at this address:
+This package is still in its early development, going forward to the
+first 0.1 release. Computational and theoretical chemistry is a huge
+field, and providing a program that encompasses all aspect of it is an
+impossible task. The spirit of chemlab is to provide a common ground
+from where you can build specific programs. For this reason it
+includes an easily extendable molecular viewer and flexible data
+structures field-independent.
 
-https://chemlab.readthedocs.org/en/latest/
+While you wait for the full release, take a look at the
+tests/test_core.py and tests/test_graphics.py as well as the examples
+directory (some example may be outdated) to get a taste of it.
+
+chemlab wants to be really contributor-friendly, this means having a
+good documentation and an easy structure to get in. Feel free to send
+me anything that you may do with chemlab, from supporting a new file
+format to writing a new graphic renderer, even if you don'think it's
+perfect. Send me an email or write an issue on the github page.
+
+Installation
+------------
+
+chemlab is currently tested on Ubuntu 12.10. First
+install the dependencies:
+
+    $ sudo apt-get install python-numpy python-pyside python-opengl
+
+Then install chemlab from the setup.py included:
+
+    $ sudo python setup.py install
+
+Documentation
+-------------
+
+Refer to the documentation link at the beginning of this file.
+
+Bug Reports
+-----------
+
+Go to http://github.com/chemlab/chemlab or send me an email.
+
+License
+-------
+
+chemlab is released under GNU GPL3 (see COPYING attached).

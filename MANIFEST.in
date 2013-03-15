@@ -1,1 +1,11 @@
 include distribute_setup.py
+include Makefile
+include COPYING
+include MANIFEST.in
+include requirements.txt
+graft chemlab/data
+graft chemlab/resources
+graft tests/data
+graft docs
+prune docs/_build
+

@@ -1,5 +1,3 @@
-import pyglet
-
 from .base import DefaultRenderer
 
 class CubeRenderer(DefaultRenderer):

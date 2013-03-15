@@ -5,32 +5,32 @@ from OpenGL.arrays import ArrayDatatype as ADT
 class VertexBuffer(object):
 
   def __init__(self, data, usage):
-    self.buffer = GL.GLuint(0)
+    self.buffer = GLuint(0)
     self.buffer = glGenBuffers(1)
     self.usage = usage
     self.data = data
     
-    glBindBuffer(GL_ARRAY_BUFFER_ARB, self.buffer)
-    glBufferData(GL_ARRAY_BUFFER_ARB, ADT.arrayByteCount(data),
+    glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
+    glBufferData(GL_ARRAY_BUFFER, ADT.arrayByteCount(data),
                  ADT.voidDataPointer(data), usage)
-    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0)
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
 
   def __del__(self):
     # this causes an error otherwise
     if bool(glDeleteBuffers):
-      glDeleteBuffers(1, GL.GLuint(self.buffer))
+      glDeleteBuffers(1, GLuint(self.buffer))
     else:
       return
 
   def bind(self):
-    glBindBuffer(GL_ARRAY_BUFFER_ARB, self.buffer)
+    glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
     
   def unbind(self):
-    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0)
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
 
   def set_data(self, data):
     self.bind()
-    glBufferData(GL_ARRAY_BUFFER_ARB, ADT.arrayByteCount(data), ADT.voidDataPointer(data), self.usage)
+    glBufferData(GL_ARRAY_BUFFER, ADT.arrayByteCount(data), ADT.voidDataPointer(data), self.usage)
     self.unbind()
       
   def bind_colors(self, size, type, stride=0):
