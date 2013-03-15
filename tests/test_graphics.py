@@ -6,6 +6,7 @@ from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer)
 
+from chemlab.graphics.uis import TextUI
 import numpy as np
 
 def test_triangle_renderer():
@@ -97,6 +98,20 @@ def test_line_renderer():
     ar = v.add_renderer(LineRenderer, vectors, colors)
     v.run()
 
+    
+def test_text_ui():
+    v = QtViewer()
+    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+                    Atom("H", [-0.402, 0.249, 0.0]),
+                    Atom("H", [-0.532, 0.198, 0.10])])
+    
+    # To add some interaction to it
+    ar = v.add_renderer(AtomRenderer, mol, "impostors")
+    tr = v.add_ui(TextUI, 100, 100, 'Hello guys')
+    
+    v.run()
+    
+    
 def test_unproject():
     v = QtViewer()
     

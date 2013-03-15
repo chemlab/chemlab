@@ -11,8 +11,9 @@ class VertexBuffer(object):
     self.data = data
     
     glBindBuffer(GL_ARRAY_BUFFER_ARB, self.buffer)
-    glBufferData(GL_ARRAY_BUFFER_ARB, ADT.arrayByteCount(data), ADT.voidDataPointer(data), usage)
-    
+    glBufferData(GL_ARRAY_BUFFER_ARB, ADT.arrayByteCount(data),
+                 ADT.voidDataPointer(data), usage)
+    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0)
 
   def __del__(self):
     # this causes an error otherwise
@@ -23,10 +24,14 @@ class VertexBuffer(object):
 
   def bind(self):
     glBindBuffer(GL_ARRAY_BUFFER_ARB, self.buffer)
+    
+  def unbind(self):
+    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0)
 
   def set_data(self, data):
     self.bind()
     glBufferData(GL_ARRAY_BUFFER_ARB, ADT.arrayByteCount(data), ADT.voidDataPointer(data), self.usage)
+    self.unbind()
       
   def bind_colors(self, size, type, stride=0):
     self.bind()

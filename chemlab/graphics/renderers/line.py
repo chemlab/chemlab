@@ -30,12 +30,19 @@ class LineRenderer(ShaderBaseRenderer):
         
         glDrawArrays(GL_LINES, 0, self.n_lines)
         
+        glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
+        
+        self._vbo_v.unbind()
+        self._vbo_c.unbind()
         
     def update_positions(self, vertices):
         vertices = np.array(vertices, dtype=np.float32)
         self._vbo_v.set_data(vertices)
+        self._vbo_v.unbind()
         
     def update_colors(self, colors):
         colors = np.array(colors, dtype=np.float32)
         self._vbo_c.set_data(colors)
-
+        self._vbo_c.unbind()
+        

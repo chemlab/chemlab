@@ -7,7 +7,7 @@ from .sphere_imp import SphereImpostorRenderer
 from .point import PointRenderer
 
 class AtomRenderer(AbstractRenderer):
-    def __init__(self, viewer, system, type='polygons'):
+    def __init__(self, viewer, system, backend='polygons'):
         radii = []
         colorlist = []
         
@@ -15,12 +15,14 @@ class AtomRenderer(AbstractRenderer):
             radii.append(vdw_dict[system.type_array[i]])
             colorlist.append(colors.map.get(system.type_array[i], colors.light_grey))
         
-        if type == 'polygons':
+        if backend == 'polygons':
             self.sr = SphereRenderer(viewer, system.r_array, radii, colorlist)
-        elif type == 'impostor':
+        elif backend == 'impostors':
             self.sr = SphereImpostorRenderer(viewer, system.r_array, radii, colorlist)
-        elif type == 'points':
+        elif backend == 'points':
             self.sr = PointRenderer(viewer, system.r_array, colorlist)
+        else:
+            raise Exception("No backend %s available. Choose between polygons, impostors or points" % backend)
 
     def draw(self):
         self.sr.draw()

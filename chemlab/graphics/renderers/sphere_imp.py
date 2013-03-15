@@ -81,6 +81,10 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         
         glDrawArrays(GL_QUADS, 0, 4*self.n_spheres)
         
+        self._mapping_vbo.unbind()
+        self._centers_vbo.unbind()
+        self._radius_vbo.unbind()
+        
     def update_positions(self, rarray):
         vertices = np.repeat(rarray, 4, axis=0).astype(np.float32)
         self.poslist = rarray

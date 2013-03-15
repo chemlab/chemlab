@@ -34,20 +34,21 @@ class GLWidget(QGLWidget):
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
         
+
         glClearColor(1.0, 1.0, 1.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glColor3f(1.0, 1.0, 1.0)
-        
+
         proj = self.camera.projection
         cam = self.camera.matrix
         
         self.mvproj = mvproj = np.dot(proj, cam)
         self.ldir = np.array([0.0, 0.0, 5.0])
         
-        self.on_draw_ui()
 
+        self.on_draw_ui()
         # Draw World
         self.on_draw_world()
+
          
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)
@@ -102,12 +103,15 @@ class QtViewer(QMainWindow):
         
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(self.widget, *args, **kwargs)
-
         self.widget._renderers.append(renderer)
         return renderer
     
-    # Events
+    def add_ui(self, klass, *args, **kwargs):
+        ui = klass(self.widget, *args, **kwargs)
+        self.widget._uis.append(ui)
+        return ui
         
+    # Events
     def mousePressEvent(self, evt):
         self._last_mouse_right = evt.button() == Qt.RightButton
         self._last_mouse_left = evt.button() == Qt.LeftButton
@@ -163,7 +167,7 @@ class QtViewer(QMainWindow):
             pos = np.dot(self.camera.position, self.camera.position)**0.5
             if (( pos > 0.1 and inc > 0) or
                 ( pos < 50  and inc < 0)):
-                self.camera.position -= self.camera.position*inc/5
+                self.camera.position -= self.camera.c*inc/2
                 
         zoom(self.widget, z*0.01)
 

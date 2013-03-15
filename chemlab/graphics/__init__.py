@@ -1,37 +1,44 @@
 from .qtviewer import QtViewer
 from .renderers import AtomRenderer, BoxRenderer
-from .ui import SliderUI
+from .uis import TextUI
 
 import numpy as np
 
-def display_system(sys, renderer='sphere'):
-    v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
-    
+def _system_auto_scale(sys, camera):
     # We should move the camera position and rotation in front of the 
     # center of the molecule.
     geom_center = sys.r_array.sum(axis=0) / len(sys.r_array)
-    v.widget.camera.position[:2] = geom_center[:2]
-    v.widget.camera.pivot = geom_center
+    camera.position[:2] = geom_center[:2]
+    camera.pivot = geom_center
     
     # Now setup the distance, that will be comparable with the size
     vectors = sys.r_array - geom_center
     sqdistances = (vectors ** 2).sum(1)[:,np.newaxis]
     sqdist = np.max(sqdistances)
-    v.widget.camera.position[2] = sqdist
+    camera.position[2] = np.sqrt(sqdist) + 10.0
+    
+
+def display_system(sys, renderer='sphere'):
+    v = QtViewer()
+    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
+    
+    _system_auto_scale(sys, v.widget.camera)
     
     if sys.box_vectors is not None:
         v.add_renderer(BoxRenderer, sys.box_vectors)
     
     v.run()
-    
+
 def display_trajectory(sys, coords_list):
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, type='impostor')
+    sr = v.add_renderer(AtomRenderer, sys, backend='impostors')
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
     
-    i = [0]
+    tui = v.add_ui(TextUI, 100, 100, '')
     
+    _system_auto_scale(sys, v.widget.camera)
+    
+    i = [0]
     def on_update():
         
         nframes = len(coords_list)
@@ -40,6 +47,8 @@ def display_trajectory(sys, coords_list):
         
         sr.update_positions(r_array)
         br.update(sys.box_vectors)
+        tui.update_text("%i/%i"%(i[0]%nframes, nframes))
+        
         v.widget.repaint()
     
     v.schedule(on_update, 100)

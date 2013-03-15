@@ -15,9 +15,6 @@ class SphereRenderer(AbstractRenderer):
         performance.
         '''
         
-
-        
-        
         self.viewer = viewer
 
         self.poslist = poslist

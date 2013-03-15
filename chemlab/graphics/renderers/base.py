@@ -35,6 +35,7 @@ class ShaderBaseRenderer(AbstractRenderer):
     def draw(self):
         self.setup_shader()
         self.draw_vertices()
+        glUseProgram(0)
         
     def draw_vertices(self):
         raise NotImplementedError()

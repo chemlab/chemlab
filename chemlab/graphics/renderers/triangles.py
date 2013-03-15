@@ -42,6 +42,10 @@ class TriangleRenderer(DefaultRenderer):
         self._vbo_c.bind_colors(4, GL_UNSIGNED_BYTE)
         
         glDrawArrays(GL_TRIANGLES, 0, self._n_triangles)
+        
+        self._vbo_v.unbind()
+        self._vbo_n.unbind()
+        self._vbo_c.unbind()
     
     def update_vertices(self, vertices):
         vertices = np.array(vertices, dtype=np.float32)
