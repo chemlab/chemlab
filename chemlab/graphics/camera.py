@@ -1,7 +1,8 @@
 '''Module to provide a nice camera for 3d applications'''
 from transformations import rotation_matrix, translation_matrix
 from transformations import simple_clip_matrix, clip_matrix
-from transformations import vector_product, angle_between_vectors
+from transformations import vector_product, angle_between_vectors, normalized
+from ..mathutils import fequal 
 
 import numpy as np
 import numpy.linalg as LA
@@ -17,8 +18,8 @@ class Camera:
         # Perspective parameters
         self.scale = 1.0
         self.aspectratio = 1.0
-        self.z_near = 0.1
-        self.z_far = 100.0
+        self.z_near = 0.2
+        self.z_far = 50.0
         
         # Those are the direction fo the three axis of the camera in
         # world coordinates, used to compute the rotations necessary
@@ -57,6 +58,29 @@ class Camera:
         self.b = np.dot(rot, self.b)
         self.c = np.dot(rot, self.c)        
         
+    def mouse_rotate(self, dx, dy):
+        fact = 1.5
+        self.orbit_y(-dx*fact)
+        self.orbit_x(dy*fact)
+
+    def mouse_zoom(self, inc):
+        # Square Distance from pivot
+        dsq = np.linalg.norm(self.position - self.pivot)
+        minsq = 1.0**2  # How near can we be to the pivot
+        maxsq = 7.0**2 # How far can we go 
+
+        scalefac = 0.25
+
+        if dsq > maxsq and inc < 0: 
+            # We're going too far
+            pass
+        elif dsq < minsq and inc > 0:
+            # We're going too close
+            pass
+        else:
+            # We're golden
+            self.position += self.c*inc*scalefac
+
     def _get_projection_matrix(self):
         # Matrix to convert from homogeneous coordinates to 
         # 2d coordinates args = (scale, znear, zfar, aspect_ratio)
@@ -113,47 +137,3 @@ class Camera:
         
         return res[0:3]/res[3]
 
-    def arcball_rotation(self, x, y, dx, dy, scale=1.0):
-        start = map_to_arcball(x,y)
-        end = map_to_arcball(x + dx, y + dy)
-            
-        start = self.unproject(start[0], start[1], -start[2])
-        end = self.unproject(end[0], end[1], -end[2])
-    
-        axis = vector_product(end, start)
-        angle = angle_between_vectors(end, start)
-    
-        # Sometimes when you go outside the window with the mouse
-        # you get zero displacement, and therefore zero axis and zero
-        # angle. This causes an error.
-        if np.allclose(axis, np.zeros(3)) or np.equal(angle, 0.0):
-            # Do not alter anything
-            return
-
-        # It is the inverse rotation anyway, to rotate the object in a
-        # certain way we have to rotate the camera the opposite way
-        rot = rotation_matrix(angle*scale, axis)[:3, :3].T
-
-        self.position -= self.pivot
-        self.position = rot.dot(self.position)
-        self.position += self.pivot
-
-        self.a = rot.dot(self.a)
-        self.b = rot.dot(self.b)
-        self.c = rot.dot(self.c)
-
-
-def map_to_arcball(x, y):
-    # Find intersection between sphere and arcball
-
-    # the point of intersection is that:
-    r = 1.0
-    D = x*x + y*y
-    rsq = r*r
-    if D < rsq:
-        z = (rsq - D)**0.5
-    else: # Fallback on hyperbolic sheet
-        z = (rsq/2.0) / D**0.5
-    
-    return np.array([x,y,z])
-    

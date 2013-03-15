@@ -98,4 +98,5 @@ void main()
   color =  diffuse * NdotL + specular;
    
   gl_FragColor = diffuse*NdotL + specular;
+  
 }

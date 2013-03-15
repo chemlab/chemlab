@@ -1,6 +1,9 @@
 import numpy as np
 from numpy.linalg import norm
 
+def fequal(a, b, tol):
+    return (abs(a-b) / max(abs(a), abs(b))) < tol
+
 def normalized(x):
     '''Return the x vector normalized'''
     return x/norm(x)

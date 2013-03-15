@@ -141,7 +141,7 @@ class QtViewer(QMainWindow):
                 cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
                 self.widget.repaint()
         if self._last_mouse_left:
-            # Arcball Rotation
+            # Orbiting Rotation
             if bool(evt.buttons() & Qt.LeftButton):
                 x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
                 x2, y2 = evt.pos().x(), evt.pos().y()
@@ -156,21 +156,15 @@ class QtViewer(QMainWindow):
                 dx, dy = x2 - x, y2 - y
                 
                 cam = self.widget.camera
-                cam.arcball_rotation(x, y, dx, dy, scale=1000.0)
+                cam.mouse_rotate(dx, dy)
+
                 self.widget.repaint()
             
                 
     def wheelEvent(self, evt):
         z = evt.delta()
-        # TODO Pretty brutal zoom function
-        def zoom(self, inc):
-            pos = np.dot(self.camera.position, self.camera.position)**0.5
-            if (( pos > 0.1 and inc > 0) or
-                ( pos < 50  and inc < 0)):
-                self.camera.position -= self.camera.c*inc/2
-                
-        zoom(self.widget, z*0.01)
-
+        self.widget.camera.mouse_zoom(z*0.01)
+        
         self.widget.repaint()
 
         
@@ -190,16 +184,10 @@ class QtViewer(QMainWindow):
             self.widget.camera.orbit_y(angvel)
         
         # TODO Pretty brutal zoom function
-        def zoom(self, inc):
-            pos = np.dot(self.camera.position, self.camera.position)**0.5
-            if (( pos > 0.1 and inc > 0) or
-                ( pos < 50  and inc < 0)):
-                self.camera.position = self.camera.position - self.camera.position*inc/3
-                
         if evt.key() == Qt.Key_Plus:
-            zoom(self.widget, 0.1)
+            self.widget.camera.mouse_zoom(0.1)
         if evt.key() == Qt.Key_Minus:
-            zoom(self.widget, -0.1)
+            self.widget.camera.mouse_zoom(-0.1)
 
         self.widget.repaint()
 
