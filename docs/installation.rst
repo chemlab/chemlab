@@ -2,24 +2,32 @@
 Installation and Quickstart
 ===========================
 
-In its early stages, chemlab does not provide yet a package for
-automatic installation, but it will for sure. Anyway, it's based on
-popular libraries already available on most Linux distributions, other
-platforms are not taken into account yet, but the will be at a certain
-point.
+chemlab is currently tested on Ubuntu 12.10. First
+install the dependencies:
 
-Core dependencies:
+    $ sudo apt-get install python-numpy python-pyside python-opengl
 
-    sudo apt-get install python-numpy python-scipy 
+Download chemlab and install it from the setup.py included in the package:
 
-Graphics dependencies
+    $ sudo python setup.py install
 
-    sudo apt-get install python-opengl pyside
+Test the newly installed package by typing:
 
-IO dependencies:
+    $ chemlab view tests/data/licl.gro
 
-    openbabel, pyxdr(grab it from git)
+The molecular viewer should display a crystal, if not, file an issue
+on `github <http://github.com/chemlab/chemlab/issues>`_.
+
+Once you're setup you're ready to go to dig in chemlab's features.
+
+Quickstart
+----------
+
+We'll see how to read, visualize and process a proteine using chemlab.
+
     
+Development
+-----------
 
 Grab the chemlab source from git:
 
@@ -30,7 +38,7 @@ Just add the chemlab directory to the PYTHONPATH in your .bashrc
    export PYTHONPATH=$PYTHONPATH:/path/to/chemlab
 
 
-Once you're setup you're ready to go to dig in chemlab's features.
+
 
 
 
