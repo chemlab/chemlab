@@ -58,7 +58,7 @@ molecule about 90 degrees around the z-axis::
         wat.r_array[i] = np.dot(M,r)
 
     # numpy efficient trick to do the same:
-    # wat.r_array = M * wat.r_array.transpose()
+    # wat.r_array = np.dot(wat.r_array, M.T)
 
 The array-based interaction is done provide a massive increase in performance
 and a more straightforward integration with C libraries through a

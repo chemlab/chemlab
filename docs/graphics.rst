@@ -59,4 +59,67 @@ interaction and widgets to your application.
 Renderers
 ---------
 
-Renderers are simply classes.
+Renderers are simply classes used to draw 3D objects. They are
+tecnically required to provide just one method, *draw*. In this way
+they provide the maximum flexibility required to build efficient
+opengl routines. Renderers may be subclass other renderers as well
+as use other renderers.
+
+A very useful renderer is TriangleRenderer, used to render efficiently
+a list of triangles, it constitutes a base for writing other
+renderers. TriangleRenderer works basically like this, you pass the
+vertices, normals and colors of the triangle and it will display a
+triangle in the world::
+
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import TriangleRenderer
+    from chemlab.graphics.colors import green
+    import numpy as np
+     
+    vertices = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]])
+    normals = np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]])
+    colors = np.array([green, green, green])
+     
+    v = QtViewer()
+    v.add_renderer(TriangleRenderer, vertices, normals, colors)
+    v.run()
+
+.. image:: _static/graphics_triangle.png
+	   :width: 600px
+		   
+If you pass 6 vertices/normals/colors, he will display 2 triangles and
+so on. As a sidenote, he is very efficient and in fact
+TriangleRenderer is used as a backend for a lot of other renderers
+such as SphereRenderer and CylinderRenderer. If you can reduce a shape
+in triangles, you can easily write a renderer for it.
+
+In addition to that, TriangleRenderer provides also a method to update
+vertices, normals and colors. We can demonstrate that from the last
+example by defining an update function that rotates our triangle::
+  
+  from chemlab.graphics.transformations import rotation_matrix
+
+  def update():
+      y_axis = np.array([0.0, 1.0, 0.0])
+      
+      # We take the [:3,:3] part because rotation_matrix can be used to 
+      # rotate homogeneous (4D) coordinates. 
+      rot = rotation_matrix(3.14/32, y_axis)[:3, :3]
+   
+      # This is the numpy equivalent to applying rot to each coordinate
+      vertices[:] = np.dot(vertices, rot.T)
+      normals[:] = np.dot(vertices, rot.T)
+      
+      tr.update_vertices(vertices)
+      tr.update_normals(normals)
+      v.widget.repaint()
+   
+  v.schedule(update, 10)
+  v.run()
+
+On this ground we can develop a TetrahedronRenderer based on our
+TriangleRenderer. To do that we first need to understand how a
+tetrahedron is made, and how can we define the vertices that make the
+tetrahedron.
+
+
