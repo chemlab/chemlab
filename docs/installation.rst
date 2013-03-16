@@ -18,6 +18,9 @@ Test the newly installed package by typing::
 The molecular viewer should display a crystal, if not, file an issue
 on `github <http://github.com/chemlab/chemlab/issues>`_.
 
+.. image:: _static/licl.png
+           :width: 600px
+
 Once you're setup you're ready to go to dig in chemlab's features.
 
 Quickstart
