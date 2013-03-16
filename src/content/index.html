@@ -1,46 +1,56 @@
 {% extends "_base.html" %}
 {% block content %}
+
     <div class="container">
+
       <div class="hero-unit">
-
-	<img src="media/img/chemlab_logo.png" class="img-rounded pull-right" width="180"
-             position="absolute"/>
-
 	<h1 class="text-center">chemlab</h1>
 	<p class="text-center">Chemistry has never been so easy</p>
 	<p class="text-center">
 	  <a class="btn btn-large btn-success"  
 	     href="http://github.com/chemlab/chemlab">
-	    Download<br/> <small><em>latest</em></small></a></p>
+	    <i class="icon-download icon-2x pull-left"></i> Download <br/> <small><em>latest</em></small></a>
+           
+	  <a class="btn btn-large btn-info"  
+	     href="http://chemlab.readthedocs.org/en/latest/installation.html">
+	    <i class="icon-beaker icon-2x pull-left"></i> Get
+	    Started<br/><small><em>Docs</em></small></a>
+	</p>
 
       </div> <!-- /container -->
 
       
       <div class="row">
 	<div class="span4">
-	  <h2>FUN</h2>
-	  <p>With the included molecular viewer you can try out new things.</p>
+	  <h2>Molecular Viewer</h2>
+	  <p>Built-in molecular viewer to quickly visualize your
+	  systems.</p>
 	  
-	  <img src="holder.js/400x400" />
+	  <img src="media/img/licl.png" />
 	</div>
 	
 	<div class="span4">
-	  <h2>FLEXIBLE</h2>
-	  <p>Use the python programming language to build your
-	  tools</p>
+	  <h2>Python Powered</h2>
+	  <p>Built on the flexible, fast and well-tested scientific
+	  python stack.</p>
 	  <img src="media/img/python-powered-h-140x182.png"/>
+	  <img src="media/img/pysidelogo.png"/>
+	  <img src="media/img/numpy_logo.png"/>
+	  <img src="media/img/cythonlogo.png"/>
 	</div>
 	
 	<div class="span4">
-	  <h2>FREE</h2>
-	  <p>This is a free and open source project, feel free to
-	  interact with the community.</p>
+	  <h2>Designed to be extensible</h2>
+	  <p>Well documented and developer-friendly.</p>
+	  
+	  <i class="icon-cogs icon-4x"></i>
 	</div>
       </div>
       
       <hr/>
     
-      <footer>Gabriele Lanaro 2013</footer>
+      <footer>Gabriele Lanaro (2013) -- Icons
+      by <a href="http://fortawesome.github.com/Font-Awesome/">FontAwesome</a></footer>
 
     </div>
     {% endblock %}
