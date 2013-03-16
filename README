@@ -1,12 +1,23 @@
 chemlab - the python chemistry package you were waiting for
 -----------------------------------------------------------
 
-- Version: --
-- Author:  Gabriele Lanaro
-- Email:   gabriele.lanaro@gmail.com
-- Website: http://chemlab.github.com/chemlab
-- Docs:    http://chemlab.rtfd.org
-- Github:  http://github.com/chemlab/chemlab
+:Version:
+   0.1 (not yet)
+
+:Author:
+   Gabriele Lanaro
+   
+:Email:   
+   gabriele.lanaro@gmail.com
+
+:Website:
+    http://chemlab.github.com/chemlab
+    
+:Docs:
+    http://chemlab.rtfd.org
+    
+:Github:
+    http://github.com/chemlab/chemlab
 
 
 chemlab is a ptyhon library and a set of utilities built to ease the

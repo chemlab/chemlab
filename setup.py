@@ -11,7 +11,6 @@ setup(
                     'chemlab.resources' : ["*"],
                     'chemlab.data' : ['*']},
     
-    install_requires = ["numpy", "pyopengl", "pyside"],
     author = "Gabriele Lanaro",
     scripts = ['scripts/chemlab'],
     zip_safe = False,
@@ -20,7 +19,7 @@ setup(
     author_email = "gabriele.lanaro@gmail.com",
     description = "The python chemistry library you were waiting for",
     long_description = '''
-    chemlab is a ptyhon library and a set of utilities built to ease the
+    chemlab is a python library and a set of utilities built to ease the
     life of the computational chemist. It takes inspiration from other
     python scientific library such as numpy scipy and matplotlib, and aims
     to bring a consistent and simple API by following the python
@@ -28,7 +27,7 @@ setup(
 
     This package is still in its early development, going forward to the
     first 0.1 release. Computational and theoretical chemistry is a huge
-    field, and providing a program that encompasses all aspect of it is an
+    field, and providing a program that encompasses all aspects of it is an
     impossible task. The spirit of chemlab is to provide a common ground
     from where you can build specific programs. For this reason it
     includes an easily extendable molecular viewer and flexible data
