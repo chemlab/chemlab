@@ -15,7 +15,7 @@ def _system_auto_scale(sys, camera):
     vectors = sys.r_array - geom_center
     sqdistances = (vectors ** 2).sum(1)[:,np.newaxis]
     sqdist = np.max(sqdistances)
-    camera.position[2] = np.sqrt(sqdist) + 10.0
+    camera.position[2] = np.sqrt(sqdist) + 4.0
     
 
 def display_system(sys, renderer='sphere'):

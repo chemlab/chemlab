@@ -1,21 +1,30 @@
 '''Analysis for statistical ensembles'''
 import numpy as np
-from ..mathutils import distance
+import time
+from scipy.spatial import distance
 
-def pair_correlation(system, bins=1000):
-    #density = float(system.n)/system.volume
-    distances = []
+
+
+def radial_distribution_function(system, maska, maskb, nbins=1000, rmax=1.5):
+    distances = distance.cdist(system.r_array[maska], system.r_array[maskb])
+    # Filtering distances outside rmax
+    distances = distances[distances < rmax]
     
-    for i in xrange(system.n):
-        for j in xrange(i+1, system.n):
-            distances.append(distance(system.rarray[i],
-                                      system.rarray[j]))
+    n_a = len(system.r_array[maska])
+    n_b = len(distances)/float(n_a)
     
-    hist, bin_edges = np.histogram(np.array(distances), bins)
-    # Normalize this by radial distribution
-    dr = bin_edges[1]- bin_edges[0]
-    normal_fac = []
-    for edge in bin_edges[:-1]:
-        normal_fac.append(4*np.pi*edge**2*dr)
+    print len(distances)
     
-    return bin_edges[1:], hist/np.array(normal_fac)
+    rmin = 0.0
+    bins = np.linspace(rmin, rmax, nbins)
+    vmax = (4.0/3.0) * np.pi * rmax ** 3
+    local_rho = n_b / vmax
+    
+    hist, bin_edges = np.histogram(distances, bins)
+    dr  = bin_edges[1] - bin_edges[0]
+
+    # Normalize this by a sphere shell
+    for i, r in enumerate(bin_edges[1:]):
+        hist[i] /= 4.0 * np.pi * (r+dr)**2
+    
+    return bin_edges[1:], 1.0/(local_rho*n_a) * hist
