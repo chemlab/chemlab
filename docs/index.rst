@@ -2,44 +2,75 @@
    sphinx-quickstart on Sun Nov 18 21:31:35 2012.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
+   
 Welcome to chemlab's documentation!
 ===================================
 
-chemlab is a library that can help the user with chemistry-relevant
+:Webpage:
+   https://chemlab.github.com/chemlab
+ 
+:Project Page:
+   https://github.com/chemlab/chemlab
+
+:Mailing List:
+   `python-chemlab.googlegroups.com <mailto:python-chemlab.googlegroups.com>`_
+   
+:Downloads:
+   https://chemlab.github.com/chemlab
+
+
+
+Chemlab is a library that can help the user with chemistry-relevant
 calculations using the flexibility and power of the python programming
 language. It aims to be well-designed and pythonic, taking inspiration
 from project such as numpy and scipy.
 
-chemlab long term goal is to be:
+Chemlab long term goal is to be:
 
-- array oriented: most operations and data structures are based on
-               numpy arrays.  This let you write compact and efficient
-               code.
-- graphic: chemlab aim to integrate 3D molecular viewer that is easily
-           extendable and lets you write your own visualization tools
-           easily.
-- interoperable: chemlab wants to be interoperable with other
-               chemistry programs, to enable the integration of
-               different functions from different programs.
-- fast: Even if python is known to be slow every effort should be made
-        to make chemlab 'fast enough', by using effectively numpy arrays
-        and efficient data structures. When everything else fails we can still
-        write the hard bits in C.
+- **General**
+  Chemistry is a huge field, chemlab wants to provide a general ground from where to build domain-specific tools and apps.
+- **Array oriented** 
+  most operations and data structures are based on
+  numpy arrays.  This let you write compact and efficient
+  code.
+- **Graphic**
+  chemlab integrates a 3D molecular viewer that is easily
+  extendable and lets you write your own visualization tools.
+- **Interoperable**
+  chemlab wants to be interoperable with other
+  chemistry programs by reading and writing different
+  file formats and using flexible data structures.
+- **Fast**
+  Even if python is known to be slow every effort should be made
+  to make chemlab 'fast enough', by using effectively numpy arrays
+  and efficient data structures. When everything else fails we can still
+  write the hard bits in C.
 
+Current Status (pre 0.1)
+------------------------
 
-The current status of chemlab
------------------------------
+This package is still in its early development, going forward to the
+first 0.1 release. Computational and theoretical chemistry is a huge
+field, and providing a program that encompasses all aspect of it is an
+impossible task. The spirit of chemlab is to provide a common ground
+from where you can build specific programs. For this reason it
+includes an :doc:`easily extensible </graphics>` molecular viewer.
 
-chemlab is still in its infancy and it provides the most basic data
-structures. It's important to get them right to avoid problems in the
-future. The molecular viewer (chemlab.graphics) has a solid ground and
-can actually draw and play trajectories in an efficient way. More
-representations are required to enrich its capabilities. It's still a
-bit early to make useful as it is, but it can be a nice platform where
-other programs can be built on.
+chemlab is in its early developement and it provides the most basic
+data structures. The molecular viewer (chemlab.graphics) has a solid
+ground and can actually draw and play trajectories in an efficient
+way. To get started be sure to check the user manual.
 
-chemlab is divided in several packages that can be used almost
+chemlab wants to be developer-friendly, this means having a good
+documentation and an easy structure to get in. Feel free to send me
+anything that you may do with chemlab, from supporting a new file
+format to writing a new graphic renderer, even if you don'think it's
+perfect. Send me an email to the `mailing list
+<mailto:python-chemlab.googlegroups.com>`_ or file an issue on the
+github page to discuss any aspect that you like or not like and any
+idea that comes to your mind. In other words, get involved! 
+
+Chemlab is divided in several packages that can be used almost
 independently.
 
   - chemlab.graphics includes a molecular viewer and its components.
@@ -50,7 +81,10 @@ independently.
     molecular packages.
 
 
-User Manual:
+User Manual
+-----------
+
+**Table of Contents**
 
 .. toctree::
    :maxdepth: 2
@@ -61,11 +95,7 @@ User Manual:
    io
    gromacs
    
+License
+-------
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+Chemlab is released under the `GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>`_ and its main developer is Gabriele Lanaro.
