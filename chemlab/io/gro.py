@@ -1,5 +1,6 @@
 from ..core.system import System
 from ..core.molecule import Atom
+from .iohandler import IOHandler
 
 from ..data.symbols import symbol_list
 import re
@@ -27,10 +28,25 @@ gro_to_cl = {
 
 import numpy as np
 
-def parse_gro(filename):
-    with open(filename) as fn:
-        lines = fn.readlines()
-        return parse_gro_lines(lines)
+
+class GromacsIO(IOHandler):
+    can_read = ['system']
+    can_write = ['system']
+
+    def __init__(self, filename):
+        self.filename = filename
+    
+    def read(self, feature):
+        if feature == 'system':
+            with open(self.filename) as fn:
+                lines = fn.readlines()
+                return parse_gro_lines(lines)
+
+
+    def write(self, feature, sys):
+        if feature == 'system':
+            write_gro(sys, filename)
+
 
 def parse_gro_lines(lines):
     '''Reusable parsing'''

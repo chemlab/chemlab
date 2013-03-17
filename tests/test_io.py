@@ -1,21 +1,14 @@
-from chemlab.core.system import System
-from chemlab.core.molecule import Atom, Molecule
-#from chemlab.io.trajectory import make_trajectory
-from chemlab.io.gro import write_gro
+from chemlab.core import System, Atom, Molecule
+from chemlab.io import DataFile
+from chemlab.io.gro import GromacsIO
     
-def _test_traj():
-    sys = MonatomicSystem.random("Ar", 64, 1.0)
-    traj = make_trajectory(sys,  "traj.hdf", restart=True)
-    
-    for i in range(1000):
-        sys.r_array += 1
-        traj.append(sys)
+def test_datafile():
+    DataFile.add_handler(GromacsIO, 'gro', '.gro')
+    df = DataFile("tests/data/cry.gro") # It guesses 
+    sys = df.read("system")
+    assert sys.n_atoms == 1728
 
-    print traj.npoints
-    #print traj._read_sys(0).r_array
-    #print traj._read_sys(1).r_array
-
-def test_gromacs():
+def test_read_gromacs():
     '''Test reading a gromacs file'''
     from chemlab.io.gro import parse_gro
     from chemlab.graphics import display_system
@@ -33,5 +26,3 @@ def test_write_gromacs():
         sys.add(water.copy())
     
     write_gro(sys, '/tmp/dummy.gro')
-    
-    
