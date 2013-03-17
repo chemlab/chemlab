@@ -1,3 +1,4 @@
+from .base import AbstractRenderer
 from .sphere import SphereRenderer
 from .sphere_imp import SphereImpostorRenderer
 from .atom import AtomRenderer

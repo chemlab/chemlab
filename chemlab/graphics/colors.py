@@ -1,6 +1,7 @@
 light_grey =      [200,200,200,255]
 red      =        [240,0,0,255]    
 white     =       [255,255,255,255]
+black   =         [0, 0, 0, 255]
                               
 light_blue  =     [143,143,255,255]
 sulphur_yellow =  [255,200,50,255] 
@@ -18,6 +19,8 @@ purple      =     [160,32.240,255]
 firebrick    =    [178,34,34,255]  
 pink          =   [255,192,203,255]
 deep_pink      =  [255,20,147,255] 
+
+
 
 # Default color
 default = deep_pink

@@ -60,10 +60,11 @@ Renderers
 ---------
 
 Renderers are simply classes used to draw 3D objects. They are
-tecnically required to provide just one method, *draw*. In this way
-they provide the maximum flexibility required to build efficient
-opengl routines. Renderers may be subclass other renderers as well
-as use other renderers.
+tecnically required to provide just one method, *draw* and they must
+take an instance of `GLWidget` as their first argument (check out
+the `AbstractRenderer` class). In this way they provide the maximum
+flexibility required to build efficient opengl routines. Renderers may
+be subclass other renderers as well as use other renderers.
 
 A very useful renderer is TriangleRenderer, used to render efficiently
 a list of triangles, it constitutes a base for writing other
@@ -122,4 +123,170 @@ TriangleRenderer. To do that we first need to understand how a
 tetrahedron is made, and how can we define the vertices that make the
 tetrahedron.
 
+Tutorial: TetrahedronRenderer
+-----------------------------
 
+First of all, we need to have the 4 coordinates that represents a
+tetrahedron. Without even trying to visualize it, just pick the values
+straight from `Wikipedia <http://en.wikipedia.org/wiki/Tetrahedron>`_::
+
+    import numpy as np
+    v1 = np.array([1.0, 0.0, -1.0/np.sqrt(2)])
+    v2 = np.array([-1.0, 0.0, -1.0/np.sqrt(2)])
+    v3 = np.array([0.0, 1.0, 1.0/np.sqrt(2)])
+    v4 = np.array([0.0, -1.0, 1.0/np.sqrt(2)])
+    
+We can quickly verify if this is correcty by using a `PointRenderer`::
+   
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import PointRenderer
+    from chemlab.graphics.colors import black, green, blue, red
+
+    colors = [black, green, blue, red]
+    v = QtViewer()
+    v.add_renderer(PointRenderer, np.array([v1, v2, v3, v4]), colors)
+    v.run()
+
+We've got 4 boring points that look like they're at the vertices of a
+tetrahedron. Most importantly we learned that we can use PointRenderer
+to quickly test shapes.
+
+Now let's define the four triangles (12 vertices) that represent a
+solid tetrahedron. It is good practice to put the triangle vertices in
+a certain order to estabilish which face is pointing outside and which
+one is pointing inside for optimization reasons. The convention is
+that if we specify 3 triangle vertices in clockwise order this means
+that the face points outwards from the solid:
+   
+.. image:: _static/tetrahedron_vertices.png
+          :width: 300px
+
+
+We can therefore write our vertices and colors::
+
+    vertices = np.array([
+        v1, v4, v3,
+        v3, v4, v2,
+        v1, v3, v2,
+        v2, v4, v1
+    ])
+    
+    colors = [green] * 12
+    
+All is left to do is write the normals to the surface at each
+vertex. This is easily done by calculating the cross product of the
+vectors constituting two sides of a triangle, (remember that the
+normals should point outward)::
+  
+    n1 = -np.cross(v4 - v1, v3 - v1)
+    n2 = -np.cross(v4 - v3, v2 - v3)
+    n3 = -np.cross(v3 - v1, v2 - v1)
+    n4 = -np.cross(v4 - v2, v1 - v2)
+
+    normals = [n1, n1, n1, 
+               n2, n2, n2,
+               n3, n3, n3,
+               n4, n4, n4]
+   
+    from chemlab.graphics.renderers import TriangleRenderer
+    
+    v.add_renderer(TriangleRenderer, vertices, normals, colors)
+    v.run()
+
+Now that we've got the basic shape in place we can code the actual
+Renderer class to be used directly with the viewer. We will make a
+renderer that, given a set of coordinates will display many tetrahedra.
+
+We can start by defining a Renderer class, inheriting from
+AbstractRenderer, the main thing you should notice is that you need an
+additional argument `widget` that will be passed when you use the
+method `Viewer.add_renderer`::
+
+
+    from chemlab.graphics.renderers import AbstractRenderer
+    
+    class TetrahedraRenderer(AbstractRenderer):
+        def __init__(self, widget, positions):
+            super(TetrahedraRenderer, self).__init__(widget)
+            ...
+
+The strategy to implement a multiple-tetrahedron renderer will be like
+this:
+
+- store the triangle vertices, and normals of a single tetrahedra.
+- for each position that we pass, translate the vertices of the single
+  tetrahedra and accumulate the obtained vertices in a big array.
+- repeat the normals of a single tetrahedra for the number of
+  tetrahedra we're going to render.
+- generate the per-vertex colors (green for simplicity)
+- create a TriangleRenderer as an attribute and initialize him with
+  the accumulated vertices, normals, and colors
+- reimplement the *draw* method by calling the draw method of our
+  trianglerenderer.
+  
+You can see the code in this snippet::
+
+    class TetrahedraRenderer(AbstractRenderer):
+        def __init__(self, widget, positions):
+            super(TetrahedraRenderer, self).__init__(widget)
+            
+            v1 = np.array([1.0, 0.0, -1.0/np.sqrt(2)])
+            v2 = np.array([-1.0, 0.0, -1.0/np.sqrt(2)])
+            v3 = np.array([0.0, 1.0, 1.0/np.sqrt(2)])
+            v4 = np.array([0.0, -1.0, 1.0/np.sqrt(2)])
+     
+            positions = np.array(positions)
+            
+            # Vertices of a single tetrahedra
+            self._th_vertices = np.array([
+                v1, v4, v3,
+                v3, v4, v2,
+                v1, v3, v2,
+                v2, v4, v1
+            ])
+            
+            self._th_normals = np.array([
+                n1, n1, n1,
+                n2, n2, n2,
+                n3, n3, n3,
+                n4, n4, n4])
+            
+            self.n_tetra = len(positions)
+            
+            tot_vertices = []
+            for pos in positions:
+                tot_vertices.extend(self._th_vertices + pos)
+            
+	    # Refer to numpy.tile, this simply repeats the elements
+            # of the array in an efficient manner.
+            tot_normals = np.tile(self._th_normals, (self.n_tetra, 1))
+            tot_colors = [green] * self.n_tetra * 12
+            
+	    # !NOTICE! that we have to pass widget as the first argument
+            self.tr = TriangleRenderer(widget, tot_vertices,
+                                      tot_normals, tot_colors)
+            
+        def draw(self):
+            self.tr.draw()
+
+To demostrate let's draw a grid of 125 tetrahedra::
+
+
+    positions = []
+     
+    for x in range(5):
+        for y in range(5):
+            for z in range(5):
+                positions.append([float(x)*2, float(y)*2, float(z)*2])
+     
+    v.add_renderer(TetrahedraRenderer, positions)
+    v.widget.camera.position = np.array([0.0, 0.0, 20.0])
+    v.run()
+
+.. image:: _static/tetrahedra_final.png
+	   :width: 600px
+		  
+
+If you had any problem with the tutorial or you want to implement
+other kind of renderers don't exitate to contact me. The full code of
+this tutorial is in `chemlab/examples/tetrahedra_tutorial.py`.

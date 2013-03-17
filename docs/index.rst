@@ -57,8 +57,8 @@ User Manual:
   
    installation
    core
-   io
    graphics
+   io
    gromacs
    
 

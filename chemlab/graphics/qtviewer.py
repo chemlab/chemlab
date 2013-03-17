@@ -42,7 +42,8 @@ class GLWidget(QGLWidget):
         cam = self.camera.matrix
         
         self.mvproj = mvproj = np.dot(proj, cam)
-        self.ldir = np.array([0.0, 0.0, 5.0])
+        
+        self.ldir = cam[:3, :3].T.dot(np.array([0.0, 0.0, 10.0]))
         
 
         self.on_draw_ui()
