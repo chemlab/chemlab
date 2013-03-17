@@ -40,7 +40,7 @@ class AtomGenerator(object):
 AttrData = namedtuple('AttrData', ['name', 'type'])
 
 
-class SystemFast(object):
+class System(object):
     molecule_inherited={'mol_export': AttrData(name='export', type=object),
                         'mol_formula': AttrData(name='formula', type=object)}
     
@@ -49,14 +49,23 @@ class SystemFast(object):
                     'type_array': AttrData(name='type_array', type=np.object),
                     'atom_export_array': AttrData(name='atom_export_array', type=np.object)}
     
+    def __init__(self, molecules, boxsize=None, box_vectors=None):
+        n_mol = len(molecules)
+        n_atoms = sum(m.n_atoms for m in molecules)
     
-    def __init__(self, n_mol, n_atoms, boxsize=None, box_vectors=None):
-        # TODO set boxsize to False and do not display it
-        if boxsize:
-            self.boxsize = boxsize
-        else:
-            self.box_vectors = box_vectors
+        # Initialize an empty system and fill it with molecules
+        self._setup_empty(n_mol, n_atoms, boxsize, box_vectors)
         
+        for mol in molecules:
+            self.add(mol)
+        
+    @classmethod
+    def empty(cls, n_mol, n_atoms, boxsize=None, box_vectors=None):
+        inst = cls.__new__(System)
+        inst._setup_empty(n_mol, n_atoms, boxsize, box_vectors)
+        return inst
+
+    def _setup_empty(self, n_mol, n_atoms, boxsize, box_vectors):
         self.n_mol = n_mol
         self.n_atoms = n_atoms
         
@@ -65,6 +74,13 @@ class SystemFast(object):
 
         self.molecules = MoleculeGenerator(self)
         self.atoms = AtomGenerator(self)
+        
+        # Setup boxsize
+        if boxsize:
+            self.boxsize = boxsize
+        else:
+            self.box_vectors = box_vectors
+        
         # Initialize molecule arrays
         
         # Special arrays
@@ -88,7 +104,7 @@ class SystemFast(object):
 
     @classmethod
     def from_arrays(cls, **kwargs):
-        inst = cls.__new__(SystemFast)
+        inst = cls.__new__(System)
         
         if kwargs.get('m_array', None) == None:
             inst.m_array = np.array([masses.typetomass[t] for t in kwargs['type_array']])
@@ -125,14 +141,14 @@ class SystemFast(object):
         
     @classmethod
     def molecule_map(cls):
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
             yield arr_name, field_name
     
     @classmethod
     def atom_map(cls):
-        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
             yield arr_name, field_name
-            
+
     def add(self, mol):
         mc = self._mol_counter
         ac = self._at_counter
@@ -151,12 +167,12 @@ class SystemFast(object):
             self.mol_n_atoms[mc] = mol.n_atoms
         
         # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[mc] = getattr(mol, field_name)
         
         # Setting atom-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[ac:ac+mol.n_atoms] = getattr(mol, field_name).copy()
         
@@ -167,13 +183,12 @@ class SystemFast(object):
     def remove_molecules(self, indices):
         
         # Molecule arrays
-        for arr in SystemFast.molecule_inherited.keys():
+        for arr in System.molecule_inherited.keys():
             setattr(self,arr, np.delete(getattr(self, arr), indices, axis=0))
             
         # Atomic arrays
         at_indices = self.mol_to_atom_indices(indices)
-        print at_indices
-        for arr in SystemFast.atom_inherited.keys():
+        for arr in System.atom_inherited.keys():
             setattr(self, arr, np.delete(getattr(self, arr), at_indices, axis=0))
         
         # Now the hard part, change mol_indices and mol_n_atoms
@@ -220,7 +235,7 @@ class SystemFast(object):
         # We have to shuffle everything regarding atoms
         
         old_atom_arrays = {} # Storing old-ordered coordinates etc...
-        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
             attr = getattr(self, arr_name)
             old_atom_arrays[arr_name] = attr.copy()
         
@@ -228,7 +243,7 @@ class SystemFast(object):
         for k,(o_i,o_n) in enumerate(zip(old_indices[sorted_index],
                                          old_n_atoms[sorted_index])):
 
-            for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+            for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
                 attr = getattr(self, arr_name)
                 attr[offset: offset+o_n] = old_atom_arrays[arr_name][o_i: o_i+o_n]
 
@@ -237,7 +252,7 @@ class SystemFast(object):
             offset += o_n
 
         # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
             attr = getattr(self, arr_name)
             attr[:] = attr[sorted_index]
 
@@ -253,7 +268,7 @@ class SystemFast(object):
         
         kwargs = {}
 
-        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
             kwargs[arr_name] = getattr(self, arr_name)[start_index:end_index]
 
         for sys_field, (mol_field, dtyp) in Molecule.atom_inherited.items():
@@ -297,7 +312,7 @@ def lattice(mol, size=1, density=1.0):
     nmol = 4*size**3
     nat = nmol * mol.n_atoms
     
-    sys = SystemFast(nmol, nat)
+    sys = System.empty(nmol, nat)
 
     cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
                      [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
@@ -363,13 +378,13 @@ def extract_subsystem(sys, index):
     '''
     nmol = len(index)
     natom = np.sum(sys.mol_n_atoms[index])
-    ret = SystemFast(nmol, natom)
+    ret = System.empty(nmol, natom)
     
     offset = 0
     for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[index],
                                      sys.mol_n_atoms[index])):
 
-        for arr_name, (field_name, dtyp) in SystemFast.atom_inherited.iteritems():
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
             o_attr = getattr(sys, arr_name)
             attr = getattr(ret, arr_name)
 
@@ -380,7 +395,7 @@ def extract_subsystem(sys, index):
         offset += o_n
 
     # Setting molecule-wise attributes
-    for arr_name, (field_name, dtyp) in SystemFast.molecule_inherited.iteritems():
+    for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
         o_attr = getattr(sys, arr_name)
         attr = getattr(ret, arr_name)
         attr[:] = o_attr[index]
@@ -418,15 +433,15 @@ def merge_systems(sysa, sysb, bounding=0.2):
     # Rebuild sysa without water molecules
     sysa = select_atoms(sysa, np.logical_not(xmask & ymask & zmask))
     
-    sysres = SystemFast(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
+    sysres = System(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     
     # each atom attribute
-    for attr_name in SystemFast.atom_inherited.keys():
+    for attr_name in System.atom_inherited.keys():
         val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
         setattr(sysres, attr_name, val)
     
     # each molecule attribute
-    for attr_name in SystemFast.molecule_inherited.keys():
+    for attr_name in System.molecule_inherited.keys():
         val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
         setattr(sysres, attr_name, val)
     
@@ -442,202 +457,202 @@ def merge_systems(sysa, sysb, bounding=0.2):
     return sysres
 
     
-class System(object):
-    def __init__(self, atomlist=None, boxsize=2.0):
-        '''This system is made of all atoms of the same types'''
+# class System(object):
+#     def __init__(self, atomlist=None, boxsize=2.0):
+#         '''This system is made of all atoms of the same types'''
         
-        if atomlist is None:
-            atomlist = []
+#         if atomlist is None:
+#             atomlist = []
         
-        self.atoms = atomlist
+#         self.atoms = atomlist
 
-        self.boxsize = boxsize
-        self.bodies = []
+#         self.boxsize = boxsize
+#         self.bodies = []
         
         
-        self.rarray = np.array([a.coords for a in atomlist])
-        self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
+#         self.rarray = np.array([a.coords for a in atomlist])
+#         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
         
-        for atom in self.atoms:
-            atom.system = self
+#         for atom in self.atoms:
+#             atom.system = self
 
-    @property
-    def n(self):
-        return len(self.rarray)
+#     @property
+#     def n(self):
+#         return len(self.rarray)
 
-    # Add body may be the same as add_molecule
-    def add_body(self, body):
-        # Should add each atom with its own coordinates
+#     # Add body may be the same as add_molecule
+#     def add_body(self, body):
+#         # Should add each atom with its own coordinates
         
-        # Should bind this guy's coordinates with my rarray
+#         # Should bind this guy's coordinates with my rarray
         
-        pass
+#         pass
     
-    @classmethod
-    def random(cls, type, number, dim=10.0):
-        '''Return a random monatomic system made of *number* molecules
-        fo type *type* arranged in a cube of dimension *dim* extending
-        in the 3 directions.
+#     @classmethod
+#     def random(cls, type, number, dim=10.0):
+#         '''Return a random monatomic system made of *number* molecules
+#         fo type *type* arranged in a cube of dimension *dim* extending
+#         in the 3 directions.
 
-        '''
-        # create random in the range 0,1   dimension dim
-        coords = np.random.rand(number, 3) * dim - dim/2
-        atoms = []
-        for c in coords:
-            atoms.append(Atom(type, c))
+#         '''
+#         # create random in the range 0,1   dimension dim
+#         coords = np.random.rand(number, 3) * dim - dim/2
+#         atoms = []
+#         for c in coords:
+#             atoms.append(Atom(type, c))
         
-        return cls(atoms, dim)
+#         return cls(atoms, dim)
         
-    def random_add(self, body, min_distance=0.1, maxtries=1000):
+#     def random_add(self, body, min_distance=0.1, maxtries=1000):
         
-        # try adding until you can 
-        while maxtries:
-            centers = []
-            for b in self.bodies:
-                centers.append(b.geometric_center)
-            centers = np.array(centers)
+#         # try adding until you can 
+#         while maxtries:
+#             centers = []
+#             for b in self.bodies:
+#                 centers.append(b.geometric_center)
+#             centers = np.array(centers)
 
-            # Translate the molecule to its center of mass
+#             # Translate the molecule to its center of mass
             
-            rar = body.rarray.copy()
-            rar -= body.geometric_center
+#             rar = body.rarray.copy()
+#             rar -= body.geometric_center
             
-            # let's randomly rotate the molecule
-            from ..graphics.gletools.transformations import random_rotation_matrix
-            rar = np.dot(rar, random_rotation_matrix()[:3,:3].T)
+#             # let's randomly rotate the molecule
+#             from ..graphics.gletools.transformations import random_rotation_matrix
+#             rar = np.dot(rar, random_rotation_matrix()[:3,:3].T)
             
-            # randomly place the molecule
-            mol_center = (np.random.rand(3) - 0.5) * self.boxsize
-            rar += mol_center
+#             # randomly place the molecule
+#             mol_center = (np.random.rand(3) - 0.5) * self.boxsize
+#             rar += mol_center
 
-            # if it's the only one molecule here it's ok
-            if not self.bodies:
-                body.rarray = rar
-                self.bodies.append(body)
-                self.atoms.extend(body.atoms)
-                self.rarray = rar
-                return
+#             # if it's the only one molecule here it's ok
+#             if not self.bodies:
+#                 body.rarray = rar
+#                 self.bodies.append(body)
+#                 self.atoms.extend(body.atoms)
+#                 self.rarray = rar
+#                 return
             
-            # Minimum image convention for distance calculation
-            dx = centers - mol_center
-            minimage = abs(dx) > (self.boxsize*0.5)
-            dx[minimage] -= np.sign(dx[minimage]) * self.boxsize
-            distsq = (dx**2).sum(axis=1)
+#             # Minimum image convention for distance calculation
+#             dx = centers - mol_center
+#             minimage = abs(dx) > (self.boxsize*0.5)
+#             dx[minimage] -= np.sign(dx[minimage]) * self.boxsize
+#             distsq = (dx**2).sum(axis=1)
             
-            if all(distsq > min_distance**2):
-                # The guy is accepted
-                body.rarray = rar
-                self.bodies.append(body)
-                self.atoms.extend(body.atoms)
-                self.rarray = np.concatenate((self.rarray, rar))
+#             if all(distsq > min_distance**2):
+#                 # The guy is accepted
+#                 body.rarray = rar
+#                 self.bodies.append(body)
+#                 self.atoms.extend(body.atoms)
+#                 self.rarray = np.concatenate((self.rarray, rar))
 
-                return
-            else:
-                maxtries -= 1
+#                 return
+#             else:
+#                 maxtries -= 1
 
-        raise Exception('Maximum tries for random insertion')
+#         raise Exception('Maximum tries for random insertion')
         
-    @classmethod
-    def lattice(cls, body, size=4, density=1.0):
-        '''Generate an FCC lattice with *body* as points of the
-        lattice. *size* is the number of primitive cells per dimension
-        (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
-        cells) and density is the required *density* required to
-        calculate volume and unit cell vectors.
+#     @classmethod
+#     def lattice(cls, body, size=4, density=1.0):
+#         '''Generate an FCC lattice with *body* as points of the
+#         lattice. *size* is the number of primitive cells per dimension
+#         (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
+#         cells) and density is the required *density* required to
+#         calculate volume and unit cell vectors.
 
-        '''
-        sys = cls()
+#         '''
+#         sys = cls()
         
-        cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
-                         [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
+#         cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
+#                          [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
 
-        grams =  units.convert(body.mass*len(cell)*size**3, 'amu', 'g')
+#         grams =  units.convert(body.mass*len(cell)*size**3, 'amu', 'g')
         
-        vol = grams/density
-        vol = units.convert(vol, 'cm^3', 'nm^3')
-        dim = vol**(1.0/3.0)
-        celldim = dim/size
-        sys.boxsize = dim
+#         vol = grams/density
+#         vol = units.convert(vol, 'cm^3', 'nm^3')
+#         dim = vol**(1.0/3.0)
+#         celldim = dim/size
+#         sys.boxsize = dim
         
-        cells = [size, size, size]
-        for x in range(cells[0]):
-            for y in range(cells[1]):
-                for z in range(cells[2]):
-                    for cord in cell:
-                        b = body.copy()
-                        b.rarray += (cord + np.array([float(x), float(y), float(z)]))*celldim
-                        b.rarray -= sys.boxsize / 2.0
-                        sys.add(b)
-        #sys.rarray -= sys.boxsize/2.0
-        return sys
+#         cells = [size, size, size]
+#         for x in range(cells[0]):
+#             for y in range(cells[1]):
+#                 for z in range(cells[2]):
+#                     for cord in cell:
+#                         b = body.copy()
+#                         b.rarray += (cord + np.array([float(x), float(y), float(z)]))*celldim
+#                         b.rarray -= sys.boxsize / 2.0
+#                         sys.add(b)
+#         #sys.rarray -= sys.boxsize/2.0
+#         return sys
         
-    def add(self, body):
-        rar = body.rarray
-        if not self.bodies:
-            self.bodies.append(body)
-            self.atoms.extend(body.atoms)
-            self.rarray = rar
-        else:
-            self.bodies.append(body)
-            self.atoms.extend(body.atoms)
-            self.__rarray = np.concatenate((self.rarray, rar))
+#     def add(self, body):
+#         rar = body.rarray
+#         if not self.bodies:
+#             self.bodies.append(body)
+#             self.atoms.extend(body.atoms)
+#             self.rarray = rar
+#         else:
+#             self.bodies.append(body)
+#             self.atoms.extend(body.atoms)
+#             self.__rarray = np.concatenate((self.rarray, rar))
         
-        for atom in body.atoms:
-            atom.system = self
+#         for atom in body.atoms:
+#             atom.system = self
         
-    def replace(self, i, body):
-        body = body.copy()
+#     def replace(self, i, body):
+#         body = body.copy()
         
-        # We have to update various things like atoms and rarray
-        atoffset = roffset = self.atoms.index(self.bodies[i].atoms[0])
+#         # We have to update various things like atoms and rarray
+#         atoffset = roffset = self.atoms.index(self.bodies[i].atoms[0])
 
         
-        replaced = self.bodies[i]
-        pos = replaced.geometric_center
-        body.rarray += pos
+#         replaced = self.bodies[i]
+#         pos = replaced.geometric_center
+#         body.rarray += pos
         
-        self.atoms = (self.atoms[:atoffset] +
-                      body.atoms +
-                      self.atoms[atoffset+len(replaced.atoms):])
+#         self.atoms = (self.atoms[:atoffset] +
+#                       body.atoms +
+#                       self.atoms[atoffset+len(replaced.atoms):])
         
-        self.rarray = np.concatenate([self.rarray[:roffset],
-                                      body.rarray,
-                                      self.rarray[roffset+len(replaced.rarray):]])
+#         self.rarray = np.concatenate([self.rarray[:roffset],
+#                                       body.rarray,
+#                                       self.rarray[roffset+len(replaced.rarray):]])
         
-        self.bodies[i] = body
-        for atom in body.atoms:
-            atom.system = self
+#         self.bodies[i] = body
+#         for atom in body.atoms:
+#             atom.system = self
         
-    def remove(self, i):
-        atoffset = 0
-        roffset = 0
-        for j in range(i):
-            bd = self.bodies[i]
-            atoffset += len(bd.atoms)
-            roffset += len(bd.rarray)
+#     def remove(self, i):
+#         atoffset = 0
+#         roffset = 0
+#         for j in range(i):
+#             bd = self.bodies[i]
+#             atoffset += len(bd.atoms)
+#             roffset += len(bd.rarray)
             
-        replaced = self.bodies[i]
+#         replaced = self.bodies[i]
         
-        self.atoms = (self.atoms[:atoffset] +
-                      self.atoms[atoffset+len(replaced.atoms):])
+#         self.atoms = (self.atoms[:atoffset] +
+#                       self.atoms[atoffset+len(replaced.atoms):])
         
-        self.rarray = np.concatenate([self.rarray[:roffset],
-                                      self.rarray[roffset+len(replaced.rarray):]])
+#         self.rarray = np.concatenate([self.rarray[:roffset],
+#                                       self.rarray[roffset+len(replaced.rarray):]])
         
-        del self.bodies[i]
+#         del self.bodies[i]
         
         
-    def get_rarray(self):
-        return self.__rarray
+#     def get_rarray(self):
+#         return self.__rarray
     
-    def set_rarray(self, value):
-        self.__rarray = value
-        return
-        for i, atom in enumerate(self.atoms):
-            atom.coords = self.__rarray[i]
+#     def set_rarray(self, value):
+#         self.__rarray = value
+#         return
+#         for i, atom in enumerate(self.atoms):
+#             atom.coords = self.__rarray[i]
         
-    rarray = property(get_rarray, set_rarray)
+#     rarray = property(get_rarray, set_rarray)
     
-    def __repr__(self):
-        return "System(%d)"%self.n
+#     def __repr__(self):
+#         return "System(%d)"%self.n
         

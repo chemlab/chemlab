@@ -1,4 +1,3 @@
-import h5py
 from chemlab.core.system import MonatomicSystem, System
 from chemlab.core.molecule import Atom, Molecule
 from chemlab.io.trajectory import make_trajectory

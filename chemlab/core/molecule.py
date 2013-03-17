@@ -3,6 +3,7 @@
 import numpy as np
 from collections import Counter
 import numpy as np
+from copy import copy
 
 from ..data import symbols
 from ..data import masses
@@ -63,17 +64,15 @@ class Molecule(object):
             else:
                 setattr(inst, arr_name, kwargs[arr_name])
         
+                
+        # Special Case, default value
+        if kwargs.get('export', None) is None:
+            kwargs['export'] = {}
+                
         for field in Molecule.fields:
-            # Special cases
-            if kwargs.get('export', None) == None:
-                inst.export = {}
-            elif kwargs.get('formula', None) == None:
-                pass
-            else:
-                setattr(inst, field, kwargs[field])
+            setattr(inst, field, kwargs[field])
 
         inst.n_atoms = len(inst.r_array)
-        
         return inst
         
     @property
@@ -96,10 +95,17 @@ class Molecule(object):
         return "molecule({})".format(self._det_formula())
     
     def copy(self):
-        mol = Molecule([atom.copy() for atom in self.atoms],
-                       [], export=self.export.copy())
+        kwargs = {}
         
-        return mol
+        # Arrays
+        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.items():
+            kwargs[arr_name] = getattr(self, arr_name).copy()
+        
+        # Fields
+        for field in Molecule.fields:
+            kwargs[field] = copy(getattr(self, field))
+
+        return Molecule.from_arrays(**kwargs)
         
     def _det_formula(self):
         return make_formula(self.type_array)

@@ -15,7 +15,7 @@ import numpy as np
 from collections import Counter
 
 from .spacegroup import Spacegroup
-from ..system import SystemFast
+from ..system import System
 from .cell import cellpar_to_cell
 
 
@@ -56,8 +56,8 @@ def crystal(positions, molecules, group,
         n_at += c[el]*molecules[el].n_atoms 
         n_mol += c[el]
 
-    cry = SystemFast(reptot*n_mol,
-                     reptot*n_at)
+    cry = System.empty(reptot*n_mol,
+                       reptot*n_at)
     
     # Unit cell parameters
     a,b,c = cellpar_to_cell(cellpar)
