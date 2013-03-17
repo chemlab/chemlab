@@ -73,7 +73,7 @@ idea that comes to your mind. In other words, get involved!
 Chemlab is divided in several packages that can be used almost
 independently.
 
-  - chemlab.graphics includes a molecular viewer and its components.
+  - :doc:`chemlab.graphics </api/chemlab.graphics>` includes a molecular viewer and its components.
   - chemlab.molsim molecular simulation routines
   - chemlab.core basic data structures such as atoms, molecules etc
   - chemlab.data database for various chemical data

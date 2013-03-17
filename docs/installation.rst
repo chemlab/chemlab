@@ -5,9 +5,10 @@ Installation and Quickstart
 chemlab is currently tested on Ubuntu 12.10. First
 install the dependencies::
 
-    $ sudo apt-get install python-numpy python-pyside python-opengl
+    $ sudo apt-get install python-numpy python-pyside python-opengl cython
 
-Download chemlab and install it from the setup.py included in the package::
+Download chemlab and install it from the setup.py included in the
+package::
 
     $ sudo python setup.py install
 
