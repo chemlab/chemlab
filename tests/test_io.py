@@ -1,9 +1,9 @@
-from chemlab.core.system import MonatomicSystem, System
+from chemlab.core.system import System
 from chemlab.core.molecule import Atom, Molecule
-from chemlab.io.trajectory import make_trajectory
-from chemlab.io.gro import write_gro, read_gro_traj
+#from chemlab.io.trajectory import make_trajectory
+from chemlab.io.gro import write_gro
     
-def test_traj():
+def _test_traj():
     sys = MonatomicSystem.random("Ar", 64, 1.0)
     traj = make_trajectory(sys,  "traj.hdf", restart=True)
     
@@ -18,11 +18,8 @@ def test_traj():
 def test_gromacs():
     '''Test reading a gromacs file'''
     from chemlab.io.gro import parse_gro
-    import pyglet
-    pyglet.options['vsync'] = False
     from chemlab.graphics import display_system
-    
-    display_system(parse_gro("tests/data/water_nacl.gro"))
+    parse_gro("tests/data/cry.gro")
 
 
 def test_write_gromacs():
@@ -31,12 +28,10 @@ def test_write_gromacs():
                       Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
                       export={'groname': 'SOL'})
 
-    sys = System(boxsize=1.82)
+    sys = System.empty(200, 3*200, boxsize = 2.0)
     for i in range(200):
-        sys.random_add(water.copy(), min_distance=0.25, maxtries=1000)
+        sys.add(water.copy())
     
-    write_gro(sys, '../grostudy/mywater/dummy.gro')
+    write_gro(sys, '/tmp/dummy.gro')
     
-def test_read_trajectory():
-    print read_gro_traj('traj.gro')
     

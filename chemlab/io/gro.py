@@ -83,7 +83,9 @@ def parse_gro_lines(lines):
         
     mol_export = np.array([dict(groname=g) for g in dataarr['f1'][mol_indices]])
     atom_export_array = np.array([dict(grotype=g) for g in grotype_array])
-    type_array = np.array([gro_to_cl[g] for g in grotype_array])
+    
+    # Gromacs Defaults to Unknown Atom type
+    type_array = np.array([gro_to_cl.get(g, "Unknown") for g in grotype_array])
     
     # Molecular Formula Arrays
     mol_formula = []
@@ -138,6 +140,8 @@ def write_gro(sys, filename):
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n%99999, x, y, z))
     
+    if sys.box_vectors == None:
+        raise Exception('Gromacs exporter need box_vector information\nSet System.boxsize attribute or System.box_vectors')
     lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0,0],
                                                       sys.box_vectors[1,1],
                                                       sys.box_vectors[2,2]))
