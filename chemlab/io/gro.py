@@ -1,4 +1,4 @@
-from ..core.system import System, SystemFast
+from ..core.system import System
 from ..core.molecule import Atom
 
 from ..data.symbols import symbol_list
@@ -98,7 +98,7 @@ def parse_gro_lines(lines):
     
     
     # n_mol, n_at
-    sys = SystemFast.from_arrays(r_array=r_array, mol_indices=mol_indices,
+    sys = System.from_arrays(r_array=r_array, mol_indices=mol_indices,
                                  type_array=type_array,
                                  atom_export_array=atom_export_array,
                                  mol_export=mol_export,
