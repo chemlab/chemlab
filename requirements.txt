@@ -4,4 +4,3 @@ distribute==0.6.24
 nose==1.2.1
 numpy==1.7.0
 wsgiref==0.1.2
-PySide
