@@ -29,14 +29,24 @@ class Mock(object):
         elif name[0] == name[0].upper():
             mockType = type(name, (), {})
             mockType.__module__ = __name__
-            return mockType
+            return Mock()
         else:
             return Mock()
+        
+    def __getitem__(self, index):
+        raise IndexError()
 
-MOCK_MODULES = ['PySide', 'cforces', 'pexpect', 'pyxdr']
+    
+MOCK_MODULES = ['PySide.QtGui', 'PySide.QtCore', 'PySide', 'PySide.QtOpenGL',
+                'chemlab.molsim.cforces2', 'h5py']
+
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
+MOCK_NAMES = ['QGLWidget']
+
+for name in MOCK_NAMES:
+    __builtins__[name] = Mock()
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

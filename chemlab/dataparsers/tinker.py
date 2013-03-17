@@ -2,7 +2,7 @@
 
 """
 import re
-from .. import Molecule, Atom, Bond
+from .. import Molecule, Atom
 
 class TinkerXyzDataParser(object):
 
