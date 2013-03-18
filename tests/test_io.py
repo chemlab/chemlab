@@ -15,6 +15,13 @@ def test_read_gromacs():
     parse_gro("tests/data/cry.gro")
 
 
+def test_pdb():
+    df = DataFile('tests/data/3ZJE.pdb')
+    s = df.read('system')
+    
+    from chemlab.graphics import display_system
+    display_system(s)
+    
 def test_write_gromacs():
     water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'grotype': 'OW'}),
                       Atom('H', [0.1, 0.0, 0.0], export={'grotype': 'HW1'}),

@@ -3,6 +3,7 @@ import difflib
 
 from .iohandler import make_ionotavailable
 from .gro import GromacsIO
+from .pdb import PdbIO
 
 try:
     from .xtctrr import XtcIO, TrrIO
@@ -18,7 +19,8 @@ except ImportError:
 _default_handlers = [
     [GromacsIO, 'gro', '.gro'],
     [XtcIO, 'xtc', '.xtc'],
-    [TrrIO, 'trr', '.trr']
+    [TrrIO, 'trr', '.trr'],
+    [PdbIO, 'pdb', '.pdb']
 ]
 
 class DataFile(object):
