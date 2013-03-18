@@ -28,12 +28,14 @@ class PdbIO(IOHandler):
     def handle_line(self, line):
         if line[0:6] == 'ATOM  ':
             self.handle_ATOM(line)
+        if line[0:6] == 'HETATM':
+            self.handle_ATOM(line)
 
     def handle_ATOM(self, line):
-        serial = int(line[7:11])
-        name = line[13:16]
+        serial = int(line[6:12])
+        name = line[12:16]
         
-        resname = line[18:20]
+        resname = line[17:20]
         x = float(line[31:38])
         y = float(line[39:46])
         z = float(line[47:54])
@@ -41,11 +43,10 @@ class PdbIO(IOHandler):
         # Standard residues just contain the following atoms
         # C, N, H, S and the first is the type
         
-        type = name[0]
+        type = name[0:2].lstrip()
         self.atom_res.append(resname)
         # Angstrom to nanometer
         self.atoms.append(Atom(type, [x/10.0, y/10.0, z/10.0]))
-        
         
     def get_system(self):
         r_array = np.array([a.r for a in self.atoms])
@@ -60,7 +61,7 @@ class PdbIO(IOHandler):
             mol_indices.append(first_element[0])
             mol_names.append(first_element[1])
         
-        mol_export = [{'residue': res} for res in mol_names]
+        mol_export = [{'pdb.residue': res} for res in mol_names]
             
         return System.from_arrays(r_array=r_array,
                                   type_array=type_array,
@@ -68,6 +69,7 @@ class PdbIO(IOHandler):
                                   atom_export_array=atom_export_array,
                                   mol_formula=mol_names,
                                   mol_export=mol_export)
+    
     def get_molecule(self):
         m = Molecule(self.atoms)
         return m

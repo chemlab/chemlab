@@ -8,6 +8,7 @@ import re
 symbol_list = [s.lower() for s in symbol_list]
 
 
+
 gro_to_cl = {
 'OW' : 'O',
 'OW1': 'O',
@@ -45,7 +46,7 @@ class GromacsIO(IOHandler):
 
     def write(self, feature, sys):
         if feature == 'system':
-            write_gro(sys, filename)
+            write_gro(sys, self.filename)
 
 
 def parse_gro_lines(lines):

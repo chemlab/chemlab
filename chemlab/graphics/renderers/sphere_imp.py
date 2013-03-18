@@ -88,3 +88,4 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         
         self._verts_vbo.set_data(vertices)
         self._centers_vbo.set_data(vertices)
+        
