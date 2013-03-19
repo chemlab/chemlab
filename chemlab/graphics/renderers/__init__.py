@@ -7,3 +7,4 @@ from .point import PointRenderer
 from .triangles import TriangleRenderer
 from .box import BoxRenderer
 from .line import LineRenderer
+from .cylinder import CylinderRenderer

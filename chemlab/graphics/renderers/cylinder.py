@@ -1,7 +1,12 @@
 import numpy as np
+from ..transformations import (rotation_matrix, normalized,
+                               angle_between_vectors, unit_vector, distance,
+                               vector_product)
+from .triangles import TriangleRenderer
+from .base import AbstractRenderer
 
 class CylinderRenderer(AbstractRenderer):
-    def __init__(self, startlist, endlist, radiuslist, colorlist):
+    def __init__(self, viewer, bounds, radii, colors):
         '''Renders a set of cylinders. The starting and end point of
         each cylinder is stored in the startlist* and *endlist*.
         
@@ -12,127 +17,115 @@ class CylinderRenderer(AbstractRenderer):
 
         '''
         
-        self.startlist = startlist
-        self.endlist = endlist
-        self.radiuslist = radiuslist
-        self.colorlist = colorlist
+        # Unit cylinder
+        cyl = Cylinder(1.0, np.array([0.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
         
-        ncyl = len(startlist)
+        self._reference_verts = cyl.tri_vertex
+        self._reference_norms = cyl.tri_normals
         
-        dir = self.endlist - self.startlist
+        n_v = len(self._reference_verts)
+        self._reference_verts = self._reference_verts.reshape(n_v/3, 3)
+        self._reference_norms = self._reference_norms.reshape(n_v/3, 3)
         
+        self._reference_n = len(self._reference_verts)
         
-        for start, end, radius, color in zip(self.startlist,
-                                             self.endlist,
-                                             self.radiuslist,
-                                             self.colorlist):
-            cyl = OptCylinder(start, end, radius, color)
+        self.n_cylinders = len(bounds)
         
-        # We expect to receive things in nanometers
-        n_triangles = 0
+        # Rotate the cylinder
         vertices = []
         normals = []
-        colors_ = []
         
+        for s,e in bounds:
+            # Generate rotation matrix
+            ang = angle_between_vectors([0.0, 0.0, 1.0], e - s)
+            axis = normalized(e - s)
+            rot = rotation_matrix(ang, axis)[:3, :3]
+            vertices.extend(np.dot(rot, self._reference_verts.T) + s[:,np.newaxis])
+            normals.extend(np.dot(rot, self._reference_norms.T))
         
-        for start, end, radius, color in zip(self.startlist,
-                                             self.endlist,
-                                             self.radiuslist,
-                                             self.colorlist):
-            cyl = OptCylinder(start, end, radius, color)
-            n_triangles += s.tri_n
-            
-            vertices.append(s.tri_vertex)
-            normals.append(s.tri_normals)
-            colors_.append(s.tri_color)
+        vertices = np.array(vertices, dtype = np.float32)
+        normals = np.array(normals, dtype = np.float32)
+        colors = np.repeat(colors, self._reference_n * self.n_cylinders)
         
-        # Convert arrays to numpy arrays, float32 precision,
-        # compatible with opengl, and cast to ctypes
-        vertices = np.array(vertices, dtype=np.float32)
-        normals = np.array(normals, dtype=np.float32)
-        colors_ = np.array(colors_, dtype=np.uint8)
-
-        # Store vertices, colors and normals in 3 different vertex
-        # buffer objects
-        self._vbo_v = VertexBufferObject(n_triangles*3*sizeof(GLfloat),
-                                         GL_ARRAY_BUFFER,
-                                         GL_DYNAMIC_DRAW)
-        self._vbo_v.bind()
-        self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
-        self._vbo_v.unbind()
+        self.tr = TriangleRenderer(viewer, vertices, colors, normals)
         
-        self._vbo_n = VertexBufferObject(n_triangles*3*sizeof(GLfloat),
-                                         GL_ARRAY_BUFFER,
-                                         GL_DYNAMIC_DRAW)
-        self._vbo_n.bind()
-        self._vbo_n.set_data(normals.ctypes.data_as(POINTER(GLfloat)))
-        self._vbo_n.unbind()
-
-        self._vbo_c= VertexBufferObject(n_triangles*4*sizeof(GLubyte),
-                                        GL_ARRAY_BUFFER,
-                                        GL_DYNAMIC_DRAW)
-        self._vbo_c.bind()
-        self._vbo_c.set_data(colors_.ctypes.data_as(POINTER(GLuint)))
-        self._vbo_c.unbind()
-        
-        self._n_triangles = n_triangles
-    
     def draw(self):
-        # Draw all the vbo defined in set_atoms
-        glEnableClientState(GL_VERTEX_ARRAY)
-        self._vbo_v.bind()
-        glVertexPointer(3, GL_FLOAT, 0, 0)
+        self.tr.draw()
+    
         
-        glEnableClientState(GL_NORMAL_ARRAY)
-        self._vbo_n.bind()
-        glNormalPointer(GL_FLOAT, 0, 0)
-        
-        glEnableClientState(GL_COLOR_ARRAY)
-        self._vbo_c.bind()
-        glColorPointer(4, GL_UNSIGNED_BYTE, 0, 0)
-        
-        glDrawArrays(GL_TRIANGLES, 0, self._n_triangles)
-        
-        self._vbo_v.unbind()
-        self._vbo_n.unbind()
-        self._vbo_c.unbind()
-        
-        glDisableClientState(GL_VERTEX_ARRAY)
-        glDisableClientState(GL_NORMAL_ARRAY)
-        glDisableClientState(GL_COLOR_ARRAY)
+from ..colors import purple        
+class Cylinder(object):
+    def __init__(self, radius, start, end, cloves=10, color=purple):
+        '''Create a Cylinder object specifying its radius its start
+        and end points. You can modulate its smoothness using the
+        "cloves" settings.
 
-    def update_positions(self, startlist, endlist):
-        offset = 0
-        vertices = np.zeros(self._n_triangles*3, dtype=np.float32)
+        '''
+        self.radius = radius
+        self.start = start
+        self.end = end
+        self.axis = unit_vector(end - start)
+        self.cloves = cloves
+        self.color = color
         
-        for i in range(len(rarray)):
-            color = self.colorlist[i]
-            radius = self.radiuslist[i]
-            start = startlist[i]
-            end = endlist[i]
-            s = OptCylinder(start, end, radius, color=color)
+        self.vertices = []
+        self.indices = []
+        self.normals = []
+        
+        self.tri_color = self.color*self.cloves*2*3
+        self.tri_vertex = []
+        self.tri_normals = []
+        
+        self._generate_vertices()
+
+    def _generate_vertices(self):
+        # Generate a cylinder centered at axis 0
+        length = distance(self.start, self.end)
+        
+        # First two points
+        self.vertices.append(np.array([self.radius, 0.0, 0.0]))
+        self.vertices.append(np.array([self.radius, 0.0, length]))
+        
+        z_axis = np.array([0.0, 0.0, 1.0])
+        for i in range(1, self.cloves):
+            rotmat = rotation_matrix( i * 2*np.pi/self.cloves, z_axis)[:3,:3]
             
-            n = len(s.tri_vertex)
-            vertices[offset:offset+n] = s.tri_vertex
-            offset += n
+            nextbottom = np.dot(rotmat, self.vertices[0])
+            nextup = np.dot(rotmat, self.vertices[1])
+            self.vertices.append(nextbottom)
+            self.vertices.append(nextup)
         
-        self._vbo_v.bind()
-        self._vbo_v.set_data(vertices.ctypes.data_as(POINTER(GLfloat)))
-        self._vbo_v.unbind()
+        # Last two points
+        self.vertices.append(np.array([self.radius, 0.0, 0.0]))
+        self.vertices.append(np.array([self.radius, 0.0, length]))
         
-        self.startlist = startlist
-        self.endlist = endlist
+        self.vertices = np.array(self.vertices)
+        self.indices = xrange(len(self.vertices.flatten()))
+
+        # Normals, this is quite easy they are the coordinate with
+        # null z
+        for vertex in self.vertices:
+            self.normals.append(normalized(np.array([vertex[0], vertex[1], 0.0])))
         
-    def update_colors(self, colorlist):
-        self.colorlist = colorlist
+        self.normals = np.array(self.normals) # Numpyize
         
-        colors_ = []
-        for coords, radius, color in zip(self.poslist, self.radiuslist, colorlist):
-            s = OptSphere(radius, coords, color=color)
-            colors_.append(s.tri_color)
+        ang = angle_between_vectors(z_axis, self.axis)
+        rotmat = rotation_matrix(-ang, vector_product(z_axis, self.axis))[:3,:3]
         
-        colors_ = np.array(colors_, dtype=np.uint8)
+        # Rototranslate the cylinder to the real axis
+        self.vertices = np.dot(self.vertices, rotmat.T) - self.end
+        self.normals = np.dot(self.normals, rotmat.T)
+        # for i, vertex in enumerate(self.vertices):
+        #     self.vertices[i] = np.dot(rotmat, vertex) - self.start
+        #     self.normals[i] = np.dot(rotmat, self.normals[i])
         
-        self._vbo_c.bind()
-        self._vbo_c.set_data(colors_.ctypes.data_as(POINTER(GLuint)))
-        self._vbo_v.unbind()
+        # Now for the indices let's generate triangle stuff
+        n = self.cloves * 2 + 2
+        # Draw each triangle in order to form the cylinder
+        a0 = np.array([0,1,2, 2,1,3]) # first two triangles
+        a = np.concatenate([a0 + 2*i for i in xrange(self.cloves)])
+        self.indices = a
+        n = self.cloves * 2 * 3
+        self.tri_vertex = self.vertices[a].flatten()
+        self.tri_normals = self.normals[a].flatten()
+        
