@@ -131,9 +131,9 @@ def test_bond_renderer():
                     Atom("H", [-0.532, 0.198, 0.10])])
     
     from chemlab.io import DataFile
-    mol = DataFile('tests/data/3ZJE.pdb').read('molecule')
+    mol = DataFile('tests/data/sulphoxide.xyz').read('molecule')
     
-    from scipy.spatial import cKDTree as KDTree
+    from scipy.spatial import KDTree
     
     print 'Atoms', mol.n_atoms
     
@@ -147,6 +147,7 @@ def test_bond_renderer():
     t0 = time.time()
     pairs = kd.query_pairs(0.2)
     pairs = np.array(list(pairs))
+    #print pairs
     print time.time() - t0
     
     
@@ -156,7 +157,7 @@ def test_bond_renderer():
     colors = [white] * n_pairs
     #print colors
     
-    ar = v.add_renderer(AtomRenderer, mol, "polygons")
+    ar = v.add_renderer(AtomRenderer, mol, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     
     v.run()

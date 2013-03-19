@@ -27,7 +27,7 @@ class XyzIO(IOHandler):
                 r_array.append([float(x),float(y),float(z)])
                 type_array.append(type)
             
-            r_array = np.array(r_array)
+            r_array = np.array(r_array)/10 # To nm
             type_array = np.array(type_array)
             
             return Molecule.from_arrays(r_array=r_array, type_array=type_array)
