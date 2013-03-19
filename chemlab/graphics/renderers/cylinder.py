@@ -3,6 +3,7 @@ from ..transformations import (rotation_matrix, normalized,
                                angle_between_vectors, unit_vector, distance,
                                vector_product)
 from .triangles import TriangleRenderer
+from .point import PointRenderer
 from .base import AbstractRenderer
 
 class CylinderRenderer(AbstractRenderer):
@@ -17,8 +18,19 @@ class CylinderRenderer(AbstractRenderer):
 
         '''
         
+        self.bounds = bounds
+        self.radii = radii
+        self.colors = colors
+        
+        
+        starts =  bounds[:,0,:]
+        ends = bounds[:,1,:]
+        
+        self.lengths = lengths = np.sqrt(((ends - starts)**2).sum(axis=1))
+        
         # Unit cylinder
-        cyl = Cylinder(1.0, np.array([0.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
+        cyl = Cylinder(1.0, np.array([0.0, 0.0, 0.0]),
+                       np.array([0.0, 0.0, 1.0]))
         
         self._reference_verts = cyl.tri_vertex
         self._reference_norms = cyl.tri_normals
@@ -31,27 +43,48 @@ class CylinderRenderer(AbstractRenderer):
         
         self.n_cylinders = len(bounds)
         
+        vertices, normals, colors = self._process_reference()
+        
+        self.tr = TriangleRenderer(viewer, vertices,  normals, colors)
+        
+    def draw(self):
+        self.tr.draw()
+
+    def _process_reference(self):
         # Rotate the cylinder
         vertices = []
         normals = []
         
-        for s,e in bounds:
+        for i, (s,e) in enumerate(self.bounds):
+            # Scale the radii and the length
+            vrt = self._reference_verts.copy()
+            vrt[:, 0:2] *= self.radii[i]
+            vrt[:, 2] *= self.lengths[i]
+            
             # Generate rotation matrix
             ang = angle_between_vectors([0.0, 0.0, 1.0], e - s)
-            axis = normalized(e - s)
-            rot = rotation_matrix(ang, axis)[:3, :3]
-            vertices.extend(np.dot(rot, self._reference_verts.T) + s[:,np.newaxis])
-            normals.extend(np.dot(rot, self._reference_norms.T))
+            axis = normalized(vector_product([0.0, 0.0, 1.0], e - s))
+            rot = rotation_matrix(ang, axis)[:3, :3].T
+            
+            
+            vertices.extend(np.dot(vrt, rot) + s)
+            normals.extend(np.dot(self._reference_norms, rot))
         
-        vertices = np.array(vertices, dtype = np.float32)
-        normals = np.array(normals, dtype = np.float32)
-        colors = np.repeat(colors, self._reference_n * self.n_cylinders)
+        colors = np.repeat(self.colors, self._reference_n, axis=0)
+        return vertices, normals, colors
         
-        self.tr = TriangleRenderer(viewer, vertices, colors, normals)
+    def update_bounds(self, bounds):
+        starts =  bounds[:,0,:]
+        ends = bounds[:,1,:]
+
+        self.bounds = bounds
+        self.lengths =  np.sqrt(((ends - starts)**2).sum(axis=1))
         
-    def draw(self):
-        self.tr.draw()
-    
+        vertices, normals, colors = self._process_reference()
+        
+        self.tr.update_vertices(vertices)
+        self.tr.update_normals(normals)
+        
         
 from ..colors import purple        
 class Cylinder(object):
@@ -101,16 +134,22 @@ class Cylinder(object):
         
         self.vertices = np.array(self.vertices)
         self.indices = xrange(len(self.vertices.flatten()))
-
+        
         # Normals, this is quite easy they are the coordinate with
         # null z
         for vertex in self.vertices:
             self.normals.append(normalized(np.array([vertex[0], vertex[1], 0.0])))
-        
         self.normals = np.array(self.normals) # Numpyize
         
         ang = angle_between_vectors(z_axis, self.axis)
-        rotmat = rotation_matrix(-ang, vector_product(z_axis, self.axis))[:3,:3]
+        
+        if np.allclose(z_axis, self.axis):
+            # Special case
+            rotmat = np.eye(3)
+        else:
+            rotmat = rotation_matrix(-ang,
+                                     vector_product(z_axis, self.axis))[:3,:3]
+            
         
         # Rototranslate the cylinder to the real axis
         self.vertices = np.dot(self.vertices, rotmat.T) - self.end

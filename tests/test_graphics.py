@@ -101,12 +101,26 @@ def test_line_renderer():
 
     
 def test_cylinder_renderer():
-    bounds = np.array([[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
-    radii = np.array([0.5])
-    colors = np.array([blue])
+    bounds = np.array([[[-1.0, 0.0, 0.0], [-1.0, 1.0, 0.0]],
+                       [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]]])
+    radii = np.array([0.5, 0.3])
+    colors = np.array([blue, orange])
+    
+    # Test for speed
+    # random bounds
+    # n = 1000
+    #bounds = np.random.rand(n, 2, 3) * 10
+    #radii = np.random.rand(n)
+    #colors = np.array([blue] * n)
     
     v = QtViewer()
+    import time
+    t0 = time.time()
     ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
+    print time.time() - t0
+    
+    ar.update_bounds(bounds)
+    
     v.run()
     
 def test_text_ui():
