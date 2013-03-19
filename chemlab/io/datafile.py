@@ -8,20 +8,16 @@ from .edr import EdrIO
 from .xyz import XyzIO
 
 try:
-    from .xtctrr import XtcIO, TrrIO
+    from .xtctrr import XtcIO
 except ImportError:
     XtcIO = make_ionotavailable('XtcIO',
                                 'To enable XTC file reading install library pyxdr',
                                 can_read = ['trajectory'])
-    TrrIO = make_ionotavailable('TrrIO',
-                                'To enable TRR file reading install library pyxdr',
-                                can_read=['trajectory'])
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
     [GromacsIO, 'gro', '.gro'],
     [XtcIO, 'xtc', '.xtc'],
-    [TrrIO, 'trr', '.trr'],
     [PdbIO, 'pdb', '.pdb'],
     [EdrIO, 'edr', '.edr'],
     [XyzIO, 'xyz', '.xyz']

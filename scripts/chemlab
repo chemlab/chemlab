@@ -7,30 +7,23 @@ import os
 import time
 
 def view(args):
-    from chemlab.io.gro import parse_gro, read_gro_traj
+    from chemlab.io import DataFile
     from chemlab.graphics import display_system, display_trajectory
     
     base, ext = os.path.splitext(args.filename)
     
     if ext == '.gro':
         if not args.traj:
-            sys = parse_gro(args.filename)
+            df = DataFile(args.filename)
+            sys = df.read('system')
 	    display_system(sys)
 	else:
-            from pyxdr import XTCReader
-            print 'Parsing'
-            t0 = time.time()
-            sys = parse_gro(args.filename)
-            print 'Elapsed', time.time() - t0
-            t0 = time.time()
+            df = DataFile(args.filename)
+            sys = df.read('system')
             
-            print 'Trajectory parsing'
-            frames = []
-            for frame in XTCReader(args.traj):
-                frames.append(frame.coords)
-            print 'Elapsed', time.time() - t0
-            t0 = time.time()
-
+            df = DataFile(args.traj)
+            frames = df.read('trajectory')
+            
             display_trajectory(sys, frames)
 	
 def plot(args):
