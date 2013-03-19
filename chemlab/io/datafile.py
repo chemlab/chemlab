@@ -5,6 +5,7 @@ from .iohandler import make_ionotavailable
 from .gro import GromacsIO
 from .pdb import PdbIO
 from .edr import EdrIO
+from .xyz import XyzIO
 
 try:
     from .xtctrr import XtcIO, TrrIO
@@ -22,7 +23,8 @@ _default_handlers = [
     [XtcIO, 'xtc', '.xtc'],
     [TrrIO, 'trr', '.trr'],
     [PdbIO, 'pdb', '.pdb'],
-    [EdrIO, 'edr', '.edr']
+    [EdrIO, 'edr', '.edr'],
+    [XyzIO, 'xyz', '.xyz']
 ]
 
 class DataFile(object):

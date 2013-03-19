@@ -62,3 +62,18 @@ def test_read_edr():
         df.read('quantity', 'NonExistent')
     except:
         pass
+
+def test_read_xyz():
+    df = DataFile('tests/data/sulphoxide.xyz')
+    mol1 = df.read('molecule')
+    
+    
+    df = DataFile('/tmp/t.xyz')
+    df.write('molecule', mol1)
+    
+    mol2 = df.read('molecule')
+    
+    assert np.allclose(mol1.r_array, mol2.r_array)
+    assert all(mol1.type_array == mol2.type_array)
+    
+    

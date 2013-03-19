@@ -56,13 +56,15 @@ class Molecule(object):
             raise Exception('r_array and type_array are required arguments.')
         
         inst = cls.__new__(Molecule)
-
+        
+        # Special cases -- default values
+        if kwargs.get('m_array', None) == None:
+            kwargs['m_array'] = np.array([masses.typetomass[t] for t in kwargs['type_array']])            
+        if kwargs.get('atom_export_array', None) == None:
+            kwargs['atom_export_array'] = np.array([{} for t in kwargs['type_array']])     
+            
         for arr_name, (field_name, dtyp) in Molecule.atom_inherited.items():
-            # Special cases
-            if kwargs.get('m_array', None) == None:
-                inst.m_array = np.array([masses.typetomass[t] for t in kwargs['type_array']])            
-            else:
-                setattr(inst, arr_name, kwargs[arr_name])
+            setattr(inst, arr_name, kwargs[arr_name])
         
                 
         # Special Case, default value
