@@ -1,23 +1,57 @@
 '''Parser for gromacs edr'''
 from .iohandler import IOHandler
+import numpy as np
 import xdrlib
+import difflib
+
+class QuantityNotAvailable(Exception):
+    pass
 
 class EdrIO(IOHandler):
-    can_read = ['frames']
+    can_read = ['frames', 'quantity', 'units', 'avail quantities']
     can_write = []
     
     def __init__(self, filename):
         self.f = filename
+        self.processed = False
         
     def read(self, feature, *args):
-        frames =  self.process_frames()        
+        
+        if not self.processed:
+            self.frames = frames = self.process_frames()        
+            self.processed = True
+        else:
+            frames = self.frames
         
         if feature == 'frames':
             return frames
+        
         if feature == 'quantity':
+            if not args[0]:
+                raise Exception('the method read("quantity", arg) requires a quantity to get')
+                
+            
             quant = args[0]
-            # This will give back the quantity vs T, that seems reasonable
-            pass
+            
+            if quant not in self.props:
+                close = difflib.get_close_matches(quant, self.props)
+                raise QuantityNotAvailable('Quantity %s not available. Close matches: %s'%
+                                           (str(quant), str(close)))
+                
+            i = self.props.index(quant)
+            ret = []
+            for f in frames:
+                ret.append(f[i][0])
+            
+            return np.array(self.times), np.array(ret)
+            
+        if feature == 'units':
+            quant = args[0]
+            i = self.props.index(quant)
+            return self.units[i]
+            
+        if feature == 'avail quantities':
+            return self.props
 
             
     def process_frames(self):
@@ -37,7 +71,6 @@ class EdrIO(IOHandler):
             try:
                 fr = self._unpack_frame()
             except EOFError:
-                print 'Reached end of file'
                 break
             self.frames.append(fr)
 
