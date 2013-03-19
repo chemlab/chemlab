@@ -6,7 +6,7 @@ from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer,
                                         CylinderRenderer)
-
+from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
 
@@ -102,9 +102,10 @@ def test_line_renderer():
     
 def test_cylinder_renderer():
     bounds = np.array([[[-1.0, 0.0, 0.0], [-1.0, 1.0, 0.0]],
-                       [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]]])
-    radii = np.array([0.5, 0.3])
-    colors = np.array([blue, orange])
+                       [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]],
+                       [[1.0, 0.0, 0.0], [1.0, 0.0, 1.0]]])
+    radii = np.array([0.5, 0.3, 0.3])
+    colors = np.array([blue, orange, green])
     
     # Test for speed
     # random bounds
@@ -119,9 +120,47 @@ def test_cylinder_renderer():
     ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     print time.time() - t0
     
-    ar.update_bounds(bounds)
+    #ar.update_bounds(bounds)
     
     v.run()
+    
+def test_bond_renderer():
+    v = QtViewer()
+    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+                    Atom("H", [-0.402, 0.249, 0.0]),
+                    Atom("H", [-0.532, 0.198, 0.10])])
+    
+    from chemlab.io import DataFile
+    mol = DataFile('tests/data/3ZJE.pdb').read('molecule')
+    
+    from scipy.spatial import cKDTree as KDTree
+    
+    print 'Atoms', mol.n_atoms
+    
+    print 'Making kdtree'
+    import time
+    t0 =    time.time()
+    kd = KDTree(mol.r_array)
+    print time.time() - t0
+    
+    print 'Querying'
+    t0 = time.time()
+    pairs = kd.query_pairs(0.2)
+    pairs = np.array(list(pairs))
+    print time.time() - t0
+    
+    
+    bounds = mol.r_array[pairs]
+    n_pairs = len(bounds)
+    radii = [0.03] * n_pairs
+    colors = [white] * n_pairs
+    #print colors
+    
+    ar = v.add_renderer(AtomRenderer, mol, "polygons")
+    cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
+    
+    v.run()
+    
     
 def test_text_ui():
     v = QtViewer()

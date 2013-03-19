@@ -62,13 +62,19 @@ class CylinderRenderer(AbstractRenderer):
             vrt[:, 2] *= self.lengths[i]
             
             # Generate rotation matrix
+
+            # Special case, if the axis is the z-axis
             ang = angle_between_vectors([0.0, 0.0, 1.0], e - s)
             axis = normalized(vector_product([0.0, 0.0, 1.0], e - s))
-            rot = rotation_matrix(ang, axis)[:3, :3].T
+            
+            if ang==0 or np.allclose(axis, [0.0, 0.0, 0.0]):
+                rot = np.eye(3)
+            else:
+                rot = rotation_matrix(ang, axis)[:3, :3].T
             
             
-            vertices.extend(np.dot(vrt, rot) + s)
-            normals.extend(np.dot(self._reference_norms, rot))
+            vertices.extend(np.dot(vrt, rot.T) + e)
+            normals.extend(np.dot(self._reference_norms, rot.T))
         
         colors = np.repeat(self.colors, self._reference_n, axis=0)
         return vertices, normals, colors
