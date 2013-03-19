@@ -64,12 +64,20 @@ def parse_atp(file):
 
     for opls, mass in fields:
         mass = float(mass)
+        found = False
         for k, v in masses.typetomass.items():
             if abs(v - mass) < 0.1:
                 type = k
-        opls_to_type[opls] = type
+                found = True
+            
+        if found:
+            opls_to_type[opls] = type
+        else:
+            print 'Type', opls, 'not found.', 'Mass =', mass
+            opls_to_type[opls] = 'Unknown'
     
 parse_atp('/usr/share/gromacs/top/oplsaa.ff/atomtypes.atp')    
+#parse_atp('/usr/share/gromacs/top/gmx.ff/atomtypes.atp')
 
 for fn in sys.argv[1:]:
     parse(fn)

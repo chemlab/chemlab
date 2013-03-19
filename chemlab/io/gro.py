@@ -1,3 +1,4 @@
+import numpy as np
 from ..core.system import System
 from ..core.molecule import Atom
 from .iohandler import IOHandler
@@ -5,30 +6,9 @@ from .iohandler import IOHandler
 from ..data.symbols import symbol_list
 import re
 
+from .gro_map import gro_to_cl
+
 symbol_list = [s.lower() for s in symbol_list]
-
-
-
-gro_to_cl = {
-'OW' : 'O',
-'OW1': 'O',
-'HW1': 'H',
-'HW2': 'H',
-'HW3': 'H',
-'LI' : 'Li',
-'CL' : 'Cl',
-'NA' : 'Na',
-'BR' : 'Br',
-
-    # Methane
-    'Me1': 'C',
-    'O2': 'O',
-    'H3': 'H'
-
-}
-
-import numpy as np
-
 
 class GromacsIO(IOHandler):
     can_read = ['system']
