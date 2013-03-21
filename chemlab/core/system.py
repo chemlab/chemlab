@@ -66,6 +66,11 @@ class System(object):
     **Atom Derived Attributes**
         
     .. py:attribute:: r_array
+        
+        :Type: np.ndarray[3,NA]
+        :Derived From: Atom
+    
+        
     
     .. py:attribute:: m_array
     
