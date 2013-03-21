@@ -14,8 +14,7 @@ class Atom(object):
     
     .. seealso:: :doc:`/core`
         
-    Parameters
-    ----------
+    **Parameters**
 
       type: str
          Atomic symbol
@@ -38,21 +37,25 @@ class Atom(object):
     .. py:attribute:: type
        
        :Type: str
+    
        The atomic symbol e.g. `Ar`, `H`, `O`.
     
     .. py:attribute:: r 
        
        :Type: np.ndarray(3) of floats
+    
        Atomic position in *nm*.
 
     .. py:attribute:: mass
     
        :Type: float
+    
        Mass in atomic mass units.
     
     .. py:attribute:: export
     
        :Type: dict
+    
        Dictionary containing additional information when
        importing data from various formats.
     
@@ -61,6 +64,7 @@ class Atom(object):
     .. py:attribute:: Atom.fields
     
        :Type: tuple
+    
        This is a *class attribute*.
        The list of attributes that constitute the Atom. This is used
        to iterate over the `Atom` attributes at runtime. 
@@ -130,50 +134,67 @@ class Molecule(object):
     export: dict, optional
       Export information for the Molecule 
     
-    **Atom Derived Attributes**
-    
-    
-    .. py:attribute:: r_array {numpy.array[N,3] of float}
+    .. py:attribute:: r_array
+
+       :type: np.ndarray((N,3), dtype=float)
+       :derived from: Atom
     
        An array with the coordinates of each *Atom*.
     
     .. py:attribute:: type_array {numpy.array[N] of str}
     
+       :type: np.ndarray(N, dtype=str)
+       :derived from: Atom
+    
        An array containing the chemical symbols of the
        constituent atoms.
     
-    .. py:attribute::  m_array {numpy.array[N] of float}
+    .. py:attribute::  m_array
+    
+       :type: np.ndarray(N, dtype=float)
+       :derived from: Atom
     
        Array of masses.
     
     .. py:attribute:: atom_export_array {numpy.array[N] of dict}
     
+       :type: np.ndarray(N, dtype=object) *array of dicts*
+       :derived from: Atom
+    
        Array of `Atom.export` dicts.
     
-    **Attributes**
+    .. py:attribute:: n_atoms
     
-    .. py:attribute:: n_atoms {int}
+       :type: int
     
        Number of atoms present in the molecule.
     
-    .. py:attribute:: export {dict}
+    .. py:attribute:: export
+
+       :type: dict
     
        Export information for the whole Molecule.
     
-    .. py:attribute:: mass {float}
+    .. py:attribute:: mass
        
+       :type: float
+    
        Mass of the whole molecule in *amu*.
     
-    .. py:attribute:: center_of_mass {float}
+    .. py:attribute:: center_of_mass
     
-    .. py:attribute:: geometric_center {float}
+       :type: float
+    
+    .. py:attribute:: geometric_center
 
-    .. py:attribute:: formula {str}
+       :type: float    
+    
+    .. py:attribute:: formula
+    
+       :type: float
     
        The brute formula of the Molecule. i.e. ``"H2O"``
        
-    
-    **Methods**
     '''
     # Association between the Molecule array attribute and the atom one
     atom_inherited = {'r_array': ('r', np.float64),

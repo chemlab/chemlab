@@ -56,7 +56,7 @@ class System(object):
        The size of one side of a cubic box containing the system. Periodic boxes
        are common in molecular dynamics.
     
-    box_vectors: np.ndarray[3,3], optional
+    box_vectors: np.ndarray((3,3), dtype=float), optional
        You can specify the periodic box of another shape by giving 3 box vectors
        instead.
 
@@ -65,21 +65,24 @@ class System(object):
     
     .. py:attribute:: r_array
         
-        :Type: np.ndarray[3,NA]
-        :Derived From: Atom
+       :type: np.ndarray[3,NA]
+       :derived from: Atom
     
     .. py:attribute:: m_array
+        
+       :derived from: Atom
     
     .. py:attribute:: type_array
     
+       :derived from: Atom
+    
     .. py:attribute:: atom_export_array
     
-    **Molecule Derived Attributes**
+       :derived from: Atom
     
     .. py:attribute:: mol_export
     
-    
-    **System Attributes**
+       :derived from: Molecule    
     
     .. py:attribute:: boxsize
     
