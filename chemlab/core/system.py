@@ -63,14 +63,10 @@ class System(object):
     The System class has attributes derived both from the Molecule and
     the Atom class.
     
-    **Atom Derived Attributes**
-        
     .. py:attribute:: r_array
         
         :Type: np.ndarray[3,NA]
         :Derived From: Atom
-    
-        
     
     .. py:attribute:: m_array
     

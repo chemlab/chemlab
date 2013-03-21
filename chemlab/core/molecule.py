@@ -14,7 +14,8 @@ class Atom(object):
     
     .. seealso:: :doc:`/core`
         
-    **Parameters**
+    Parameters
+    ----------
 
       type: str
          Atomic symbol
@@ -34,35 +35,35 @@ class Atom(object):
     
     >>> Atom('H', [0.0, 0.0, 0.0], {'groname': 'HW1'})
   
-    **Instance Attributes**
-    
-    .. py:attribute:: type {str} 
-    
-       The atomic symbol, e.g. `Ar`, `H`, `O`.
-    
-    .. py:attribute:: r {np.ndarray[3] of floats}
+    .. py:attribute:: type
        
-       Atomic position in nm.
-
-    .. py:attribute:: mass {float}
+       :Type: str
+       The atomic symbol e.g. `Ar`, `H`, `O`.
     
+    .. py:attribute:: r 
+       
+       :Type: np.ndarray(3) of floats
+       Atomic position in *nm*.
+
+    .. py:attribute:: mass
+    
+       :Type: float
        Mass in atomic mass units.
     
-    .. py:attribute:: export {dict}
+    .. py:attribute:: export
     
+       :Type: dict
        Dictionary containing additional information when
        importing data from various formats.
     
        .. seealso:: :py:class:`chemlab.io.gro.GroIO`    
        
-    **Class Attributes**
+    .. py:attribute:: Atom.fields
     
-    .. py:attribute:: Atom.fields {tuple}
-    
-       A list of attributes that constitute the atom. This is used
+       :Type: tuple
+       This is a *class attribute*.
+       The list of attributes that constitute the Atom. This is used
        to iterate over the `Atom` attributes at runtime. 
-    
-    **Methods**
     
     '''
 
