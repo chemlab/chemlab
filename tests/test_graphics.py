@@ -132,30 +132,35 @@ def test_bond_renderer():
     
     from chemlab.io import DataFile
     mol = DataFile('tests/data/sulphoxide.xyz').read('molecule')
+    #mol = DataFile('tests/data/3ZJE.pdb').read('molecule')
     
     from scipy.spatial import KDTree
     
-    print 'Atoms', mol.n_atoms
+    # Test other algorithm to find bond
+    r_array = mol.r_array
+    # Make a grid of 0.3 spacing
+    eps = 0.3
+    grid = (r_array/eps).astype(int)
+    # Transfor into chars to ease the sorting
+    #grid_list = grid.tolist()
+    sorted_indices = sorted(range(len(grid)), key=lambda x: str(grid[x]))
     
-    print 'Making kdtree'
-    import time
-    t0 =    time.time()
-    kd = KDTree(mol.r_array)
-    print time.time() - t0
-    
-    print 'Querying'
-    t0 = time.time()
-    pairs = kd.query_pairs(0.2)
-    pairs = np.array(list(pairs))
-    #print pairs
-    print time.time() - t0
-    
-    
+    sorted_grid = grid[sorted_indices]
+    print sorted_grid
+        
+    pairs = []
+    for i in range(len(grid)-1):
+        print sorted_grid[i]
+        if np.allclose(sorted_grid[i], sorted_grid[i+1]):
+            pairs.append((sorted_indices[i], sorted_indices[i+1]))
+        
+    pairs = np.array(pairs)
     bounds = mol.r_array[pairs]
     n_pairs = len(bounds)
     radii = [0.03] * n_pairs
     colors = [white] * n_pairs
     #print colors
+    print n_pairs
     
     ar = v.add_renderer(AtomRenderer, mol, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)

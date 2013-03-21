@@ -1,34 +1,31 @@
-core Package
+chemlab.core
 ============
 
-:mod:`core` Package
--------------------
-
-.. automodule:: chemlab.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`molecule` Module
-----------------------
-
-.. automodule:: chemlab.core.molecule
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`system` Module
---------------------
-
-.. automodule:: chemlab.core.system
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Subpackages
------------
+This package contains general functions and the most basic data
+containers such as Atom, Molecule and System. Plus some utility
+functions to create and edit common Systems.
 
 .. toctree::
 
-    chemlab.core.spacegroup
+   chemlab.core
+   
+   
+The Atom class
+--------------
+
+.. autoclass:: chemlab.core.Atom
+    :members:
+
+The Molecule class
+------------------
+
+.. autoclass:: chemlab.core.Molecule
+    :members:
+
+The System class
+----------------
+
+.. autoclass:: chemlab.core.System
+    :members:
+ 
 
