@@ -56,7 +56,7 @@ class DataFile(object):
     def __init__(self, filename, format=None):
         cls = type(self)
         # Add the default handlers
-        
+        self.filename = filename
         
         if format is None:
             base, ext = os.path.splitext(filename)

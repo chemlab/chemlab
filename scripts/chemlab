@@ -34,8 +34,8 @@ parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()
 
 # Contrib plugins
-#from chemlab.contrib import gromacs
-#gromacs.setup_commands(subparsers)
+from chemlab.contrib import gromacs
+gromacs.setup_commands(subparsers)
 
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
