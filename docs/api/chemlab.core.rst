@@ -4,11 +4,6 @@ chemlab.core
 This package contains general functions and the most basic data
 containers such as Atom, Molecule and System. Plus some utility
 functions to create and edit common Systems.
-
-.. toctree::
-
-   chemlab.core
-   
    
 The Atom class
 --------------

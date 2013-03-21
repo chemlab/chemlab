@@ -65,6 +65,34 @@ class System(object):
     
     **Atom Derived Attributes**
         
+    .. py:attribute:: r_array
+    
+    .. py:attribute:: m_array
+    
+    .. py:attribute:: type_array
+    
+    .. py:attribute:: atom_export_array
+    
+    **Molecule Derived Attributes**
+    
+    .. py:attribute:: mol_export
+    
+    
+    **System Attributes**
+    
+    .. py:attribute:: boxsize
+    
+    .. py:attribute:: box_vectors
+    
+    .. py:attribute:: n_mol
+    
+    .. py:attribute:: n_atoms
+    
+    .. py:attribute:: mol_indices
+    
+    .. py:attribute:: mol_n_atoms
+    
+    **Methods**
     
     '''
     

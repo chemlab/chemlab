@@ -95,6 +95,16 @@ User Manual
    io
    gromacs
    
+API Documentation
+-----------------
+
+**Packages**
+
+.. toctree::
+   :maxdepth: 2
+
+   api/chemlab.core
+   
 License
 -------
 
