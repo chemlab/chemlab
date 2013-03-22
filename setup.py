@@ -1,11 +1,26 @@
 from distribute_setup import use_setuptools
 use_setuptools()
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+from Cython.Distutils import build_ext
+#import numpy
+#numpy_include = numpy.get_include()
+
+ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
+
+               Extension('chemlab.libs.pyxdr._xdrfile',
+                          ["chemlab/libs/pyxdr/xdrfile.c",
+                           "chemlab/libs/pyxdr/xdrfile_trr.c", 
+                           "chemlab/libs/pyxdr/xdrfile_xtc.c",
+                           "chemlab/libs/pyxdr/_xdrfile.pyx"],
+                            include_dirs=['./chemlab/libs/'])]
 
 setup(
     name = "chemlab",
     version = "0.1",
     packages = find_packages(),
+    cmdclass = {'build_ext': build_ext},
+    ext_modules = ext_modules,
+
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.resources' : ["*"],
