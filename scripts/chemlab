@@ -12,19 +12,18 @@ def view(args):
     
     base, ext = os.path.splitext(args.filename)
     
-    if ext == '.gro':
-        if not args.traj:
-            df = DataFile(args.filename)
-            sys = df.read('system')
-	    display_system(sys)
-	else:
-            df = DataFile(args.filename)
-            sys = df.read('system')
+    if not args.traj:
+        df = DataFile(args.filename)
+        sys = df.read('system')
+        display_system(sys)
+    else:
+        df = DataFile(args.filename)
+        sys = df.read('system')
+        
+        df = DataFile(args.traj)
+        frames = df.read('trajectory')
             
-            df = DataFile(args.traj)
-            frames = df.read('trajectory')
-            
-            display_trajectory(sys, frames)
+        display_trajectory(sys, frames)
 	
 def plot(args):
     base, ext = os.path.splitext(args.filename)

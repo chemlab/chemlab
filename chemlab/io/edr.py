@@ -64,10 +64,11 @@ class EdrIO(IOHandler):
         self.frames = []
 
         self._unpack_start()
-        fr = self._unpack_first_frame()
+        fr = self._unpack_frame()
         self.frames.append(fr)
+        
+        
         while True:
-
             try:
                 fr = self._unpack_frame()
             except EOFError:
@@ -105,6 +106,7 @@ class EdrIO(IOHandler):
 
         # Checking the first real for format
         first_real = up.unpack_double()
+
         if (first_real != first_real_to_check):
             raise Exception('Format not supported, first real not matching.')
 
@@ -121,7 +123,7 @@ class EdrIO(IOHandler):
         min = up.unpack_int()
         maj = up.unpack_int()
 
-        nsum = up.unpack_int()
+        self.nsum = up.unpack_int()
 
         # NSTEPS (again?)
         min = up.unpack_int()
@@ -133,7 +135,7 @@ class EdrIO(IOHandler):
 
         # Number of properties?
         self.nre = up.unpack_int()
-
+        
         dum = up.unpack_int()
 
         nblock = up.unpack_int() + 1
@@ -141,33 +143,28 @@ class EdrIO(IOHandler):
         # Block headers:
         id = up.unpack_int()
         nsubblocks = up.unpack_int()
-
+        
         e_size = up.unpack_int()
+        
         #dum = up.unpack_int()
         #dum = up.unpack_int()
         #up.unpack_int()
 
-
-    def _unpack_first_frame(self):
-        # First unpacking Just the energies
-        
-        frame = []
-        self._unpack_eheader()
-        for i in range(self.nre):
-            en = self.up.unpack_double()
-            # energy, average, rmsd
-            frame.append([en, en, 0.0])
-        
-        return frame
     def _unpack_frame(self):
         # Energies, averages and rmsd
         self._unpack_eheader()
+
         frame = []
         
+
         for i in range(self.nre):
             en = self.up.unpack_double()
-            avg = self.up.unpack_double()
-            rmsd = self.up.unpack_double()
+            if self.nsum > 0:
+                avg = self.up.unpack_double()
+                rmsd = self.up.unpack_double()
             
-            frame.append([en, avg, rmsd])
+                frame.append([en, avg, rmsd])
+            else:
+                frame.append([en, en, 0.0])
+                
         return frame
