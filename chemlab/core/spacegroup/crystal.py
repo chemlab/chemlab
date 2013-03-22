@@ -25,8 +25,10 @@ __all__ = ['crystal']
 
 def crystal(positions, molecules, group,
             cellpar=[1.0, 1.0, 1.0, 90, 90, 90], repetitions=[1, 1, 1]):
-    '''
-    Parameters:
+    '''Build a crystal from atomic positions, space group and cell
+    parameters.
+    
+    **Parameters**
 
     positions: list of coordinates
         A list of the atomic positions 
@@ -40,6 +42,13 @@ def crystal(positions, molecules, group,
         Repetition of the unit cell in each direction
     cellpar:
         Unit cell parameters
+
+    This function was taken and adapted from the *spacegroup* module 
+    found in `ASE <https://wiki.fysik.dtu.dk/ase/>`_.
+
+    The module *spacegroup* module was originally developed by Jesper
+    Frills.
+
     '''
     sp = Spacegroup(group)
     sites, kind = sp.equivalent_sites(positions)

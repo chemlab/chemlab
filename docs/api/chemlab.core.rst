@@ -33,3 +33,9 @@ Routines to manipulate Systems
 
 
 .. autofunction:: chemlab.core.merge_systems
+
+
+Routines to create Systems
+--------------------------
+
+.. autofunction:: chemlab.core.crystal
