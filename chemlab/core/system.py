@@ -41,6 +41,65 @@ AttrData = namedtuple('AttrData', ['name', 'type'])
 
 
 class System(object):
+    '''
+    A data structure containing information of a set of *N* Molecules
+    and *NA* Atoms.
+       
+    **Parameters**
+    
+    molecules: list of molecules
+       Molecules that constitute the System. The data **gets copied**    
+       to the System, subsequent changes to the Molecule are not
+       reflected in the System.
+    
+    boxsize: float, optional
+       The size of one side of a cubic box containing the system. Periodic boxes
+       are common in molecular dynamics.
+    
+    box_vectors: np.ndarray((3,3), dtype=float), optional
+       You can specify the periodic box of another shape by giving 3 box vectors
+       instead.
+
+    The System class has attributes derived both from the Molecule and
+    the Atom class.
+    
+    .. py:attribute:: r_array
+        
+       :type: np.ndarray[3,NA]
+       :derived from: Atom
+    
+    .. py:attribute:: m_array
+        
+       :derived from: Atom
+    
+    .. py:attribute:: type_array
+    
+       :derived from: Atom
+    
+    .. py:attribute:: atom_export_array
+    
+       :derived from: Atom
+    
+    .. py:attribute:: mol_export
+    
+       :derived from: Molecule    
+    
+    .. py:attribute:: boxsize
+    
+    .. py:attribute:: box_vectors
+    
+    .. py:attribute:: n_mol
+    
+    .. py:attribute:: n_atoms
+    
+    .. py:attribute:: mol_indices
+    
+    .. py:attribute:: mol_n_atoms
+    
+    **Methods**
+    
+    '''
+    
     molecule_inherited={'mol_export': AttrData(name='export', type=object),
                         'mol_formula': AttrData(name='formula', type=object)}
     
