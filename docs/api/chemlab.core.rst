@@ -23,4 +23,13 @@ The System class
 .. autoclass:: chemlab.core.System
     :members:
  
+Routines to manipulate Systems
+------------------------------
 
+.. autofunction:: chemlab.core.select_atoms
+		  
+
+.. autofunction:: chemlab.core.extract_subsystem
+
+
+.. autofunction:: chemlab.core.merge_systems

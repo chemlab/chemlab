@@ -41,8 +41,7 @@ AttrData = namedtuple('AttrData', ['name', 'type'])
 
 
 class System(object):
-    '''
-    A data structure containing information of a set of *N* Molecules
+    '''A data structure containing information of a set of *N* Molecules
     and *NA* Atoms.
        
     **Parameters**
@@ -64,44 +63,119 @@ class System(object):
     the Atom class.
     
     .. py:attribute:: r_array
-        
-       :type: np.ndarray[3,NA]
+       
+       :type: np.ndarray((NA, 3), dtype=float)
        :derived from: Atom
+       
+       Atomic coordinates.
     
     .. py:attribute:: m_array
         
+       :type: np.ndarray(NA, dtype=float)
        :derived from: Atom
+       
+       Atomic masses.
     
     .. py:attribute:: type_array
     
+       :type: np.ndarray(NA, dtype=object) *array of str*
        :derived from: Atom
     
+       Array of  all the atomic symbols. It can be used to select
+       certain atoms in a system.
+
+       **Example**
+       
+       Suppose you have a box of water defined by the System *s*, to 
+       select all oxygen atoms you can use the numpy selection rules::
+
+           >>> oxygens = s.type_array == 'O'
+           # oxygens is an array of booleans of length NA where
+           # each True corresponds to an oxygen atom i.e:
+           # [True, False, False, True, False, False]
+       
+       You can use the *oxygen* array to access other properties::
+    
+           >>> o_coordinates = s.r_array[oxygens] 
+           >>> o_indices = np.arange(s.n_atoms)[oxygens] 
+              
+       
     .. py:attribute:: atom_export_array
     
+       :type: np.ndarray(NA, dtype=object) *array of dict*
        :derived from: Atom
+    
     
     .. py:attribute:: mol_export
     
-       :derived from: Molecule    
-    
-    .. py:attribute:: boxsize
+       :type: np.ndarray(N, dtype=object) *array of dict*
+       :derived from: Molecule 
+       
+       Export information relative to the molecule.
     
     .. py:attribute:: box_vectors
     
+       :type: np.ndarray((3,3), dtype=float) or None
+
+       Those are the three vectors that define of the periodic box of
+       the system.
+    
+       **Example**
+      
+       To define an orthorombic box of size 3, 4, 5 nm::
+       
+           >>> np.array([[3.0, 0.0, 0.0],  # Vector a
+                         [0.0, 4.0, 0.0],  # Vector b
+                         [0.0, 0.0, 5.0]]) # Vector c
+
+    
+    
+    .. py:attribute:: boxsize, optional
+    
+       :type: float or None
+    
+       Defines the size of the periodic box. Boxes defined with
+       boxsize are cubic. Changes in *boxsize* are reflected in
+       box.
+    
     .. py:attribute:: n_mol
+       
+       :type: int
+
+       Number of molecules.
     
     .. py:attribute:: n_atoms
     
+       :type: int
+       
+       Number of atoms.
+    
     .. py:attribute:: mol_indices
     
-    .. py:attribute:: mol_n_atoms
+       :type: np.ndarray(N, dtype=int)
     
-    **Methods**
+       Gives the starting index for each molecule in the atomic
+       arrays. For example, in a System comprised of 3 water
+       molecules::
+
+           >>> s.mol_indices
+           [0, 3, 6]
+           >>> s.type_array[0:3]
+           ['O', 'H', 'H']
+    
+       This array is used internally to retrieve all the 
+       Molecule derived data. Do not modify unless you know what 
+       you're doing.
+    
+    .. py:attribute:: mol_n_atoms
+         
+       :type: np.ndarray(N, dtype=int)
+       
+       Contains the number of atoms present in each molecule
     
     '''
     
-    molecule_inherited={'mol_export': AttrData(name='export', type=object),
-                        'mol_formula': AttrData(name='formula', type=object)}
+    molecule_inherited={'mol_export': AttrData(name='export', type=object)}
     
     atom_inherited={'r_array': AttrData(name='r_array', type=np.float),
                     'm_array': AttrData(name='m_array', type=np.float),
@@ -120,6 +194,19 @@ class System(object):
         
     @classmethod
     def empty(cls, n_mol, n_atoms, boxsize=None, box_vectors=None):
+        '''Initialize an empty System containing *n_mol* Molecules and
+        *n_atoms* Atoms. The molecules can be added by using the
+        method :py:meth:`~chemlab.core.System.add`.
+        
+        **Example**
+        
+        How to initialize a system of 3 water molecules::
+        
+            s = System.empty(3, 9)
+            for i in range(3):
+                s.add(water)
+
+        '''
         inst = cls.__new__(System)
         inst._setup_empty(n_mol, n_atoms, boxsize, box_vectors)
         return inst
@@ -163,23 +250,67 @@ class System(object):
 
     @classmethod
     def from_arrays(cls, **kwargs):
+        '''Initialize a System from its constituent arrays. It is the
+        fastest way to initialize a System, well suited for 
+        reading one or more big System from data files.
+
+        **Parameters**
+        
+        The following parameters are required:
+        
+        - r_array
+        - type_array
+        - mol_indices
+        - mol_n_arrays
+
+        To further speed up the initialization process you optionally      
+        pass the other derived arrays:
+
+        - m_array
+        - atom_export_array
+        - mol_export
+
+        **Example**
+        
+        Our classic example of 3 water molecules::
+
+                r_array = np.random.random((3, 9))
+                type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
+                mol_indices = [0, 3, 6]
+                mol_n_atoms = [3, 3, 3]
+                System.from_arrays(r_array=r_array, type_array=type_array,
+                                   mol_indices=mol_indices,
+                                   mol_n_atoms=mol_n_atoms)
+
+        '''
         inst = cls.__new__(System)
         
-        if kwargs.get('m_array', None) == None:
-            inst.m_array = np.array([masses.typetomass[t] for t in kwargs['type_array']])
-        else:
-            inst.m_array = kwargs['m_array']
+        required = ['type_array', 'r_array', 'mol_indices', 'mol_n_atoms']
+        for r in required:
+            if r not in kwargs:
+                raise Exception('%s is a required argument.'%r)
+            
+        
+        n_atoms = len(kwargs['type_array'])
+        n_mol = len(kwargs['mol_indices'])
+        
+        if 'm_array' not in kwargs:
+            kwargs['m_array'] = np.array([masses.typetomass[t]
+                                          for t in kwargs['type_array']])
+        
+        if 'atom_export_array' not in kwargs:
+            kwargs['atom_export_array'] = np.array([{} for i in range(n_atoms)])
+            
+        if 'mol_export' not in kwargs:
+            kwargs['mol_export'] = np.array([{} for i in range(n_mol)])
+            
 
-        special_cases = ['m_array']
         for arr_name, field in cls.atom_inherited.items():
-            if arr_name in special_cases:
-                continue
             setattr(inst, arr_name, kwargs[arr_name])
         
         for arr_name, field_name in cls.molecule_inherited.items():
             setattr(inst, arr_name, kwargs[arr_name])
         
-        n_atoms = len(kwargs['r_array'])
         # Special guys here
         inst.mol_indices = kwargs['mol_indices']
         # Calculate n_atoms
@@ -188,12 +319,13 @@ class System(object):
         
         inst.boxsize = kwargs.get('boxsize', None)
         inst.box_vectors = kwargs.get('box_vectors', None)
+        
         if inst.boxsize:
             inst.box_vectors = np.array([[inst.boxsize, 0, 0],
                                          [0, inst.boxsize, 0],
                                          [0, 0, inst.boxsize]])
         
-        inst.n_mol = len(inst.mol_indices)
+        inst.n_mol = n_mol
         inst.n_atoms = n_atoms
         
         return inst
@@ -209,6 +341,10 @@ class System(object):
             yield arr_name, field_name
 
     def add(self, mol):
+        '''Add the molecule *mol* to a System initialized through
+         :py:meth:`System.empty <chemlab.core.System.empty>`.
+
+        '''
         mc = self._mol_counter
         ac = self._at_counter
         
@@ -262,6 +398,10 @@ class System(object):
         self.n_atoms = len(self.r_array)
         
     def mol_to_atom_indices(self, indices):
+        '''Given the indices over molecules, return the indices over
+        atoms.
+        
+        '''
         rng = np.arange(self.n_atoms)
         ind = []
         
@@ -281,7 +421,7 @@ class System(object):
         '''
         Sort the molecules in the system according to their
         brute formula.
-
+        
         '''
         # We do have to sort by formula
         sorted_index = sorted(enumerate(self.mol_formula),
@@ -407,14 +547,21 @@ def select_atoms(sys, mask):
     '''Generate a subsystem containing the atoms specified by
     *mask*. If an atom belongs to a molecule, the molecules is also
     selected.
+
+    This can be useful when selecting a part of a system based on 
+    positions.
     
-    Parameters:
+    **Parameters**
 
     sys: System
-       Origin system
-    mask: list of True/False
-       A mask to select certain atoms   
+       Original system.
+    mask: np.ndarray(NA, dtype=bool)
+       A boolean array that is True when the ith atom has to be selected.
 
+    Returns:
+
+    A new System instance.
+    
     '''
     # Which atom belongs to which molecule
     seq = np.array(range(sys.n_atoms))
@@ -425,7 +572,8 @@ def select_atoms(sys, mask):
     return extract_subsystem(sys, molecule_ids)
 
 def extract_subsystem(sys, index):
-    '''Generate a system containing the molecules specifide by *indices*.
+    '''Generate a subsystem containing the molecules
+       specifide by *indices*.
 
     Parameters:
 
@@ -469,9 +617,21 @@ def extract_subsystem(sys, index):
     return ret
 
 def merge_systems(sysa, sysb, bounding=0.2):
-    '''Generate a system by overlapping *sysa* and *sysb*, overlapping
-    molecules are removed, based on the size of the box.
+    '''Generate a system by overlapping *sysa* and *sysb*. Overlapping
+    molecules are removed by cutting the molecules of *sysa* that are
+    found inside the space defined by :py:attr:`sysb.box_vectors
+    <chemlab.core.System.box_vectors>`.
 
+    **Parameters**
+    
+    sysa: System
+       First system
+    sysb: System
+       Second system
+    bounding: float
+       Extra space used when cutting molecules in *sysa* to make space
+       for *sysb*.
+    
     '''
     # Delete overlaps.
     minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
@@ -516,202 +676,3 @@ def merge_systems(sysa, sysb, bounding=0.2):
     return sysres
 
     
-# class System(object):
-#     def __init__(self, atomlist=None, boxsize=2.0):
-#         '''This system is made of all atoms of the same types'''
-        
-#         if atomlist is None:
-#             atomlist = []
-        
-#         self.atoms = atomlist
-
-#         self.boxsize = boxsize
-#         self.bodies = []
-        
-        
-#         self.rarray = np.array([a.coords for a in atomlist])
-#         self.varray = np.array([[0.0, 0.0, 0.0] for atom in (atomlist)])
-        
-#         for atom in self.atoms:
-#             atom.system = self
-
-#     @property
-#     def n(self):
-#         return len(self.rarray)
-
-#     # Add body may be the same as add_molecule
-#     def add_body(self, body):
-#         # Should add each atom with its own coordinates
-        
-#         # Should bind this guy's coordinates with my rarray
-        
-#         pass
-    
-#     @classmethod
-#     def random(cls, type, number, dim=10.0):
-#         '''Return a random monatomic system made of *number* molecules
-#         fo type *type* arranged in a cube of dimension *dim* extending
-#         in the 3 directions.
-
-#         '''
-#         # create random in the range 0,1   dimension dim
-#         coords = np.random.rand(number, 3) * dim - dim/2
-#         atoms = []
-#         for c in coords:
-#             atoms.append(Atom(type, c))
-        
-#         return cls(atoms, dim)
-        
-#     def random_add(self, body, min_distance=0.1, maxtries=1000):
-        
-#         # try adding until you can 
-#         while maxtries:
-#             centers = []
-#             for b in self.bodies:
-#                 centers.append(b.geometric_center)
-#             centers = np.array(centers)
-
-#             # Translate the molecule to its center of mass
-            
-#             rar = body.rarray.copy()
-#             rar -= body.geometric_center
-            
-#             # let's randomly rotate the molecule
-#             from ..graphics.gletools.transformations import random_rotation_matrix
-#             rar = np.dot(rar, random_rotation_matrix()[:3,:3].T)
-            
-#             # randomly place the molecule
-#             mol_center = (np.random.rand(3) - 0.5) * self.boxsize
-#             rar += mol_center
-
-#             # if it's the only one molecule here it's ok
-#             if not self.bodies:
-#                 body.rarray = rar
-#                 self.bodies.append(body)
-#                 self.atoms.extend(body.atoms)
-#                 self.rarray = rar
-#                 return
-            
-#             # Minimum image convention for distance calculation
-#             dx = centers - mol_center
-#             minimage = abs(dx) > (self.boxsize*0.5)
-#             dx[minimage] -= np.sign(dx[minimage]) * self.boxsize
-#             distsq = (dx**2).sum(axis=1)
-            
-#             if all(distsq > min_distance**2):
-#                 # The guy is accepted
-#                 body.rarray = rar
-#                 self.bodies.append(body)
-#                 self.atoms.extend(body.atoms)
-#                 self.rarray = np.concatenate((self.rarray, rar))
-
-#                 return
-#             else:
-#                 maxtries -= 1
-
-#         raise Exception('Maximum tries for random insertion')
-        
-#     @classmethod
-#     def lattice(cls, body, size=4, density=1.0):
-#         '''Generate an FCC lattice with *body* as points of the
-#         lattice. *size* is the number of primitive cells per dimension
-#         (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
-#         cells) and density is the required *density* required to
-#         calculate volume and unit cell vectors.
-
-#         '''
-#         sys = cls()
-        
-#         cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
-#                          [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
-
-#         grams =  units.convert(body.mass*len(cell)*size**3, 'amu', 'g')
-        
-#         vol = grams/density
-#         vol = units.convert(vol, 'cm^3', 'nm^3')
-#         dim = vol**(1.0/3.0)
-#         celldim = dim/size
-#         sys.boxsize = dim
-        
-#         cells = [size, size, size]
-#         for x in range(cells[0]):
-#             for y in range(cells[1]):
-#                 for z in range(cells[2]):
-#                     for cord in cell:
-#                         b = body.copy()
-#                         b.rarray += (cord + np.array([float(x), float(y), float(z)]))*celldim
-#                         b.rarray -= sys.boxsize / 2.0
-#                         sys.add(b)
-#         #sys.rarray -= sys.boxsize/2.0
-#         return sys
-        
-#     def add(self, body):
-#         rar = body.rarray
-#         if not self.bodies:
-#             self.bodies.append(body)
-#             self.atoms.extend(body.atoms)
-#             self.rarray = rar
-#         else:
-#             self.bodies.append(body)
-#             self.atoms.extend(body.atoms)
-#             self.__rarray = np.concatenate((self.rarray, rar))
-        
-#         for atom in body.atoms:
-#             atom.system = self
-        
-#     def replace(self, i, body):
-#         body = body.copy()
-        
-#         # We have to update various things like atoms and rarray
-#         atoffset = roffset = self.atoms.index(self.bodies[i].atoms[0])
-
-        
-#         replaced = self.bodies[i]
-#         pos = replaced.geometric_center
-#         body.rarray += pos
-        
-#         self.atoms = (self.atoms[:atoffset] +
-#                       body.atoms +
-#                       self.atoms[atoffset+len(replaced.atoms):])
-        
-#         self.rarray = np.concatenate([self.rarray[:roffset],
-#                                       body.rarray,
-#                                       self.rarray[roffset+len(replaced.rarray):]])
-        
-#         self.bodies[i] = body
-#         for atom in body.atoms:
-#             atom.system = self
-        
-#     def remove(self, i):
-#         atoffset = 0
-#         roffset = 0
-#         for j in range(i):
-#             bd = self.bodies[i]
-#             atoffset += len(bd.atoms)
-#             roffset += len(bd.rarray)
-            
-#         replaced = self.bodies[i]
-        
-#         self.atoms = (self.atoms[:atoffset] +
-#                       self.atoms[atoffset+len(replaced.atoms):])
-        
-#         self.rarray = np.concatenate([self.rarray[:roffset],
-#                                       self.rarray[roffset+len(replaced.rarray):]])
-        
-#         del self.bodies[i]
-        
-        
-#     def get_rarray(self):
-#         return self.__rarray
-    
-#     def set_rarray(self, value):
-#         self.__rarray = value
-#         return
-#         for i, atom in enumerate(self.atoms):
-#             atom.coords = self.__rarray[i]
-        
-#     rarray = property(get_rarray, set_rarray)
-    
-#     def __repr__(self):
-#         return "System(%d)"%self.n
-        

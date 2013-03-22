@@ -66,7 +66,15 @@ def test_system():
     print "*" * 72
     s = System(mols)
     _print_sysinfo(s)
-
+    
+    # 3 water molecules
+    r_array = np.random.random((3, 9))
+    type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
+    mol_indices = [0, 3, 6]
+    mol_n_atoms = [3, 3, 3]
+    System.from_arrays(r_array=r_array, type_array=type_array,
+                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+    
 
 def test_crystal():
     '''Building a crystal by using spacegroup module'''
