@@ -40,7 +40,6 @@ def display_trajectory(sys, coords_list):
     
     i = [0]
     def on_update():
-        
         nframes = len(coords_list)
         r_array = coords_list[i[0]%nframes]
         i[0] += 1

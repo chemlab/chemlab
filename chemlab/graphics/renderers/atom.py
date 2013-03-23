@@ -7,7 +7,7 @@ from .sphere_imp import SphereImpostorRenderer
 from .point import PointRenderer
 
 class AtomRenderer(AbstractRenderer):
-    def __init__(self, viewer, system, backend='polygons'):
+    def __init__(self, viewer, system, backend='impostors'):
         radii = []
         colorlist = []
         

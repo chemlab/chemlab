@@ -29,10 +29,10 @@ class GLWidget(QGLWidget):
         
     def initializeGL(self):
         # Renderers are responsible for actually drawing stuff
-        self._renderers = []
+        self.renderers = []
         
         # Ui elements represent user interactions
-        self._uis = []
+        self.uis = []
         
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)        
@@ -67,14 +67,67 @@ class GLWidget(QGLWidget):
         
         
     def on_draw_ui(self):
-        for u in self._uis:
+        for u in self.uis:
             u.draw()
         
     def on_draw_world(self):
-        for r in self._renderers:
+        for r in self.renderers:
             r.draw()
 
+    def wheelEvent(self, evt):
+        z = evt.delta()
+        self.camera.mouse_zoom(z*0.01)
+        
+        self.repaint()
             
+    def mousePressEvent(self, evt):
+        self._last_mouse_right = evt.button() == Qt.RightButton
+        self._last_mouse_left = evt.button() == Qt.LeftButton
+        
+        self._last_mouse_pos = evt.pos()
+
+    def mouseMoveEvent(self, evt):
+        
+        if self._last_mouse_right:
+            # Panning
+            if bool(evt.buttons() & Qt.RightButton):
+                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
+                x2, y2 = evt.pos().x(), evt.pos().y()
+                self._last_mouse_pos = evt.pos()
+                
+                # Converting to world coordinates
+                w = self.width()
+                h = self.height()
+                
+                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
+                dx, dy = x2 - x, y2 - y
+
+                cam = self.camera
+                
+                cam.position += (-cam.a * dx  + -cam.b * dy) * 10
+                cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
+                self.repaint()
+        if self._last_mouse_left:
+            # Orbiting Rotation
+            if bool(evt.buttons() & Qt.LeftButton):
+                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
+                x2, y2 = evt.pos().x(), evt.pos().y()
+                self._last_mouse_pos = evt.pos()
+                
+                # Converting to world coordinates
+                w = self.width()
+                h = self.height()
+                
+                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
+                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
+                dx, dy = x2 - x, y2 - y
+                
+                cam = self.camera
+                cam.mouse_rotate(dx, dy)
+
+                self.repaint()
+
 import time
 
 class FpsDraw(object):
@@ -114,71 +167,17 @@ class QtViewer(QMainWindow):
         
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(self.widget, *args, **kwargs)
-        self.widget._renderers.append(renderer)
+        self.widget.renderers.append(renderer)
         return renderer
     
     def add_ui(self, klass, *args, **kwargs):
         ui = klass(self.widget, *args, **kwargs)
-        self.widget._uis.append(ui)
+        self.widget.uis.append(ui)
         return ui
         
     # Events
-    def mousePressEvent(self, evt):
-        self._last_mouse_right = evt.button() == Qt.RightButton
-        self._last_mouse_left = evt.button() == Qt.LeftButton
         
-        self._last_mouse_pos = evt.pos()
-        
-    def mouseMoveEvent(self, evt):
-        
-        if self._last_mouse_right:
-            # Panning
-            if bool(evt.buttons() & Qt.RightButton):
-                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
-                x2, y2 = evt.pos().x(), evt.pos().y()
-                self._last_mouse_pos = evt.pos()
-                
-                # Converting to world coordinates
-                w = self.widget.width()
-                h = self.widget.height()
-                
-                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
-                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
-                dx, dy = x2 - x, y2 - y
-
-                cam = self.widget.camera
-                
-                cam.position += (-cam.a * dx  + -cam.b * dy) * 10
-                cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
-                self.widget.repaint()
-        if self._last_mouse_left:
-            # Orbiting Rotation
-            if bool(evt.buttons() & Qt.LeftButton):
-                x, y = self._last_mouse_pos.x(), self._last_mouse_pos.y()
-                x2, y2 = evt.pos().x(), evt.pos().y()
-                self._last_mouse_pos = evt.pos()
-                
-                # Converting to world coordinates
-                w = self.widget.width()
-                h = self.widget.height()
-                
-                x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
-                x2, y2 = 2*float(x2)/w - 1.0, 1.0 - 2*float(y2)/h
-                dx, dy = x2 - x, y2 - y
-                
-                cam = self.widget.camera
-                cam.mouse_rotate(dx, dy)
-
-                self.widget.repaint()
             
-                
-    def wheelEvent(self, evt):
-        z = evt.delta()
-        self.widget.camera.mouse_zoom(z*0.01)
-        
-        self.widget.repaint()
-
-        
     def keyPressEvent(self, evt):
         angvel = 0.3
         

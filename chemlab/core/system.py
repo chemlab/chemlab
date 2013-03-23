@@ -261,12 +261,12 @@ class System(object):
         - r_array
         - type_array
         - mol_indices
-        - mol_n_arrays
 
         To further speed up the initialization process you optionally      
         pass the other derived arrays:
 
         - m_array
+        - mol_n_atoms
         - atom_export_array
         - mol_export
 
@@ -277,15 +277,13 @@ class System(object):
                 r_array = np.random.random((3, 9))
                 type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
                 mol_indices = [0, 3, 6]
-                mol_n_atoms = [3, 3, 3]
                 System.from_arrays(r_array=r_array, type_array=type_array,
-                                   mol_indices=mol_indices,
-                                   mol_n_atoms=mol_n_atoms)
+                                   mol_indices=mol_indices)
 
         '''
         inst = cls.__new__(System)
         
-        required = ['type_array', 'r_array', 'mol_indices', 'mol_n_atoms']
+        required = ['type_array', 'r_array', 'mol_indices']
         for r in required:
             if r not in kwargs:
                 raise Exception('%s is a required argument.'%r)
