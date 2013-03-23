@@ -4,6 +4,7 @@ from .camera import Camera
 
 from PySide.QtGui import QMainWindow, QApplication
 from PySide.QtCore import QTimer, Qt
+from PySide import QtCore, QtGui
 from PySide.QtOpenGL import *
 
 from OpenGL.GL import *
@@ -17,6 +18,15 @@ app = QApplication([])
 
 class GLWidget(QGLWidget):
     
+    def __init__(self, parent):
+        super(GLWidget, self).__init__(parent)
+    
+    def sizeHint(self):
+        return QtCore.QSize(800, 600)
+        
+    def minimumSizeHint(self):
+        return QtCore.QSize(600, 600)
+        
     def initializeGL(self):
         # Renderers are responsible for actually drawing stuff
         self._renderers = []

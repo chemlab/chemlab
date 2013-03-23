@@ -10,6 +10,8 @@ from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
 
+from chemlab.graphics.qttrajectory import QtTrajectoryViewer
+
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
     vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
@@ -204,4 +206,19 @@ def test_unproject():
         v.widget.repaint()
     v.mousePressEvent = mouse_move # Super Hack
     v.run()
+    
+def test_traj_viewer():
+    tv = QtTrajectoryViewer()
+    
+    ar = tv.add_renderer(AtomRenderer)
+
+    frames = []
+    times = []
+    
+    def update(index):
+        f = frames[index]
+        ar.update_positions(f)
+        f.monitor.text = format_time(times[index])
+    
+    tv.run()
     
