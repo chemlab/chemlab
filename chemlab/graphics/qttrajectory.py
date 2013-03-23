@@ -62,7 +62,7 @@ class AnimationSlider(QtGui.QSlider):
         if event.button() == Qt.LeftButton:
             self.setValue(self.minimum() +
                           (self.maximum() - self.minimum()) *
-                          event.x()/ self.width())
+                          (event.x()+2)/ self.width())
             event.accept()
             
         super(AnimationSlider, self).mousePressEvent(event)
@@ -128,7 +128,6 @@ class QtTrajectoryViewer(QMainWindow):
         self._timer.start(self.speed)
 
     def do_update(self):
-        
         if self.current_index == self.max_index:
             self._timer.stop()
             self.play_stop.set_pause()
@@ -140,8 +139,10 @@ class QtTrajectoryViewer(QMainWindow):
     def on_pause(self):
         self._timer.stop()
         
-    def on_slider_moved(self):
-        print 'Slider moved'
+    def on_slider_moved(self, value):
+        #print 'Slider moved', value
+        self.current_index = value
+        self._update_function(self.current_index)
         
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(self.widget, *args, **kwargs)
