@@ -97,6 +97,8 @@ class QtTrajectoryViewer(QMainWindow):
         self.controls = QDockWidget()
         
         self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(self.do_update)
+        
         # Eliminate the dock titlebar
         title_widget = QtGui.QWidget(self)
         self.controls.setTitleBarWidget(title_widget)
@@ -125,7 +127,7 @@ class QtTrajectoryViewer(QMainWindow):
         
         self.show()
 
-        self.speed = 10
+        self.speed = 100
         # Connecting all the signals
         self.play_stop.play.connect(self.on_play)
         self.play_stop.pause.connect(self.on_pause)
@@ -151,7 +153,7 @@ class QtTrajectoryViewer(QMainWindow):
             # Restart
             self.current_index = 0
 
-        self._timer.timeout.connect(self.do_update)
+
         self._timer.start(self.speed)
 
     def do_update(self):

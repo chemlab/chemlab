@@ -21,9 +21,9 @@ def view(args):
         sys = df.read('system')
         
         df = DataFile(args.traj)
-        frames = df.read('trajectory')
+        times, frames = df.read('trajectory')
             
-        display_trajectory(sys, frames)
+        display_trajectory(sys, times,  frames)
 	
 def plot(args):
     base, ext = os.path.splitext(args.filename)

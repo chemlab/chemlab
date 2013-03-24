@@ -1,4 +1,5 @@
 from .qtviewer import QtViewer
+from .qttrajectory import QtTrajectoryViewer, format_time
 from .renderers import AtomRenderer, BoxRenderer
 from .uis import TextUI
 
@@ -29,26 +30,18 @@ def display_system(sys, renderer='sphere'):
     
     v.run()
 
-def display_trajectory(sys, coords_list):
-    v = QtViewer()
+def display_trajectory(sys, times, coords_list):
+    v = QtTrajectoryViewer()
     sr = v.add_renderer(AtomRenderer, sys, backend='impostors')
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
-    
-    tui = v.add_ui(TextUI, 100, 100, '')
-    
     _system_auto_scale(sys, v.widget.camera)
     
-    i = [0]
-    def on_update():
-        nframes = len(coords_list)
-        r_array = coords_list[i[0]%nframes]
-        i[0] += 1
-        
-        sr.update_positions(r_array)
+    v.set_ticks(len(coords_list))
+    @v.update_function
+    def on_update(index):
+        sr.update_positions(coords_list[index])
         br.update(sys.box_vectors)
-        tui.update_text("%i/%i"%(i[0]%nframes, nframes))
-        
+        v.set_text(format_time(times[index]))
         v.widget.repaint()
-    
-    v.schedule(on_update, 100)
+
     v.run()
