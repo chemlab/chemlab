@@ -7,6 +7,8 @@ import os
 from .qtviewer import app, GLWidget
 from .. import resources
 
+import numpy as np
+
 resources_dir = os.path.dirname(resources.__file__)
 
 class PlayStopButton(QtGui.QPushButton):
@@ -103,13 +105,44 @@ class QtTrajectoryViewer(QMainWindow):
         title_widget = QtGui.QWidget(self)
         self.controls.setTitleBarWidget(title_widget)
         
-        hb = QtGui.QHBoxLayout()
+        vb = QtGui.QVBoxLayout()
+        hb = QtGui.QHBoxLayout() # For controls
+        
+        containerhb2 = QtGui.QWidget(self)
+        hb2 = QtGui.QHBoxLayout() # For settings
+        containerhb2.setLayout(hb2)
+        
+        vb.addLayout(hb)
+        vb.addWidget(containerhb2)
+        
+        # Settings buttons
+        hb2.addWidget(QtGui.QLabel('Speed'))
+        self._speed_slider = QtGui.QSlider(Qt.Horizontal)
+        self._speed_slider.resize(100, self._speed_slider.height())
+        self._speed_slider.setSizePolicy(QtGui.QSizePolicy.Fixed,
+                                         QtGui.QSizePolicy.Fixed)
+        
+        self.speeds = np.linspace(15, 250, 11).astype(int)
+        self.speeds = self.speeds.tolist()
+        self.speeds.reverse()
+        self._speed_slider.setMaximum(10)
+        self._speed_slider.setValue(7)
+        self._speed_slider.valueChanged.connect(self.on_speed_changed)
+        
+        hb2.addWidget(self._speed_slider)
+        hb2.addStretch(1)
+        
+        wrapper = QtGui.QWidget()
+        wrapper.setLayout(vb)
+
         # Molecular viewer
         self.widget = GLWidget(self)
         self.setCentralWidget(self.widget)
         
+        # Control buttons
         self.play_stop = PlayStopButton()
         hb.addWidget(self.play_stop)
+
         
         self.slider = AnimationSlider()
         hb.addWidget(self.slider)
@@ -118,16 +151,14 @@ class QtTrajectoryViewer(QMainWindow):
         self.timelabel = QtGui.QLabel(self._label_tmp.format('0.0'))
         hb.addWidget(self.timelabel)
         
-        wrapper = QtGui.QWidget()
-        wrapper.setLayout(hb)
-        
         self.controls.setWidget(wrapper)
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            self.controls)
         
+        #containerhb2.setVisible(True)
         self.show()
 
-        self.speed = 100
+        self.speed = self.speeds[self._speed_slider.value()]
         # Connecting all the signals
         self.play_stop.play.connect(self.on_play)
         self.play_stop.pause.connect(self.on_pause)
@@ -135,12 +166,12 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider.valueChanged.connect(self.on_slider_change)
         self.slider.sliderPressed.connect(self.on_slider_down)
 
+        self.play_stop.setFocus()
         
     def set_ticks(self, number):
         self.max_index = number
         self.current_index = 0
         
-
         self.slider.setMaximum(self.max_index-1)
         self.slider.setMinimum(0)
         self.slider.setPageStep(1)
@@ -178,6 +209,11 @@ class QtTrajectoryViewer(QMainWindow):
         self._timer.stop()
         self.play_stop.set_pause()
         
+    def on_speed_changed(self, index):
+        self.speed = self.speeds[index]
+        if self._timer.isActive():
+            self._timer.stop()
+            self._timer.start(self.speed)
         
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(self.widget, *args, **kwargs)
