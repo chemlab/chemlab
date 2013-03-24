@@ -97,6 +97,7 @@ class QtTrajectoryViewer(QMainWindow):
         super(QtTrajectoryViewer, self).__init__()
 
         self.controls = QDockWidget()
+
         
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.do_update)
@@ -109,11 +110,18 @@ class QtTrajectoryViewer(QMainWindow):
         hb = QtGui.QHBoxLayout() # For controls
         
         containerhb2 = QtGui.QWidget(self)
+        
         hb2 = QtGui.QHBoxLayout() # For settings
         containerhb2.setLayout(hb2)
+        containerhb2.setSizePolicy(QtGui.QSizePolicy.Minimum,
+                                   QtGui.QSizePolicy.Minimum)
+        
         
         vb.addLayout(hb)
         vb.addWidget(containerhb2)
+        self.vb = vb
+        
+
         
         # Settings buttons
         hb2.addWidget(QtGui.QLabel('Speed'))
@@ -145,19 +153,33 @@ class QtTrajectoryViewer(QMainWindow):
 
         
         self.slider = AnimationSlider()
-        hb.addWidget(self.slider)
+        hb.addWidget(self.slider, 2)
         
         self._label_tmp = '<b><FONT SIZE=30>{}</b>'
         self.timelabel = QtGui.QLabel(self._label_tmp.format('0.0'))
         hb.addWidget(self.timelabel)
         
+        self._settings_button = QtGui.QPushButton()
+        self._settings_button.setStyleSheet('''
+                                 QPushButton {
+                                     width: 30px;
+                                     height: 30px;
+                                 }''')
+        icon = QtGui.QIcon(os.path.join(resources_dir, 'settings_icon.svg'))
+        self._settings_button.setIcon(icon)
+        self._settings_button.clicked.connect(self._toggle_settings)
+        
+        hb.addWidget(self._settings_button)
+        
         self.controls.setWidget(wrapper)
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            self.controls)
         
-        #containerhb2.setVisible(True)
+        containerhb2.setVisible(False)
+        self._settings_pan = containerhb2
         self.show()
 
+        
         self.speed = self.speeds[self._speed_slider.value()]
         # Connecting all the signals
         self.play_stop.play.connect(self.on_play)
@@ -167,6 +189,7 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider.sliderPressed.connect(self.on_slider_down)
 
         self.play_stop.setFocus()
+        vb.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
         
     def set_ticks(self, number):
         self.max_index = number
@@ -231,7 +254,9 @@ class QtTrajectoryViewer(QMainWindow):
     def update_function(self, func):
         self._update_function = func
 
-
+    def _toggle_settings(self):
+        self._settings_pan.setVisible(not self._settings_pan.isVisible())
+        
 def format_time(t):
     if 0.0 <= t < 100.0:
         return '%.1f ps' % t
