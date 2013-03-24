@@ -1,6 +1,6 @@
 import numpy as np
-from .iohandler import IOHandler
-from ..core import Molecule
+from .base import IOHandler
+from ...core import Molecule
 
 class XyzIO(IOHandler):
     

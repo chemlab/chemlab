@@ -1,12 +1,13 @@
 import numpy as np
-from ..core.system import System
-from ..core.molecule import Atom
-from .iohandler import IOHandler
-
-from ..data.symbols import symbol_list
 import re
 
+from .base import IOHandler
 from .gro_map import gro_to_cl
+
+from ...core.system import System
+from ...core.molecule import Atom
+from ...data.symbols import symbol_list
+
 
 symbol_list = [s.lower() for s in symbol_list]
 

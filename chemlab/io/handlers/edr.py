@@ -1,5 +1,5 @@
 '''Parser for gromacs edr'''
-from .iohandler import IOHandler
+from .base import IOHandler
 import numpy as np
 import xdrlib
 import difflib

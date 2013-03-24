@@ -1,9 +1,9 @@
 """Handlers for GROMACS trajectories xtc and trr formats
 
 """
-from .iohandler import IOHandler
+from .base import IOHandler
 import numpy as np
-from ..libs.pyxdr import XTCReader
+from ...libs.pyxdr import XTCReader
 
 
 class BlockedArray(np.ndarray):

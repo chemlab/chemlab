@@ -1,12 +1,12 @@
 import os
 import difflib
 
-from .iohandler import make_ionotavailable
-from .gro import GromacsIO
-from .pdb import PdbIO
-from .edr import EdrIO
-from .xyz import XyzIO
-from .xtctrr import XtcIO
+from .handlers.base import make_ionotavailable
+from .handlers import GromacsIO
+from .handlers import PdbIO
+from .handlers import EdrIO
+from .handlers import XyzIO
+from .handlers import XtcIO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [

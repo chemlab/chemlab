@@ -1,8 +1,8 @@
 from chemlab.core import System, Atom, Molecule
 from chemlab.io import datafile, add_default_handler
 
-from chemlab.io.gro import GromacsIO
-from chemlab.io.edr import EdrIO
+from chemlab.io.handlers import GromacsIO
+from chemlab.io.handlers import EdrIO
 import numpy as np
     
 def test_datafile():

@@ -1,5 +1,5 @@
-from ..core import Atom, Molecule, System
-from .iohandler import IOHandler
+from ...core import Atom, Molecule, System
+from .base import IOHandler
 from itertools import groupby
 import numpy as np
 
