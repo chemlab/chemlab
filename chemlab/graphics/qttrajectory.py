@@ -117,11 +117,10 @@ class QtTrajectoryViewer(QMainWindow):
                                    QtGui.QSizePolicy.Minimum)
         
         
-        vb.addLayout(hb)
-        vb.addWidget(containerhb2)
-        self.vb = vb
-        
 
+        vb.addWidget(containerhb2)
+        vb.addLayout(hb)
+        self.vb = vb
         
         # Settings buttons
         hb2.addWidget(QtGui.QLabel('Speed'))
@@ -175,7 +174,7 @@ class QtTrajectoryViewer(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            self.controls)
         
-        containerhb2.setVisible(False)
+
         self._settings_pan = containerhb2
         self.show()
 
@@ -190,6 +189,7 @@ class QtTrajectoryViewer(QMainWindow):
 
         self.play_stop.setFocus()
         vb.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        containerhb2.setVisible(False)
         
     def set_ticks(self, number):
         self.max_index = number
