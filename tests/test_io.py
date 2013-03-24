@@ -1,18 +1,18 @@
 from chemlab.core import System, Atom, Molecule
-from chemlab.io import DataFile
+from chemlab.io import datafile, add_default_handler
+
 from chemlab.io.gro import GromacsIO
 from chemlab.io.edr import EdrIO
 import numpy as np
     
 def test_datafile():
-    DataFile.add_handler(GromacsIO, 'gro', '.gro')
-    df = DataFile("tests/data/cry.gro") # It guesses 
+    add_default_handler(GromacsIO, 'gro', '.gro')
+    df = datafile("tests/data/cry.gro") # It guesses 
     sys = df.read("system")
     assert sys.n_atoms == 1728
 
-
 def test_read_pdb():
-    df = DataFile('tests/data/3ZJE.pdb')
+    df = datafile('tests/data/3ZJE.pdb')
     s = df.read('system')
     
 def test_write_pdb():
@@ -25,12 +25,12 @@ def test_write_pdb():
     for i in range(200):
         sys.add(water.copy())
     
-    df = DataFile('/tmp/dummy.gro')
+    df = datafile('/tmp/dummy.gro')
     df.write("system", sys)
     
 def test_read_gromacs():
     '''Test reading a gromacs file'''
-    df = DataFile('tests/data/cry.gro')
+    df = datafile('tests/data/cry.gro')
     s = df.read('system')
 
 def test_write_gromacs():
@@ -43,16 +43,16 @@ def test_write_gromacs():
     for i in range(200):
         sys.add(water.copy())
     
-    df = DataFile('/tmp/dummy.gro')
+    df = datafile('/tmp/dummy.gro')
     df.write('system', sys)
     
-    df = DataFile('/tmp/dummy.gro')
+    df = datafile('/tmp/dummy.gro')
     sread = df.read('system')
     
     assert all(sread.type_array == sys.type_array)
     
 def test_read_edr():
-    df = DataFile('tests/data/ener.edr')
+    df = datafile('tests/data/ener.edr')
     df.read('frames')
     
     dt, temp = df.read('quantity', 'Temperature')
@@ -64,11 +64,11 @@ def test_read_edr():
         pass
 
 def test_read_xyz():
-    df = DataFile('tests/data/sulphoxide.xyz')
+    df = datafile('tests/data/sulphoxide.xyz')
     mol1 = df.read('molecule')
     
     
-    df = DataFile('/tmp/t.xyz')
+    df = datafile('/tmp/t.xyz')
     df.write('molecule', mol1)
     
     mol2 = df.read('molecule')

@@ -6,13 +6,7 @@ from .gro import GromacsIO
 from .pdb import PdbIO
 from .edr import EdrIO
 from .xyz import XyzIO
-
-try:
-    from .xtctrr import XtcIO
-except ImportError:
-    XtcIO = make_ionotavailable('XtcIO',
-                                'To enable XTC file reading install library pyxdr',
-                                can_read = ['trajectory'])
+from .xtctrr import XtcIO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
@@ -23,82 +17,96 @@ _default_handlers = [
     [XyzIO, 'xyz', '.xyz']
 ]
 
-class DataFile(object):
-    
-    handlers = {}
-    extensions = {}
-    
-    @classmethod
-    def add_handler(cls, ioclass, format, extension=None):
-        """Register a new data handler for a given format.
-        
-        Parameters
-        ----------
-        ioclass: IOHandler subclass
-        format: str
-          A string identifier representing the format
-        extension: str, optional
-          The file extension associated with the format.
-        
-        """
-        
-        
-        if format in cls.handlers:
-            print "Warning: format %s already present."%format
+_handler_map = {}
+_extensions_map = {}
 
-        cls.handlers[format] = ioclass
+def add_default_handler(ioclass, format, extension=None):
+    """Register a new data handler for a given format in
+       the default handler list.
+
+       This is a convenience function used internally to setup the
+       default handlers. It can be used to add other handlers at
+       runtime even if this isn't a suggested practice.
+       
+       **Parameters**
+
+       ioclass: IOHandler subclass
+       format: str
+         A string identifier representing the format
+       extension: str, optional
+         The file extension associated with the format.
+
+    """
+    if format in _handler_map:
+        print "Warning: format %s already present."%format
+
+    _handler_map[format] = ioclass
         
-        if extension in cls.extensions:
-            print "Warning: extension %s already handled by %s handler."%(extension, cls.extensions[extension])
+    if extension in _extensions_map:
+        print("Warning: extension %s already handled by %s handler."
+              %
+              (extension, _extensions_map[extension]))
             
-        cls.extensions[extension] = format
-        
-    def __init__(self, filename, format=None):
-        cls = type(self)
-        # Add the default handlers
-        self.filename = filename
-        
-        if format is None:
-            base, ext = os.path.splitext(filename)
+    _extensions_map[extension] = format
+
+# Registering the default handlers
+for h in _default_handlers:
+    add_default_handler(*h)
+
+def datafile(filename, format=None):
+    """Initialize the appropriate
+    :py:class:`~chemlab.io.iohandler.IOHandler` for a given file
+    extension or file format.
+
+    The *datafile* function can be conveniently used to quickly read
+    or write data in a certain format::
+
+        >>> handler = datafile("molecule.pdb")
+        >>> mol = handler.read("molecule")
+        # You can also use this shortcut
+        >>> mol = datafile("molecule.pdb").read("molecule")
+    
+    **Parameters**
+    
+    filename: str
+          Path of the file to open.
+    format: str or None
+          When different from *None*, can be used to specify a
+          format identifier for that file. It should be used when
+          the extension is ambiguous or when there isn't a specified 
+          filename. See below for a list of the formats supported by chemlab.
+    
+    **Supported formats**
+    
+    :py:class:`xyz <chemlab.io.handlers.XyzIO>`:
+         XYZ coordinate format.
+    :py:class:`pdb <chemlab.io.handlers.PdbIO>`:
+         Protein Data Bank format.
+    :py:class:`gro <chemlab.io.handlers.GromacsIO>`:
+         GROMACS coordinate files.
+    :py:class:`xtc <chemlab.io.handlers.XtcIO>`:
+         GROMACS compressed trajectory files.
+    :py:class:`edr <chemlab.io.handlers.EdrIO>`:
+         GROMACS energy file.
+
+    """
+
+    if format is None:
+        base, ext = os.path.splitext(filename)
             
-            if ext in cls.extensions:
-                self.format = format = cls.extensions[ext]
-            else:
-                raise ValueError("Unknown format for %s extension." % ext)    
-        
-        if format in cls.handlers:
-            hc = cls.handlers[format]
-            self.handler_class = hc
-            self.handler = hc(filename)
+        if ext in _extensions_map:
+            format = _extensions_map[ext]
         else:
-            matches = difflib.get_close_matches(format, cls.handlers.keys())
+            raise ValueError("Unknown format for %s extension." % ext)    
+
+        if format in _handler_map:
+            hc = _handler_map[format]
+            handler_class = hc
+            handler = hc(filename)
+        else:
+            matches = difflib.get_close_matches(format, _handler_map.keys())
             raise ValueError("Unknown Handler for format %s, close matches: %s"
                              % (format, str(matches)))
-
-    def read(self, feature, *args, **kwargs):
-        self._check_feature(feature, "read")
-        return self.handler.read(feature, *args, **kwargs)
         
-        
-    def write(self, feature, value, *args, **kwargs):
-        self._check_feature(feature, "write")
-        return self.handler.write(feature, value, *args, **kwargs)
-    
-    
-    def _check_feature(self, feature, what):
-        if what == "read":
-            features = self.handler_class.can_read
-        if what == "write":
-            features = self.handler_class.can_write
-            
-        if feature not in features:
-            matches = difflib.get_close_matches(feature, features)
-            raise ValueError("Feature %s not present in %s. Close matches: %s"
-                             % (feature, str(self.handler_class), str(matches)))
-        
+        return handler
 
-
-# Registering the handlers
-for h in _default_handlers:
-    DataFile.add_handler(*h)
-    

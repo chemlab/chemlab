@@ -7,20 +7,20 @@ import os
 import time
 
 def view(args):
-    from chemlab.io import DataFile
+    from chemlab.io import datafile
     from chemlab.graphics import display_system, display_trajectory
     
     base, ext = os.path.splitext(args.filename)
     
     if not args.traj:
-        df = DataFile(args.filename)
+        df = datafile(args.filename)
         sys = df.read('system')
         display_system(sys)
     else:
-        df = DataFile(args.filename)
+        df = datafile(args.filename)
         sys = df.read('system')
         
-        df = DataFile(args.traj)
+        df = datafile(args.traj)
         times, frames = df.read('trajectory')
             
         display_trajectory(sys, times,  frames)

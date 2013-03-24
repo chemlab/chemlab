@@ -104,6 +104,7 @@ API Documentation
    :maxdepth: 2
 
    api/chemlab.core
+   api/chemlab.io
    
 License
 -------

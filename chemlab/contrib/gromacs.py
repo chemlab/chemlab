@@ -6,7 +6,7 @@
 # it should show a little interface to view the energy
 
 # Let's launch the program and determine what happens
-from chemlab.io import DataFile
+from chemlab.io import datafile
 from pylab import *
 
 import difflib
@@ -63,7 +63,7 @@ def main(args, output=None):
     ens = args.e
     fns = args.filenames
     
-    datafiles = [DataFile(fn) for fn in fns] 
+    datafiles = [datafile(fn) for fn in fns] 
     
     quants = datafiles[0].read('avail quantities')
     for i,e in enumerate(ens):
