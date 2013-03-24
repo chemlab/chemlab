@@ -112,7 +112,8 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider = AnimationSlider()
         hb.addWidget(self.slider)
         
-        self.timelabel = QtGui.QLabel('<b><FONT SIZE=30>10.0 ps</b>')
+        self._label_tmp = '<b><FONT SIZE=30>{}</b>'
+        self.timelabel = QtGui.QLabel(self._label_tmp.format('0.0'))
         hb.addWidget(self.timelabel)
         
         wrapper = QtGui.QWidget()
@@ -141,6 +142,9 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider.setMaximum(self.max_index-1)
         self.slider.setMinimum(0)
         self.slider.setPageStep(1)
+        
+    def set_text(self, text):
+        self.timelabel.setText(self._label_tmp.format(text))
         
     def on_play(self):
         if self.current_index == self.max_index - 1:
@@ -188,6 +192,19 @@ class QtTrajectoryViewer(QMainWindow):
         
     def update_function(self, func):
         self._update_function = func
+
+
+def format_time(t):
+    if 0.0 <= t < 100.0:
+        return '%.1f ps' % t
+    elif 100.0 <= t < 1.0e5:
+        return '%.1f ns' % (t/1e3)
+    elif 1.0e5 <= t < 1.0e8:
+        return '%.1f us' % (t/1e6)
+    elif 1.0e8 <= t < 1.0e12:
+        return '%.1f ms' % (t/1e9)
+    elif 1.0e12 <= t < 1.0e15:
+        return '%.1f s' % (t/1e12)
         
 if __name__ == '__main__':
     

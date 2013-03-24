@@ -3,8 +3,37 @@
 """
 from .iohandler import IOHandler
 import numpy as np
-from pyxdr import XTCReader
+from ..libs.pyxdr import XTCReader
 
+
+class BlockedArray(np.ndarray):
+    def __init__(self, *args, **kwargs):
+        super(BlockedArray, self).__init__(*args, **kwargs)
+        self.block_size = 1000 # It preallocates 1000
+        self._last_i = self.shape[0] - 1
+        
+
+    def append(self, item):
+        assert item.shape == self.shape[1:]
+        self._last_i += 1
+        if self._last_i == self.shape[0]:
+            self._enlarge()
+        else:
+            nslices = len(self.shape) - 1
+            slices = (slice(None, None, None),)*nslices
+            
+            self[(self._last_i,)+slices] = item
+        
+        
+    def _enlarge(self):
+        newshape = list(self.shape)
+        newshape[0] +=  self.block_size
+        self.resize(newshape, refcheck=False)
+
+    def trim(self):
+        self.resize((self._last_i,) + self.shape[1:] , refcheck=False)
+        
+import itertools
 class XtcIO(IOHandler):
 
     can_read = ['trajectory']
@@ -14,12 +43,16 @@ class XtcIO(IOHandler):
         self.filename = filename
     
     def read(self, feature):
+        import time
+        t0 = time.time()
+        
         if feature == 'trajectory':
-            # TODO numpy array
+            times = []
+            xtcreader = XTCReader(self.filename)
             frames = []
-    
-            for frame in XTCReader(self.filename):
+
+            for frame in xtcreader:
                 frames.append(frame.coords)
-                
-            return frames
+                times.append(frame.time)
+            return times, frames
             

@@ -10,7 +10,7 @@ from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
 
-from chemlab.graphics.qttrajectory import QtTrajectoryViewer
+from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
 
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
@@ -214,14 +214,14 @@ def test_traj_viewer():
     s = DataFile('tests/data/water.gro').read('system')
     ar = tv.add_renderer(AtomRenderer, s)
 
-    frames = DataFile('tests/data/trajout.xtc').read('trajectory')
+    times, frames = DataFile('tests/data/trajout.xtc').read('trajectory')
     tv.set_ticks(len(frames))
     
     @tv.update_function
     def update(index):
         f = frames[index]
         ar.update_positions(f)
-        #f.monitor.text = format_time(times[index])
+        tv.set_text(format_time(times[index]))
         tv.widget.repaint()
     
     tv.run()
