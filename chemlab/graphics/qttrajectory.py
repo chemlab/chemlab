@@ -57,15 +57,37 @@ class AnimationSlider(QtGui.QSlider):
     
     def __init__(self):
         super(AnimationSlider, self).__init__(Qt.Horizontal)
-
+        self._cursor_adjustment = 7 #px
+        
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.setValue(self.minimum() +
-                          (self.maximum() - self.minimum()) *
-                          (event.x()+2)/ self.width())
+            value = self.__pixelPosToRangeValue(event.x()-self._cursor_adjustment)
+            self.setValue(value)
             event.accept()
-            
+        
         super(AnimationSlider, self).mousePressEvent(event)
+            
+    def __pixelPosToRangeValue(self, pos):
+        opt = QtGui.QStyleOptionSlider()
+        self.initStyleOption(opt)
+        style = QtGui.QApplication.style()
+        
+        gr = style.subControlRect(style.CC_Slider, opt, style.SC_SliderGroove, self)
+        sr = style.subControlRect(style.CC_Slider, opt, style.SC_SliderHandle, self)
+        
+        if self.orientation() == QtCore.Qt.Horizontal:
+            slider_length = sr.width()
+            slider_min = gr.x()
+            slider_max = gr.right() - slider_length + 1
+        else:
+            slider_length = sr.height()
+            slider_min = gr.y()
+            slider_max = gr.bottom() - slider_length + 1
+            
+        return style.sliderValueFromPosition(self.minimum(), self.maximum(),
+                                             pos-slider_min, slider_max-slider_min,
+                                             opt.upsideDown)
+
     
 class QtTrajectoryViewer(QMainWindow):
     
@@ -73,13 +95,13 @@ class QtTrajectoryViewer(QMainWindow):
         super(QtTrajectoryViewer, self).__init__()
 
         self.controls = QDockWidget()
+        
+        self._timer = QtCore.QTimer(self)
         # Eliminate the dock titlebar
         title_widget = QtGui.QWidget(self)
         self.controls.setTitleBarWidget(title_widget)
         
         hb = QtGui.QHBoxLayout()
-        
-        
         # Molecular viewer
         self.widget = GLWidget(self)
         self.setCentralWidget(self.widget)
@@ -107,7 +129,9 @@ class QtTrajectoryViewer(QMainWindow):
         self.play_stop.play.connect(self.on_play)
         self.play_stop.pause.connect(self.on_pause)
         
-        self.slider.valueChanged.connect(self.on_slider_moved)
+        self.slider.valueChanged.connect(self.on_slider_change)
+        self.slider.sliderPressed.connect(self.on_slider_down)
+
         
     def set_ticks(self, number):
         self.max_index = number
@@ -119,30 +143,35 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider.setPageStep(1)
         
     def on_play(self):
-        if self.current_index == self.max_index:
+        if self.current_index == self.max_index - 1:
             # Restart
             self.current_index = 0
-            
-        self._timer = QtCore.QTimer(self)
+
         self._timer.timeout.connect(self.do_update)
         self._timer.start(self.speed)
 
     def do_update(self):
-        if self.current_index == self.max_index:
+        if self.current_index >= self.max_index:
+            self.current_index = self.max_index - 1
             self._timer.stop()
             self.play_stop.set_pause()
         else:
-            self._update_function(self.current_index)
-            self.slider.setSliderPosition(self.current_index)
             self.current_index += 1
+            self.slider.setSliderPosition(self.current_index)
+            
         
     def on_pause(self):
         self._timer.stop()
         
-    def on_slider_moved(self, value):
+    def on_slider_change(self, value):
         #print 'Slider moved', value
         self.current_index = value
         self._update_function(self.current_index)
+        
+    def on_slider_down(self):
+        self._timer.stop()
+        self.play_stop.set_pause()
+        
         
     def add_renderer(self, klass, *args, **kwargs):
         renderer = klass(self.widget, *args, **kwargs)
