@@ -12,6 +12,40 @@ from ...data.symbols import symbol_list
 symbol_list = [s.lower() for s in symbol_list]
 
 class GromacsIO(IOHandler):
+    '''Handler for .gro file format. Example at
+    http://manual.gromacs.org/online/gro.html.
+    
+    **Features**
+
+    .. method:: read("system")
+    
+       Read the gro file and return a :py:class:`~chemlab.core.System`
+       instance. It also add the following exporting informations:
+    
+       groname: The molecule names indicated in the gro file. This is
+            added to each entry of `System.mol_export`.
+
+       grotype: The atom names as indicated in the gro file. This is
+            added to each entry of `System.atom_export_array`.
+       
+    .. method:: write("system", syst)
+    
+       Write the *syst* :py:class:`~chemlab.core.System` instance to
+       disk. The export arrays should have the *groname* and *grotype*
+       entries as specified in the ``read("system")`` method.
+
+    **Example**
+    
+    Export informations for water SPC::
+    
+         Molecule([
+                   Atom('O', [0.0, 0.0, 0.0], export={'grotype': 'OW'}),
+                   Atom('H', [0.1, 0.0, 0.0], export={'grotype': 'HW1'}),
+                   Atom('H', [-0.033, 0.094, 0.0],export={'grotype':'HW2'})],
+                 export={'groname': 'SOL'})
+
+    '''
+    
     can_read = ['system']
     can_write = ['system']
 

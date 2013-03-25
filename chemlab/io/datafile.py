@@ -76,19 +76,6 @@ def datafile(filename, format=None):
           the extension is ambiguous or when there isn't a specified 
           filename. See below for a list of the formats supported by chemlab.
     
-    **Supported formats**
-    
-    :py:class:`xyz <chemlab.io.handlers.XyzIO>`:
-         XYZ coordinate format.
-    :py:class:`pdb <chemlab.io.handlers.PdbIO>`:
-         Protein Data Bank format.
-    :py:class:`gro <chemlab.io.handlers.GromacsIO>`:
-         GROMACS coordinate files.
-    :py:class:`xtc <chemlab.io.handlers.XtcIO>`:
-         GROMACS compressed trajectory files.
-    :py:class:`edr <chemlab.io.handlers.EdrIO>`:
-         GROMACS energy file.
-
     """
 
     if format is None:
