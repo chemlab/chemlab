@@ -39,7 +39,7 @@ class Mock(object):
     
 MOCK_MODULES = ['PySide.QtGui', 'PySide.QtCore', 'PySide', 'PySide.QtOpenGL',
                 'chemlab.molsim.cforces2', 'h5py', 'chemlab.libs.pyxdr',
-                'Cython.Distutils', 'numpy', 'PyOpenGL']
+                'Cython.Distutils', 'numpy', 'numpy.linalg', 'PyOpenGL']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
