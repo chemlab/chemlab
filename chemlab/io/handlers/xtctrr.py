@@ -35,7 +35,22 @@ class BlockedArray(np.ndarray):
         
 import itertools
 class XtcIO(IOHandler):
+    '''Reader for GROMACS XTC trajectories.
+    
+    **Features**
 
+    .. method:: read("trajectory")
+    
+       Read the frames from the file and returns the trajectory as an
+       array of times and an array of atomic positions::
+
+           >>> times, positions = datafile('traj.xtc').read('trajectory')
+           [t1, t2, t3], [pos1, pos2, ...]
+
+       positions is a *list* of ``np.ndarray(n_atoms, 3)``.
+    
+       
+    '''
     can_read = ['trajectory']
     can_write = []
     

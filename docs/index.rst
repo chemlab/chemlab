@@ -95,8 +95,8 @@ User Manual
    io
    gromacs
    
-API Documentation
------------------
+Reference Documentation
+-----------------------
 
 **Packages**
 

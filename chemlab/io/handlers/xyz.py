@@ -3,6 +3,19 @@ from .base import IOHandler
 from ...core import Molecule
 
 class XyzIO(IOHandler):
+    '''The XYZ format is described in this wikipedia article
+    http://en.wikipedia.org/wiki/XYZ_file_format.
+    
+    **Features**
+
+    .. method:: read("molecule")
+    
+       Read the coordinates in a :py:class:`~chemlab.core.Molecule` instance.
+       
+    .. method:: write("molecule", mol)
+
+       Writes a :py:class:`~chemlab.core.Molecule` instance in the XYZ format.
+    '''
     
     can_read = ['molecule']
     can_write = ['molecule']

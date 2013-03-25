@@ -5,6 +5,26 @@ import numpy as np
 
 
 class PdbIO(IOHandler):
+    '''Starting implementation of a PDB file parser.
+    
+    .. note::
+
+        This handler was developed as an example. If you like to
+        contribute by implementing it you can write an email to the
+        `mailing list <mailto: python-chemlab@googlegroups.com>`_.
+    
+    **Features**
+
+    .. method:: read("molecule")
+    
+       Read the pdb file as a huge Molecule.
+    
+    .. method:: read("system")
+    
+       Read the pdb file as a System, where each residue is 
+       a molecule.
+
+    '''
     
     can_read = ['molecule', 'system']
     can_write = []

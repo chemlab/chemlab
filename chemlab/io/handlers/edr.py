@@ -8,7 +8,54 @@ class QuantityNotAvailable(Exception):
     pass
 
 class EdrIO(IOHandler):
-    can_read = ['frames', 'quantity', 'units', 'avail quantities']
+    '''EDR files store per-frame information for gromacs
+    trajectories. Examples of properties obtainable from EDR files are::
+
+    - temperature
+    - pressure
+    - density
+    - potential energy
+    - total energy
+    - etc.
+    
+    To know which quantities are available in a certain edr file you
+    can access the feature 'avail quantity'::
+    
+        >>> datafile('ener.edr').read('avail quantities')
+        ['Temperature', 'Pressure', 'Potential', ...]
+    
+    To get the frame information for a certain quantity you may use
+    the "quantity" property passing the quantity as additional
+    argument, this will return two arrays, the first is an array of
+    times in ps and the second are the corrisponding quantities::
+    
+        >>> time, temp = datafile('ener.edr').read('quantity', 'Temperature')
+    
+    **Features**
+
+    .. method:: read("quantity", quant)
+    
+        Return an array of times in ps and the corresponding quantities
+        at that times.
+       
+    .. method:: read("avail quantities")
+    
+        Return the available quantities in the file.
+    
+    .. method:: read("units")
+    
+        Return a dictionary where the keys are the quantities and
+        the value are the units in which that quantity is expressed.
+    
+    .. method:: read("frames")
+    
+        Return a dictionary where the keys are the quantities and
+        the value are the units in which that quantity is expressed.
+
+
+    '''
+
+    can_read = ['quantity', 'units', 'avail quantities']
     can_write = []
     
     def __init__(self, filename):
@@ -22,9 +69,6 @@ class EdrIO(IOHandler):
             self.processed = True
         else:
             frames = self.frames
-        
-        if feature == 'frames':
-            return frames
         
         if feature == 'quantity':
             if not args[0]:
