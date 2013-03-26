@@ -288,6 +288,9 @@ class System(object):
             if r not in kwargs:
                 raise Exception('%s is a required argument.'%r)
             
+        if kwargs['r_array'].shape[1] != 3:
+            raise Exception('r_array should be of shape (N, 3), now it is %s'
+                            %str(kwargs['r_array'].shape))
         
         n_atoms = len(kwargs['type_array'])
         n_mol = len(kwargs['mol_indices'])
@@ -304,19 +307,19 @@ class System(object):
             
 
         for arr_name, field in cls.atom_inherited.items():
-            setattr(inst, arr_name, kwargs[arr_name])
+            setattr(inst, arr_name, np.array(kwargs[arr_name]))
         
         for arr_name, field_name in cls.molecule_inherited.items():
-            setattr(inst, arr_name, kwargs[arr_name])
+            setattr(inst, arr_name, np.array(kwargs[arr_name]))
         
         # Special guys here
-        inst.mol_indices = kwargs['mol_indices']
+        inst.mol_indices = np.array(kwargs['mol_indices'])
         # Calculate n_atoms
         shifted_indices = np.append(inst.mol_indices[1:], n_atoms)
         inst.mol_n_atoms = shifted_indices - inst.mol_indices
         
         inst.boxsize = kwargs.get('boxsize', None)
-        inst.box_vectors = kwargs.get('box_vectors', None)
+        inst.box_vectors = np.array(kwargs.get('box_vectors', None))
         
         if inst.boxsize:
             inst.box_vectors = np.array([[inst.boxsize, 0, 0],
@@ -540,6 +543,79 @@ def lattice(mol, size=1, density=1.0):
 
 
 # Functions to operate on systems
+def subsystem_from_molecules(orig, selection):
+    '''Create a system from the *orig* system by picking the molecules
+    specified in *selection*.
+
+    **Parameters**
+
+    orig: System
+        The system from where to extract the subsystem
+    selection: np.ndarray of int or np.ndarray(N) of bool
+        *selection* can be either a list of molecular indices to
+        select or a boolean array whose elements are True in correspondence
+        of the molecules to select (it is usually the result of a numpy
+        comparison operation).
+    
+    **Example**
+
+    In this example we can see how to select the molecules whose
+    center of mass that is in the region of space x > 0.1:
+    
+        s = System(...) # It is a set of 10 water molecules
+    
+        select = []
+        for i range(s.n_mol):
+           if s.get_molecule(i).center_of_mass[0] > 0.1:
+               select.append(i)
+        
+        subs = subsystem_from_molecules(s, np.ndarray(select)) 
+    
+    .. note:: The API for operating on molecules is not yet fully 
+              developed. In the future there will be smarter
+              ways to *filter* molecule attributes instead of
+              looping and using System.get_molecule.
+    
+    '''
+    selection = np.array(selection)
+    if selection.dtype == bool:
+        index = selection.nonzero()
+    else:
+        index = selection
+        
+    nmol = len(index)
+    natom = np.sum(orig.mol_n_atoms[index])
+    ret = System.empty(nmol, natom)
+    
+    offset = 0
+    
+    for k,(o_i,o_n) in enumerate(zip(orig.mol_indices[index],
+                                     orig.mol_n_atoms[index])):
+
+        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
+            o_attr = getattr(orig, arr_name)
+            attr = getattr(ret, arr_name)
+            
+            attr[offset: offset+o_n] = o_attr[o_i: o_i+o_n]
+
+        ret.mol_indices[k] = offset
+        ret.mol_n_atoms[k] = o_n
+        offset += o_n
+
+    # Setting molecule-wise attributes
+    for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
+        o_attr = getattr(orig, arr_name)
+        attr = getattr(ret, arr_name)
+        attr[:] = o_attr[index]
+
+    # Boxsize
+    x = max(abs(ret.r_array[:,0]))
+    y = max(abs(ret.r_array[:,1]))
+    z = max(abs(ret.r_array[:,2]))
+    
+    ret.box_vectors = np.array([[x,0,0], [0,y,0], [0,0,z]])
+    
+    return ret
     
 def select_atoms(sys, mask):
     '''Generate a subsystem containing the atoms specified by
@@ -569,50 +645,6 @@ def select_atoms(sys, mask):
 
     return extract_subsystem(sys, molecule_ids)
 
-def extract_subsystem(sys, index):
-    '''Generate a subsystem containing the molecules
-       specifide by *indices*.
-
-    Parameters:
-
-    sys: System
-        The system from where to extract the subsystem
-    index: list of int
-        A list of integers representing the molecules to pick.
-    
-    '''
-    nmol = len(index)
-    natom = np.sum(sys.mol_n_atoms[index])
-    ret = System.empty(nmol, natom)
-    
-    offset = 0
-    for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[index],
-                                     sys.mol_n_atoms[index])):
-
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            o_attr = getattr(sys, arr_name)
-            attr = getattr(ret, arr_name)
-
-            attr[offset: offset+o_n] = o_attr[o_i: o_i+o_n]
-
-        ret.mol_indices[k] = offset
-        ret.mol_n_atoms[k] = o_n
-        offset += o_n
-
-    # Setting molecule-wise attributes
-    for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
-        o_attr = getattr(sys, arr_name)
-        attr = getattr(ret, arr_name)
-        attr[:] = o_attr[index]
-
-    # Boxsize
-    x = max(abs(ret.r_array[:,0]))
-    y = max(abs(ret.r_array[:,1]))
-    z = max(abs(ret.r_array[:,2]))
-    
-    ret.box_vectors = np.array([[x,0,0], [0,y,0], [0,0,z]])
-    
-    return ret
 
 def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by overlapping *sysa* and *sysb*. Overlapping

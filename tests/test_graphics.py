@@ -132,42 +132,32 @@ def test_bond_renderer():
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
     
-    from chemlab.io import DataFile
-    mol = DataFile('tests/data/sulphoxide.xyz').read('molecule')
-    #mol = DataFile('tests/data/3ZJE.pdb').read('molecule')
+    from chemlab.io import datafile
+    #mol = datafile('tests/data/sulphoxide.xyz').read('molecule')
+    mol = datafile('tests/data/3ZJE.pdb').read('molecule')
     
-    from scipy.spatial import KDTree
+    from chemlab.libs.ckdtree import cKDTree
     
     # Test other algorithm to find bond
     r_array = mol.r_array
     # Make a grid of 0.3 spacing
-    eps = 0.3
-    grid = (r_array/eps).astype(int)
-    # Transfor into chars to ease the sorting
-    #grid_list = grid.tolist()
-    sorted_indices = sorted(range(len(grid)), key=lambda x: str(grid[x]))
     
-    sorted_grid = grid[sorted_indices]
-    print sorted_grid
-        
-    pairs = []
-    for i in range(len(grid)-1):
-        print sorted_grid[i]
-        if np.allclose(sorted_grid[i], sorted_grid[i+1]):
-            pairs.append((sorted_indices[i], sorted_indices[i+1]))
-        
-    pairs = np.array(pairs)
-    bounds = mol.r_array[pairs]
-    n_pairs = len(bounds)
-    radii = [0.03] * n_pairs
-    colors = [white] * n_pairs
-    #print colors
-    print n_pairs
+    kd = cKDTree(r_array)
+    pairs = kd.query_pairs(0.20)
+
+    bounds = []
+    for a, b in pairs:
+        bounds.append((r_array[a], r_array[b]))
+
+
+    bounds = np.array(bounds)
+    radii = [0.015] * len(bounds)
+    colors = [orange] * len(bounds)
     
     ar = v.add_renderer(AtomRenderer, mol, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
-    
-    v.run()
+
+    #v.run()
     
     
 def test_text_ui():

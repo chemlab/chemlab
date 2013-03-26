@@ -2,7 +2,7 @@
 
 """
 from chemlab import Molecule, Atom
-from chemlab.core.system import System
+from chemlab.core import System, subsystem_from_molecules
 from chemlab.core import crystal
 import numpy as np
 import unittest
@@ -68,12 +68,18 @@ def test_system():
     _print_sysinfo(s)
     
     # 3 water molecules
-    r_array = np.random.random((3, 9))
+    r_array = np.random.random((9, 3))
     type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
     mol_indices = [0, 3, 6]
     mol_n_atoms = [3, 3, 3]
-    System.from_arrays(r_array=r_array, type_array=type_array,
+    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
                        mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+    
+    
+    sub2 = subsystem_from_molecules(s2, np.array([0, 1, 2]))
+    assert sub2.n_mol == 3
+    sub = subsystem_from_atoms(s2, np.array([True, True, False]))
+    assert sub.n_mol == 2
     
 
 def test_crystal():
