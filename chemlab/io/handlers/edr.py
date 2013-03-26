@@ -59,10 +59,11 @@ class EdrIO(IOHandler):
     can_write = []
     
     def __init__(self, filename):
-        self.f = filename
+        super(EdrIO, self).__init__(filename)
         self.processed = False
         
     def read(self, feature, *args):
+        self.check_feature(feature, 'read')
         
         if not self.processed:
             self.frames = frames = self.process_frames()        
@@ -100,7 +101,7 @@ class EdrIO(IOHandler):
             
     def process_frames(self):
         
-        f = open(self.f).read()
+        f = open(self.filename).read()
         self.up = xdrlib.Unpacker(f)
 
         self.times = []
