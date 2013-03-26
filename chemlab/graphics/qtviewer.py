@@ -176,8 +176,6 @@ class QtViewer(QMainWindow):
         return ui
         
     # Events
-        
-            
     def keyPressEvent(self, evt):
         angvel = 0.3
         
@@ -193,7 +191,6 @@ class QtViewer(QMainWindow):
         if evt.key() == Qt.Key_Right:
             self.widget.camera.orbit_y(angvel)
         
-        # TODO Pretty brutal zoom function
         if evt.key() == Qt.Key_Plus:
             self.widget.camera.mouse_zoom(0.1)
         if evt.key() == Qt.Key_Minus:
