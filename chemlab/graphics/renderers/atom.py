@@ -13,7 +13,7 @@ class AtomRenderer(AbstractRenderer):
         
         for i in range(system.n_atoms):
             radii.append(vdw_dict[system.type_array[i]])
-            colorlist.append(colors.map.get(system.type_array[i], colors.light_grey))
+            colorlist.append(colors.map.get(system.type_array[i], colors.deep_pink))
         
         if backend == 'polygons':
             self.sr = SphereRenderer(viewer, system.r_array, radii, colorlist)

@@ -1,4 +1,5 @@
 from .qtviewer import QtViewer
+from .qchemlabwidget import QChemlabWidget
 from .qttrajectory import QtTrajectoryViewer, format_time
 from .renderers import AtomRenderer, BoxRenderer
 from .uis import TextUI

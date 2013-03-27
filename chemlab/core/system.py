@@ -561,7 +561,7 @@ def subsystem_from_molecules(orig, selection):
     **Example**
 
     In this example we can see how to select the molecules whose
-    center of mass that is in the region of space x > 0.1:
+    center of mass that is in the region of space x > 0.1::
     
         s = System(...) # It is a set of 10 water molecules
     
@@ -571,6 +571,7 @@ def subsystem_from_molecules(orig, selection):
                select.append(i)
         
         subs = subsystem_from_molecules(s, np.ndarray(select)) 
+    
     
     .. note:: The API for operating on molecules is not yet fully 
               developed. In the future there will be smarter

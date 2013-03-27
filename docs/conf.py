@@ -24,6 +24,8 @@ class Mock(object):
 
     @classmethod
     def __getattr__(cls, name):
+        if name == 'QGLWidget':
+            return int
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name[0] == name[0].upper():
@@ -36,19 +38,24 @@ class Mock(object):
     def __getitem__(self, index):
         raise IndexError()
 
+    def __mul__(self, other):
+        return Mock()
     
 MOCK_MODULES = ['PySide.QtGui', 'PySide.QtCore', 'PySide', 'PySide.QtOpenGL',
                 'chemlab.molsim.cforces2', 'h5py', 'chemlab.libs.pyxdr',
-                'Cython.Distutils', 'numpy', 'numpy.linalg', 'PyOpenGL']
+                'Cython.Distutils', 'numpy', 'numpy.linalg', 'OpenGL.GL', 'OpenGL',
+                'OpenGL.raw', 'OpenGL.arrays']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
-MOCK_NAMES = ['QGLWidget']
+MOCK_NAMES = ['GL_FALSE']
 
 for name in MOCK_NAMES:
     __builtins__[name] = Mock()
     
+    
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
