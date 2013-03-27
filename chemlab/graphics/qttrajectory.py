@@ -4,7 +4,9 @@ from PySide.QtCore import Qt
 
 import os
 
-from .qtviewer import app, GLWidget
+from .qtviewer import app
+from .qchemlabwidget import QChemlabWidget
+
 from .. import resources
 
 import numpy as np
@@ -143,7 +145,7 @@ class QtTrajectoryViewer(QMainWindow):
         wrapper.setLayout(vb)
 
         # Molecular viewer
-        self.widget = GLWidget(self)
+        self.widget = QChemlabWidget(self)
         self.setCentralWidget(self.widget)
         
         # Control buttons
