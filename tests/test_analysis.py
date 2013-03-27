@@ -22,12 +22,12 @@ def test_rdf():
     
 
     
-    gro_rdf = np.loadtxt("rdf.xvg", skiprows=13,unpack=True)
+    #gro_rdf = np.loadtxt("rdf.xvg", skiprows=13,unpack=True)
     #print rdf[0][:10]
     #print gro_rdf[0][:10]
     #print np.allclose(rdf[0], gro_rdf[0])
     
     plot(rdf[0], rdf[1], 'blue')
-    plot(gro_rdf[0], gro_rdf[1], color='red')
+    #plot(gro_rdf[0], gro_rdf[1], color='red')
     #write_gro(system, 'cry.gro')
     show()

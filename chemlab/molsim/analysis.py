@@ -13,8 +13,6 @@ def radial_distribution_function(system, maska, maskb, nbins=1000, rmax=1.5):
     n_a = len(system.r_array[maska])
     n_b = len(distances)/float(n_a)
     
-    print len(distances)
-    
     rmin = 0.0
     bins = np.linspace(rmin, rmax, nbins)
     vmax = (4.0/3.0) * np.pi * rmax ** 3

@@ -44,7 +44,7 @@ Chemlab long term goal is to be:
   Even if python is known to be slow every effort should be made
   to make chemlab 'fast enough', by using effectively numpy arrays
   and efficient data structures. When everything else fails we can still
-  write the hard bits in C.
+  write the hard bits in C with the help of cython.
 
 Current Status (pre 0.1)
 ------------------------
@@ -54,31 +54,20 @@ first 0.1 release. Computational and theoretical chemistry is a huge
 field, and providing a program that encompasses all aspect of it is an
 impossible task. The spirit of chemlab is to provide a common ground
 from where you can build specific programs. For this reason it
-includes an :doc:`easily extensible </graphics>` molecular viewer.
+includes an :doc:`fully programmable </graphics>` molecular viewer.
 
 chemlab is in its early developement and it provides the most basic
-data structures. The molecular viewer (chemlab.graphics) has a solid
-ground and can actually draw and play trajectories in an efficient
-way. To get started be sure to check the user manual.
+data structures. The molecular viewer has a solid ground and can
+actually draw and play trajectories in an efficient way. To get
+started be sure to check the user manual.
 
-chemlab wants to be developer-friendly, this means having a good
-documentation and an easy structure to get in. Feel free to send me
-anything that you may do with chemlab, from supporting a new file
-format to writing a new graphic renderer, even if you don'think it's
-perfect. Send me an email to the `mailing list
-<mailto:python-chemlab.googlegroups.com>`_ or file an issue on the
-github page to discuss any aspect that you like or not like and any
-idea that comes to your mind. In other words, get involved! 
-
-Chemlab is divided in several packages that can be used almost
-independently.
-
-  - chemlab.graphics includes a molecular viewer and its components.
-  - chemlab.molsim molecular simulation routines
-  - chemlab.core basic data structures such as atoms, molecules etc
-  - chemlab.data database for various chemical data
-  - chemlab.io input/output utilities and integration with other
-    molecular packages.
+chemlab is developer-friendly, this means a good documentation and an
+easy structure to get in. Feel free to send me anything that you may
+do with chemlab, from supporting a new file format to writing a new
+graphic renderer, even if you don'think it's perfect. Send an email to
+the `mailing list <mailto:python-chemlab.googlegroups.com>`_ or file
+an issue on the github page to discuss any aspect that you like or
+don't like and any idea that comes to your mind. Get involved!
 
 
 User Manual
@@ -91,8 +80,8 @@ User Manual
   
    installation
    core
-   graphics
    io
+   graphics
    gromacs
    
 Reference Documentation
@@ -105,8 +94,8 @@ Reference Documentation
 
    api/chemlab.core
    api/chemlab.io
-   
-   
+   api/chemlab.graphics
+
 License
 -------
 

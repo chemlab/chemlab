@@ -2,7 +2,7 @@
 
 """
 from chemlab import Molecule, Atom
-from chemlab.core import System, subsystem_from_molecules
+from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import crystal
 import numpy as np
 import unittest
@@ -76,10 +76,14 @@ def test_system():
                        mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
     
     
-    sub2 = subsystem_from_molecules(s2, np.array([0, 1, 2]))
-    assert sub2.n_mol == 3
-    sub = subsystem_from_atoms(s2, np.array([True, True, False]))
-    assert sub.n_mol == 2
+    sub2 = subsystem_from_molecules(s2, np.array([0, 2]))
+    assert sub2.n_mol == 2
+    
+    
+    sub = subsystem_from_atoms(s2, np.array([True, True, False,
+                                             False, False, False,
+                                             False, False, False]))
+    assert sub.n_mol == 1
     
 
 def test_crystal():

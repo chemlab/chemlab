@@ -425,7 +425,8 @@ class System(object):
         
         '''
         # We do have to sort by formula
-        sorted_index = sorted(enumerate(self.mol_formula),
+        mol_formula = self.get_derived_molecule_array('formula')
+        sorted_index = sorted(enumerate(mol_formula),
                               key=lambda x: x[1])
         sorted_index = np.array(zip(*sorted_index)[0])
 
@@ -577,11 +578,7 @@ def subsystem_from_molecules(orig, selection):
               looping and using System.get_molecule.
     
     '''
-    selection = np.array(selection)
-    if selection.dtype == bool:
-        index = selection.nonzero()
-    else:
-        index = selection
+    index = _selection_to_index(selection)
         
     nmol = len(index)
     natom = np.sum(orig.mol_n_atoms[index])
@@ -617,35 +614,53 @@ def subsystem_from_molecules(orig, selection):
     
     return ret
     
-def select_atoms(sys, mask):
+def subsystem_from_atoms(orig, selection):
     '''Generate a subsystem containing the atoms specified by
-    *mask*. If an atom belongs to a molecule, the molecules is also
+    *selection*. If an atom belongs to a molecule, the whole molecule is
     selected.
 
-    This can be useful when selecting a part of a system based on 
-    positions.
+    **Example**
+    
+    This function can be useful when selecting a part of a system
+    based on positions. For example, in this snippet you can see
+    how to select the part of the system (a set of molecules) whose
+    x coordinates is bigger than 1.0 nm::
+    
+        s = System(...)
+        subs = subsystem_from_atoms(s.r_array[0,:] > 1.0)
     
     **Parameters**
 
-    sys: System
+    orig: System
        Original system.
-    mask: np.ndarray(NA, dtype=bool)
-       A boolean array that is True when the ith atom has to be selected.
+    selection: np.ndarray of int or np.ndarray(NA) of bool
+       A boolean array that is True when the ith atom has to be selected or
+       a set of atomic indices to be included.
 
     Returns:
 
     A new System instance.
-    
+
     '''
     # Which atom belongs to which molecule
-    seq = np.array(range(sys.n_atoms))
-    atomic_ids = seq[mask]
-    molecule_ids = np.digitize(atomic_ids, sys.mol_indices)-1
+    atomic_ids = _selection_to_index(selection)    
+    
+    print atomic_ids
+    molecule_ids = np.digitize(atomic_ids, orig.mol_indices)-1
     molecule_ids = np.unique(molecule_ids)
 
-    return extract_subsystem(sys, molecule_ids)
+    return subsystem_from_molecules(orig, molecule_ids)
 
-
+def _selection_to_index(selection):
+    selection = np.array(selection)
+    if selection.dtype == bool:
+        index, = selection.nonzero()
+    else:
+        index = selection
+    
+    return index
+    
+    
 def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by overlapping *sysa* and *sysb*. Overlapping
     molecules are removed by cutting the molecules of *sysa* that are
@@ -680,9 +695,9 @@ def merge_systems(sysa, sysb, bounding=0.2):
     zmask = (minz < sysa.r_array[:,2]) & (sysa.r_array[:,2] < maxz) 
     
     # Rebuild sysa without water molecules
-    sysa = select_atoms(sysa, np.logical_not(xmask & ymask & zmask))
+    sysa = subsystem_from_atoms(sysa, np.logical_not(xmask & ymask & zmask))
     
-    sysres = System(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
+    sysres = System.empty(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     
     # each atom attribute
     for attr_name in System.atom_inherited.keys():

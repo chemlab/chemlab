@@ -53,7 +53,7 @@ def test_write_gromacs():
     
 def test_read_edr():
     df = datafile('tests/data/ener.edr')
-    df.read('frames')
+    #df.read('frames')
     
     dt, temp = df.read('quantity', 'Temperature')
     unit = df.read('units', 'Temperature')
