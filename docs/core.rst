@@ -42,9 +42,9 @@ origin and translating it::
 
     import numpy as np
     
-    wat = Molecule(Atom("H", [0.0, 0.0, 0.0]),
-                   Atom("H", [0.0, 1.0, 0.0]),
-                   Atom("O", [0.0, 0.0, 1.0]))
+    wat = Molecule([Atom("H", [0.0, 0.0, 0.0]),
+                    Atom("H", [0.0, 1.0, 0.0]),
+                    Atom("O", [0.0, 0.0, 1.0])])
     
     wat.r_array += np.random.rand(3)
 
@@ -55,7 +55,7 @@ molecule about 90 degrees around the z-axis::
     from chemlab.graphics.transformations import rotation_matrix
     
     # The transformation module returns 4x4 matrices
-    M = rotation_matrix(np.array([0.0, 0.0, 1.0]), np.pi/2)[:3,:3]
+    M = rotation_matrix(np.pi/2, np.array([0.0, 0.0, 1.0]))[:3,:3]
 
     # slow, readable way
     for i,r in enumerate(wat.r_array):
@@ -96,7 +96,7 @@ expose data by using arrays. By default, system inherits the atomic
 data from the constituent molecules, in this way you can, for
 instance, easily and efficienntly iterate over the atomic coordinates by
 using the attribute System.r_array. To understand the relation between 
-Atom.r, Molecule.r_array and System.r_array refer to the picture.
+Atom.r, Molecule.r_array and System.r_array refer to the picture below.
  
 .. image:: _static/core_types_copy.png
       :scale: 70 %
