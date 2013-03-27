@@ -198,13 +198,13 @@ def test_unproject():
     v.run()
     
 def test_traj_viewer():
-    from chemlab.io import DataFile
+    from chemlab.io import datafile
     tv = QtTrajectoryViewer()
     
-    s = DataFile('tests/data/water.gro').read('system')
+    s = datafile('tests/data/water.gro').read('system')
     ar = tv.add_renderer(AtomRenderer, s)
 
-    times, frames = DataFile('tests/data/trajout.xtc').read('trajectory')
+    times, frames = datafile('tests/data/trajout.xtc').read('trajectory')
     tv.set_ticks(len(frames))
     
     @tv.update_function
