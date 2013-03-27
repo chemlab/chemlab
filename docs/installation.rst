@@ -27,23 +27,22 @@ Once you're setup you're ready to go to dig in chemlab's features.
 Quickstart
 ----------
 
-We'll see how to read, visualize and process a proteine using chemlab.
+This section is still to do.
 
     
 Development
 -----------
 
-Grab the chemlab source from git::
+After installing the dependencies, grab the chemlab source from git::
 
     $ git clone https://github.com/chemlab/chemlab.git
    
+Complile the included extensions::
+
+    $ python setup.py build_ext --inplace
+
 Just add the chemlab directory to the PYTHONPATH in your .bashrc::
 
     export PYTHONPATH=$PYTHONPATH:/path/to/chemlab
-
-
-
-
-
 
 
