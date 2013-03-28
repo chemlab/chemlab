@@ -34,4 +34,5 @@ The QtViewer class
 The QtTrajectoryViewer class
 ----------------------------
 
+.. autoclass:: chemlab.graphics.QtTrajectoryViewer
 

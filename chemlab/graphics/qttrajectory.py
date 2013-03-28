@@ -94,13 +94,51 @@ class AnimationSlider(QtGui.QSlider):
 
     
 class QtTrajectoryViewer(QMainWindow):
+    """Interface for viewing trajectory.
+
+    It provides interface elements to play/pause and set the speed of
+    the animation.
     
+    **Example**
+
+    To set up a QtTrajectoryViewer you have to add renderers to the
+    scene, set the number of frames present in the animation by calling
+    ;py:meth:`~chemlab.graphics.QtTrajectoryViewer.set_ticks` and
+    define an update function.
+
+    Below is an example taken from the function
+    :py:func:`chemlab.graphics.display_trajectory`::
+    
+        from chemlab.graphics import QtTrajectoryViewer
+        
+        # sys = some System
+        # coords_list = some list of atomic coordinates
+        
+        v = QtTrajectoryViewer()
+        sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
+                            backend='impostors')
+        br = v.add_renderer(BoxRenderer, sys.box_vectors)
+        
+        v.set_ticks(len(coords_list))
+        
+        @v.update_function
+        def on_update(index):
+            sr.update_positions(coords_list[index])
+            br.update(sys.box_vectors)
+            v.set_text(format_time(times[index]))
+            v.widget.repaint()
+     
+        v.run()
+    
+    .. warning:: Use with caution, the API for this element is not
+                 fully stabilized and may be subject to change.
+
+    """
+
     def __init__(self):
         super(QtTrajectoryViewer, self).__init__()
-
-        self.controls = QDockWidget()
-
         
+        self.controls = QDockWidget()
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.do_update)
         
@@ -194,6 +232,9 @@ class QtTrajectoryViewer(QMainWindow):
         containerhb2.setVisible(False)
         
     def set_ticks(self, number):
+        '''Set the number of frames to animate.
+
+        '''
         self.max_index = number
         self.current_index = 0
         
@@ -202,6 +243,7 @@ class QtTrajectoryViewer(QMainWindow):
         self.slider.setPageStep(1)
         
     def set_text(self, text):
+        '''Update the time indicator in the interface.'''
         self.timelabel.setText(self._label_tmp.format(text))
         
     def on_play(self):
@@ -241,6 +283,10 @@ class QtTrajectoryViewer(QMainWindow):
             self._timer.start(self.speed)
         
     def add_renderer(self, klass, *args, **kwargs):
+        '''The behaviour of this function is the same as
+        :py:meth:`chemlab.graphics.QtViewer.add_renderer`.
+
+        '''
         renderer = klass(self.widget, *args, **kwargs)
         self.widget.renderers.append(renderer)
         return renderer
@@ -254,6 +300,16 @@ class QtTrajectoryViewer(QMainWindow):
         app.exec_()
         
     def update_function(self, func):
+        '''Set the function to be called when it's time to display a frame.
+
+        *func* should be a function that takes one integer argument that
+        represents the frame that has to be played::
+
+            def func(index):
+                # Update the renderers to match the
+                # current animation index
+
+        '''
         self._update_function = func
 
     def _toggle_settings(self):

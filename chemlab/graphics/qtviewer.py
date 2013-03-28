@@ -84,6 +84,8 @@ class QtViewer(QMainWindow):
             Time in milliseconds between calls of the *callback*
             function.
 
+        **Returns**
+        a `QTimer`, to stop the animation you can use `Qtimer.stop`
         '''
         timer = QTimer(self)
         timer.timeout.connect(callback)
@@ -101,6 +103,11 @@ class QtViewer(QMainWindow):
             Arguments used by the renderer constructor,
             except for the *widget* argument.
             .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer
+
+        **Return**
+
+        The istantiated renderer. You should keep the return value to
+        be able to update the renderer at run-time.
 
         '''
         renderer = klass(self.widget, *args, **kwargs)
