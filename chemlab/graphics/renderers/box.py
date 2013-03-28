@@ -7,20 +7,21 @@ from ..colors import black
 from OpenGL.GL import *
 
 class BoxRenderer(ShaderBaseRenderer):
-    def __init__(self, widget, vectors, color=black):
-        '''Used to render a black wireframed box starting from the
-        origin.
+    '''Used to render a black wireframed box starting from the
+       origin.
 
-        **Parameters**
+       **Parameters**
         
-        widget:
-           The parent QChemlabWidget
-        vectors: np.ndarray((3,3), dtype=float)
-           The three vectors representing the sides of the box.
-        color: 4 int tuple
-           r,g,b,a color in the range [0,255]
+       widget:
+          The parent QChemlabWidget
+       vectors: np.ndarray((3,3), dtype=float)
+          The three vectors representing the sides of the box.
+       color: 4 int tuple
+          r,g,b,a color in the range [0,255]
 
-        '''
+    '''
+
+    def __init__(self, widget, vectors, color=black):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                 "default_persp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
