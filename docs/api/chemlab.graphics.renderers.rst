@@ -21,8 +21,8 @@ SphereRenderer
 .. autoclass:: chemlab.graphics.renderers.SphereRenderer
     :members:
 
-SphereImpstorRenderer
----------------------
+SphereImpostorRenderer
+----------------------
 
 .. autoclass:: chemlab.graphics.renderers.SphereImpostorRenderer
     :members:

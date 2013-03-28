@@ -82,7 +82,9 @@ class SphereRenderer(AbstractRenderer):
     def draw(self):
         self.tr.draw()
 
-    def update_positions(self, r_array):
+    def update_positions(self, positions):
+        '''Update the sphere positions.
+        '''
         sphs_verts = self.sphs_verts_radii.copy()
         sphs_verts += r_array.reshape(self.n_spheres, 1, 3)
 
@@ -91,7 +93,7 @@ class SphereRenderer(AbstractRenderer):
         
     def update_colors(self, colorlist):
         
-        self.tr.update_colors(colors_)
+        self.tr.update_colors(colorlist)
 
 from ..transformations import distance, normalized
 

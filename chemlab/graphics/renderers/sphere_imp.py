@@ -7,6 +7,21 @@ from OpenGL.GL import *
 import numpy as np
 
 class SphereImpostorRenderer(ShaderBaseRenderer):
+    """The interface is identical to
+       :py:class:`~chemlab.graphics.renderers.SphereRenderer` but uses a
+       different drawing method.
+    
+       The spheres are squares that always face the user. Each point
+       of the sphere, along with the lighting, is calculated in the
+       fragment shader, resulting in a perfect sphere.
+    
+       SphereImpostorRenderer is an extremely fast rendering method,
+       it is perfect for rendering a lot of spheres ( > 50000) and for
+       animations.
+
+       .. image:: /_static/sphere_impostor_renderer.png
+
+    """
     def __init__(self, viewer, poslist, radiuslist, colorlist):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "sphereimp.vert")

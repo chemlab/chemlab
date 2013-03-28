@@ -12,8 +12,33 @@ from OpenGL.GL import (GL_DYNAMIC_DRAW, GL_VERTEX_ARRAY, GL_NORMAL_ARRAY,
                        glEnableClientState, glDrawArrays)
 
 class TriangleRenderer(DefaultRenderer):
-    def __init__(self, viewer, vertices, normals, colors):
-        super(TriangleRenderer, self).__init__(viewer)
+    '''Renders an array of triangles.
+
+    A lot of renderers are built on this, for example
+    :py:class:`~chemlab.graphics.renderers.SphereRenderer`. The
+    implementation is relatively fast since it's based on
+    VertexBuffers.
+    
+    .. image:: /_static/triangle_renderer.png
+    
+    **Parameters**
+    
+    widget:
+        The parent QChemlabWidget
+    vertices: np.ndarray((NTRIANGLES*3, 3), dtype=float)
+        The triangle vertices, keeping in mind the unwinding order.
+        If the face of the triangle is pointing outwards, the vertices should
+        be provided in clokckwise order.
+    normals: np.ndarray((NTRIANGLES*3, 3), dtype=float)
+        The normals to each of the triangle vertices, used for
+        lighting calculations.
+    colors: np.ndarray((NTRIANGLES*3, 4), dtype=np.uint8)
+        Color for each of the vertices in (r,g,b,a) values
+        in the interval [0, 255]
+    
+    '''
+    def __init__(self, widget, vertices, normals, colors):
+        super(TriangleRenderer, self).__init__(widget)
         
         n_triangles = len(vertices)
         # Convert arrays to numpy arrays, float32 precision,
@@ -48,14 +73,25 @@ class TriangleRenderer(DefaultRenderer):
         self._vbo_c.unbind()
     
     def update_vertices(self, vertices):
+        """
+        Update the triangle vertices.
+        """
+
         vertices = np.array(vertices, dtype=np.float32)
         self._vbo_v.set_data(vertices)
         
     def update_normals(self, normals):
+        """
+        Update the triangle normals.
+        """
+
         normals = np.array(normals, dtype=np.float32)
         self._vbo_n.set_data(normals)
 
     def update_colors(self, colors):
+        '''
+        Update the triangle colors.
+        '''
         colors = np.array(colors, dtype=np.float32)
         self._vbo_c.set_data(colors)
 
