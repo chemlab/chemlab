@@ -5,6 +5,8 @@ import pkgutil
 from OpenGL.GL import *
 
 class LineRenderer(ShaderBaseRenderer):
+    '''
+    '''
     def __init__(self, viewer, startends, colors):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                 "default_persp.vert")
