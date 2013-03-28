@@ -3,28 +3,65 @@ import argparse
 import sys
 import chemlab as cl
 import os
-
+from chemlab.libs.termcolor import cprint
 import time
 
+def infoprint(msg, color=None):
+    cprint('INFO: ', color='yellow', end='')    
+    cprint(msg, color=color, end='')
+    
 def view(args):
     from chemlab.io import datafile
     from chemlab.graphics import display_system, display_trajectory
+    from chemlab.core import subsystem_from_molecules
+    import numpy as np
     
+
+
     base, ext = os.path.splitext(args.filename)
     
+    infoprint('Reading file %s ... ' % args.filename)
+    t0 = time.time()
+    
+    df = datafile(args.filename)
+    sys = df.read('system')
+  
+    cprint('DONE (%f s)'%(time.time()-t0), color='green')	
+  
+    if args.nowater:
+        infoprint('Removing water molecules ... ')
+        t0 = time.time()
+        
+        mols = sys.get_derived_molecule_array('formula')
+        noh2o = np.logical_not(mols == 'H2O')
+        noh2o_atom = sys.mol_to_atom_indices(noh2o.nonzero()[0])        
+        
+        sys = subsystem_from_molecules(sys, noh2o)
+      
+        cprint('DONE (%f s)'%(time.time() - t0), color='green')
+   
     if not args.traj:
-        df = datafile(args.filename)
-        sys = df.read('system')
         display_system(sys)
     else:
-        df = datafile(args.filename)
-        sys = df.read('system')
+        infoprint('Reading trajectory frames ... ')
+        t0 = time.time()
         
         df = datafile(args.traj)
         times, frames = df.read('trajectory')
+        
+        cprint('DONE (%f s)'%(time.time()-t0), color='green')
+        
+        if args.nowater:
+            infoprint('Removing water from frames ... ')
+            t0 = time.time()
+            
+            for i, f in enumerate(frames):
+                frames[i] = f[noh2o_atom]
+                
+            cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
         display_trajectory(sys, times,  frames)
-	
+
 def plot(args):
     base, ext = os.path.splitext(args.filename)
 
@@ -39,6 +76,7 @@ gromacs.setup_commands(subparsers)
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
 view_parser.add_argument('--traj', action='store', type=str)
+view_parser.add_argument('--nowater', action='store_true')
 
 view_parser.set_defaults(func=view)
 
