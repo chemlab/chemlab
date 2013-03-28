@@ -24,7 +24,7 @@ class Mock(object):
 
     @classmethod
     def __getattr__(cls, name):
-        if name == 'QGLWidget':
+        if name in ('QGLWidget','QMainWindow'):
             return int
         if name in ('__file__', '__path__'):
             return '/dev/null'

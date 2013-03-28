@@ -20,7 +20,10 @@ def _system_auto_scale(sys, camera):
     camera.position[2] = np.sqrt(sqdist) + 4.0
     
 
-def display_system(sys, renderer='sphere'):
+def display_system(sys):
+    '''Display the system *sys* with the default viewer.
+
+    '''
     v = QtViewer()
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
@@ -33,6 +36,22 @@ def display_system(sys, renderer='sphere'):
     v.run()
 
 def display_trajectory(sys, times, coords_list):
+    '''Display the the system *sys* and instrument the trajectory
+    viewer with frames information.
+    
+    .. image:: /_static/display_trajectory.png
+    
+    **Parameters**
+
+    sys: :py:class:`~chemlab.core.System`
+        The system to be displayed
+    times: np.ndarray(NFRAMES, dtype=float)
+        The time corresponding to each frame. This is used
+        only for feedback reasons.
+    coords_list: list of np.ndarray((NFRAMES, 3), dtype=float)
+        Atomic coordinates at each frame.
+    
+    '''
     v = QtTrajectoryViewer()
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')

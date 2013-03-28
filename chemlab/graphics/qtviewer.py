@@ -27,7 +27,9 @@ class FpsDraw(object):
         
 
 class QtViewer(QMainWindow):
-    """View objects in space.
+    """Bases: `PySide.QtGui.QMainWindow`
+
+    View objects in space.
 
     This class can be used to build your own visualization routines by
     attaching :doc:`renderers <chemlab.graphics.renderers>` to it.
@@ -67,12 +69,12 @@ class QtViewer(QMainWindow):
                # calculate new_positions
                sr.update_positions(new_positions)
                v.widget.repaint()
-        
+            
             v.schedule(update)
             v.run()
         
-         .. note:: remember to call QtViewer.widget.repaint() each
-                   once you want to update the display.
+        .. note:: remember to call QtViewer.widget.repaint() each
+                  once you want to update the display.
         
 
         **Parameters**
@@ -102,7 +104,8 @@ class QtViewer(QMainWindow):
         args, kwargs:
             Arguments used by the renderer constructor,
             except for the *widget* argument.
-            .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer
+        
+        .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer`
 
         **Return**
 

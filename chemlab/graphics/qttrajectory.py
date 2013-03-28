@@ -94,7 +94,9 @@ class AnimationSlider(QtGui.QSlider):
 
     
 class QtTrajectoryViewer(QMainWindow):
-    """Interface for viewing trajectory.
+    """Bases: `PySide.QtGui.QMainWindow`
+
+    Interface for viewing trajectory.
 
     It provides interface elements to play/pause and set the speed of
     the animation.

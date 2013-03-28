@@ -4,6 +4,16 @@ chemlab.graphics
 This package contains the features related to the graphic capabilities
 of chemlab.
 
+Ready to use functions
+----------------------
+
+The two following functions are a convenient way to quickly display 
+and animate a :py:class:`~chemlab.core.System` in chemlab.
+
+.. autofunction:: chemlab.graphics.display_system
+		 
+.. autofunction:: chemlab.graphics.display_trajectory		 
+
 The QChemlabWidget class
 ------------------------
 
@@ -19,7 +29,7 @@ The Camera class
     :members:
 
 Renderers
-.........
+---------
 
 .. toctree::
     chemlab.graphics.renderers
@@ -29,10 +39,9 @@ The QtViewer class
 
 .. autoclass:: chemlab.graphics.QtViewer
     :members:
-    :show-inheritance:
 
 The QtTrajectoryViewer class
 ----------------------------
 
 .. autoclass:: chemlab.graphics.QtTrajectoryViewer
-
+     :members:
