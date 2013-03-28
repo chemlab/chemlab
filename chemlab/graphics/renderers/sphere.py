@@ -5,17 +5,37 @@ from .triangles import TriangleRenderer
 
 
 class SphereRenderer(AbstractRenderer):
-    def __init__(self, viewer, poslist, radiuslist, colorlist):
-        '''Renders a set of spheres. The positions of the spheres
-        are determined from *poslist* which is a list of xyz coordinates,
-        the respective radii are in the list *radiuslist* and colors
-        *colorlist* as rgba where each one is in the range [0, 255].
+    '''Renders a set of spheres.
 
-        This renderer uses vertex array objects to deliver optimal
-        performance.
-        '''
+    The method used by this renderer is approximating a sphere by
+    using triangles. While this is reasonably fast, for best
+    performance and animation you should use
+    :py:class:`~chemlab.graphics.renderers.SphereImpostorRenderer`
+    
+    .. image:: /_static/sphere_renderer.png
+    
+    **Parameters**
+
+    widget:
+        The parent ``QChemlabWidget``
+    
+    poslist: np.ndarray((NSPHERES, 3), dytpe=float)
+        A position array. While there aren't dimensions, in the context
+        of chemlab 1 unit of space equals 1 nm.
+    
+    radiuslist: np.ndarray(NSPHERES, dtype=float)
+        An array with the radius of each sphere.
+    
+    colorlist: np.ndarray(NSPHERES, 4) or list of tuples
+        An array with the color of each sphere. Suitable colors are
+        those found in ``chemlab.graphics.colors`` or any
+        tuple with values (r, g, b, a) in the range [0, 255]
+    
+    '''
+
+    def __init__(self, widget, poslist, radiuslist, colorlist):
         
-        self.viewer = viewer
+        self.viewer = widget
 
         self.poslist = poslist
         self.radiuslist = radiuslist
@@ -57,7 +77,7 @@ class SphereRenderer(AbstractRenderer):
         colors_ = np.repeat(colorlist, verts_one_sphere/3, axis=0)
 
 
-        self.tr = TriangleRenderer(viewer, vertices.flatten(), normals.flatten(), colors_)
+        self.tr = TriangleRenderer(widget, vertices.flatten(), normals.flatten(), colors_)
     
     def draw(self):
         self.tr.draw()

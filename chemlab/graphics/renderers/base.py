@@ -9,23 +9,59 @@ import pkgutil
 
 
 class AbstractRenderer(object):
-    '''An AbstractRenderer is an interface for Renderers. Each
-    renderer have to implement an initialization function __init__, a
-    draw method to do the actual drawing and an update function, that
-    is used to update the data to be displayed.
+    '''AbstractRenderer is the standard interface for renderers. Each
+    renderer have to implement an initialization function __init__ and
+    a draw method to do the actual drawing using OpenGL or by using
+    other, more basic, renderers.
+    
+    Usually the renderers have also some custom functions that they
+    use to update themselves.  For example a SphereRenderer implements
+    the function update_positions to move the spheres around without
+    having to regenerate all of the other properties.
+
+    .. seealso:: :doc:`/graphics` for a tutorial on how to develop a simple
+                 renderer.
+    
+    **Parameters**
+    
+    widget: :py:class:`chemlab.graphics.QChemlabWidget`
+         The parent `QChemlabWidget`. Renderers can use the widget
+         to access the camera, lights, and other informations.
+    
+    args, kwargs: Any other argument that they may use.
 
     '''
-    def __init__(self, viewer, *args, **kwargs):
+    def __init__(self, widget, *args, **kwargs):
         pass
     
     def draw(self):
+        '''Generic drawing function to be implemented by the
+        subclasses.
+
+        '''
         pass
     
-    def update(self, *args, **kwargs):
-        pass
     
 
 class ShaderBaseRenderer(AbstractRenderer):
+    '''
+    Instruments OpenGL with a vertex and a fragment shader.
+    
+    This renderer automatically binds light and camera
+    information. Subclasses should not reimplement the ``draw`` method
+    but the ``draw_vertices`` method where you can bind and draw the
+    objects.
+
+    **Parameters**
+    
+    widget:
+        The parent :py:class:`~chemlab.graphics.QChemlabWidget`
+    vertex: str
+        Vertex program as a string
+    fragment: str
+        Fragment program as a string
+    
+    '''
     def __init__(self, widget, vertex, fragment):
         self.viewer = widget
         self.VERTEX_SHADER = vertex
@@ -38,6 +74,9 @@ class ShaderBaseRenderer(AbstractRenderer):
         glUseProgram(0)
         
     def draw_vertices(self):
+        '''Method to be reimplemented by the subclasses.
+
+        '''
         raise NotImplementedError()
         
     def compile_shader(self):
@@ -56,8 +95,14 @@ class ShaderBaseRenderer(AbstractRenderer):
         set_uniform(self.shader, "camera", "3f", self.viewer.camera.position)
 
 class DefaultRenderer(ShaderBaseRenderer):
-    '''You should reimplent the draw_vertices method to
-    actually draw vertices'''
+    '''Same as
+    :py:class:`~chemlab.graphics.renderers.ShaderBaseRenderer` with
+    the default shaders.
+
+    You can find the shaders in ``chemlab/graphics/renderers/shaders/``
+    under the names of ``default_persp.vert`` and ``default_persp.frag``.
+
+    '''
     
     def __init__(self, widget):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
@@ -68,4 +113,7 @@ class DefaultRenderer(ShaderBaseRenderer):
         super(DefaultRenderer, self).__init__(widget, vert, frag)
 
     def draw_vertices(self):
+        '''Subclasses should reimplement this method.
+
+        '''
         raise NotImplementedError()

@@ -21,6 +21,9 @@ The Camera class
 Renderers
 .........
 
+.. toctree::
+    chemlab.graphics.renderers
+
 The QtViewer class
 ------------------
 

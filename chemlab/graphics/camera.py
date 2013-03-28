@@ -26,9 +26,9 @@ class Camera:
     .. py:attribute:: a, b, c
        
        :type: np.ndarray(3), np.ndarray(3), np.ndarray(3) dtype=float
-       :default a: np.ndarray([1.0, 0.0, 0.0])
-       :default b: np.ndarray([0.0, 1.0, 0.0])
-       :default c: np.ndarray([0.0, 0.0, -1.0])
+       :default: a: np.ndarray([1.0, 0.0, 0.0])
+                 b: np.ndarray([0.0, 1.0, 0.0])
+                 c: np.ndarray([0.0, 0.0, -1.0])
 
        Those three vectors represent the camera orientation. The ``a``
        vector points to our right, the ``b`` points upwards and ``c``

@@ -1,4 +1,7 @@
 from .base import AbstractRenderer
+from .base import ShaderBaseRenderer
+from .base import DefaultRenderer
+
 from .sphere import SphereRenderer
 from .sphere_imp import SphereImpostorRenderer
 from .atom import AtomRenderer
