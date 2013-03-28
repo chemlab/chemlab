@@ -27,6 +27,10 @@ Renderers
 The QtViewer class
 ------------------
 
+.. autoclass:: chemlab.graphics.QtViewer
+    :members:
+    :show-inheritance:
+
 The QtTrajectoryViewer class
 ----------------------------
 

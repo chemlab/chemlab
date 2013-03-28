@@ -27,9 +27,14 @@ class FpsDraw(object):
         
 
 class QtViewer(QMainWindow):
+    """View objects in space.
+
+    This class can be used to build your own visualization routines by
+    attaching :doc:`renderers <chemlab.graphics.renderers>` to it.
+    
+    """
     
     def __init__(self):
-        #self.app = QApplication([])
         QMainWindow.__init__(self)
         widget = QChemlabWidget(self)
         self.setCentralWidget(widget)
@@ -38,15 +43,66 @@ class QtViewer(QMainWindow):
         self.show()
         
     def run(self):
+        '''Display the QtViewer
+
+        '''
         app.exec_()
         
     def schedule(self, callback, timeout=100):
+        '''Schedule a function to be called repeated time.
+
+        This method can be used to perform animations.
+        
+        **Example**
+        
+        This is a typical way to perform an animation, just::
+        
+            from chemlab.graphics import QtViewer
+            from chemlab.graphics.renderers import SphereRenderer
+            
+            v = QtViewer()
+            sr = v.add_renderer(SphereRenderer, centers, radii, colors)
+             
+            def update():
+               # calculate new_positions
+               sr.update_positions(new_positions)
+               v.widget.repaint()
+        
+            v.schedule(update)
+            v.run()
+        
+         .. note:: remember to call QtViewer.widget.repaint() each
+                   once you want to update the display.
+        
+
+        **Parameters**
+        
+        callback: function()
+            A function that takes no arguments that will be 
+            called at intervals.
+        timeout: int
+            Time in milliseconds between calls of the *callback*
+            function.
+
+        '''
         timer = QTimer(self)
         timer.timeout.connect(callback)
         timer.start(timeout)
         return timer
         
     def add_renderer(self, klass, *args, **kwargs):
+        '''Add a renderer to the current scene.
+        
+        **Parameter**
+        
+        klass: renderer class
+            The renderer class to be added
+        args, kwargs:
+            Arguments used by the renderer constructor,
+            except for the *widget* argument.
+            .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer
+
+        '''
         renderer = klass(self.widget, *args, **kwargs)
         self.widget.renderers.append(renderer)
         return renderer
@@ -58,6 +114,7 @@ class QtViewer(QMainWindow):
         
     # Events
     def keyPressEvent(self, evt):
+        
         angvel = 0.3
         
         if evt.key() == Qt.Key_Up:

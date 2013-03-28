@@ -8,7 +8,8 @@ from OpenGL.GL import *
 
 class BoxRenderer(ShaderBaseRenderer):
     def __init__(self, widget, vectors, color=black):
-        '''Used to render a black wireframed box.
+        '''Used to render a black wireframed box starting from the
+        origin.
 
         **Parameters**
         
@@ -18,7 +19,7 @@ class BoxRenderer(ShaderBaseRenderer):
            The three vectors representing the sides of the box.
         color: 4 int tuple
            r,g,b,a color in the range [0,255]
-        
+
         '''
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                 "default_persp.vert")
