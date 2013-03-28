@@ -7,16 +7,29 @@ from .point import PointRenderer
 from .base import AbstractRenderer
 
 class CylinderRenderer(AbstractRenderer):
-    def __init__(self, viewer, bounds, radii, colors):
-        '''Renders a set of cylinders. The starting and end point of
-        each cylinder is stored in the startlist* and *endlist*.
+    '''Renders a set of cylinders.
         
-        radius of cylinders are in *radiuslits*
-        
-        This renderer uses vertex array objects to deliver optimal
-        performance.
+    The API is quite similar to
+    :py:class:`~chemlab.graphics.renderers.LineRenderer`
+    
+    .. note:: The current implementation is a bit slow and can't render
+              a lot of cylinders (~1000) fast enough, we expect to 
+              optimize it in the near future.
+    
+    .. image:: /_static/cylinder_renderer.png
+    
+    **Parameters**
+    
+    widget:
+        The parent QChemlabWidget
+    bounds: np.ndarray((NCYL, 2, 3), dtype=float)
+        Start and end points of the cylinder.
+    colors: np.ndarray((NYCL, 4), dtype=np.uint8)
+        The color for each cylinder.
+    
+    '''
+    def __init__(self, widget, bounds, radii, colors):
 
-        '''
         
         self.bounds = bounds
         self.radii = radii
@@ -45,7 +58,7 @@ class CylinderRenderer(AbstractRenderer):
         
         vertices, normals, colors = self._process_reference()
         
-        self.tr = TriangleRenderer(viewer, vertices,  normals, colors)
+        self.tr = TriangleRenderer(widget, vertices,  normals, colors)
         
     def draw(self):
         self.tr.draw()
@@ -80,6 +93,9 @@ class CylinderRenderer(AbstractRenderer):
         return vertices, normals, colors
         
     def update_bounds(self, bounds):
+        '''Update cylinders start and end positions
+
+        '''
         starts =  bounds[:,0,:]
         ends = bounds[:,1,:]
 
