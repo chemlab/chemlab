@@ -22,7 +22,8 @@ def _system_auto_scale(sys, camera):
 
 def display_system(sys, renderer='sphere'):
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, sys, backend='impostors')
+    sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
+                        backend='impostors')
     
     _system_auto_scale(sys, v.widget.camera)
     
@@ -33,7 +34,8 @@ def display_system(sys, renderer='sphere'):
 
 def display_trajectory(sys, times, coords_list):
     v = QtTrajectoryViewer()
-    sr = v.add_renderer(AtomRenderer, sys, backend='impostors')
+    sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
+                        backend='impostors')
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
     _system_auto_scale(sys, v.widget.camera)
     

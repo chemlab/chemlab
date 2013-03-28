@@ -83,7 +83,7 @@ def test_atom_renderer():
                     Atom("H", [-0.532, 0.198, 0.10])])
     
     v = QtViewer()
-    ar = v.add_renderer(AtomRenderer, mol)
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array)
     v.run()
 
 def test_box_renderer():
@@ -154,7 +154,7 @@ def test_bond_renderer():
     radii = [0.015] * len(bounds)
     colors = [orange] * len(bounds)
     
-    ar = v.add_renderer(AtomRenderer, mol, "impostors")
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
 
     #v.run()
@@ -167,7 +167,7 @@ def test_text_ui():
                     Atom("H", [-0.532, 0.198, 0.10])])
     
     # To add some interaction to it
-    ar = v.add_renderer(AtomRenderer, mol, "impostors")
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
     tr = v.add_ui(TextUI, 100, 100, 'Hello guys')
     
     v.run()
@@ -202,7 +202,7 @@ def test_traj_viewer():
     tv = QtTrajectoryViewer()
     
     s = datafile('tests/data/water.gro').read('system')
-    ar = tv.add_renderer(AtomRenderer, s)
+    ar = tv.add_renderer(AtomRenderer, s.r_array, s.type_array)
 
     times, frames = datafile('tests/data/trajout.xtc').read('trajectory')
     tv.set_ticks(len(frames))

@@ -25,7 +25,7 @@ water template.
 
 >>> from chemlab.graphics.renderers import SphereRenderer
 >>> from chemlab.data.moldb import water
->>> ar = v.add_renderer(AtomRenderer, water)
+>>> ar = v.add_renderer(AtomRenderer, water.r_array, water.type_array)
 >>> v.run()
 
 .. image:: _static/graphics_water.png

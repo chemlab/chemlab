@@ -162,7 +162,7 @@ slate_gray = (112, 128, 144, 255)
 dark_slate_gray = ( 47,  79,  79, 255)
 black = (  0,   0,   0, 255)
 
-map = {
+default_atom_map = {
 "C": light_gray,
 "O": red,
 "H": white,
@@ -172,7 +172,7 @@ map = {
 "Cl": green,
 "B":  green,
     
-"Ph": orange,
+"P": orange,
 "Fe": orange,
 "Ba": orange,
 
@@ -202,8 +202,3 @@ map = {
 
 "Xx": deep_pink,
 }
-
-# Making the guy case_insensitive
-for k,v in map.items():
-    map[k.lower()] = v
-    map[k.upper()] = v
