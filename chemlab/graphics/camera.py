@@ -1,14 +1,86 @@
 '''Module to provide a nice camera for 3d applications'''
-from transformations import rotation_matrix, translation_matrix
-from transformations import simple_clip_matrix, clip_matrix
-from transformations import vector_product, angle_between_vectors, normalized
+from .transformations import rotation_matrix, translation_matrix
+from .transformations import simple_clip_matrix, clip_matrix
+from .transformations import vector_product, angle_between_vectors, normalized
 from ..mathutils import fequal 
 
 import numpy as np
 import numpy.linalg as LA
 
 class Camera:
+    """Our viewpoint on the 3D world. The Camera class can be used to
+    access and modify from which point we're seeing the scene.
+
+    It also handle the projection matrix (the matrix we apply to
+    project 3d points onto our 2d screen).
     
+    .. py:attribute:: position
+       
+       :type: np.ndarray(3, float)
+       :default: np.array([0.0, 0.0, 5.0])
+    
+       The position of the camera. You can modify this attribute to
+       move the camera in various directions using the absoule x, y
+       and z coordinates.
+    
+    .. py:attribute:: a, b, c
+       
+       :type: np.ndarray(3), np.ndarray(3), np.ndarray(3) dtype=float
+       :default a: np.ndarray([1.0, 0.0, 0.0])
+       :default b: np.ndarray([0.0, 1.0, 0.0])
+       :default c: np.ndarray([0.0, 0.0, -1.0])
+
+       Those three vectors represent the camera orientation. The ``a``
+       vector points to our right, the ``b`` points upwards and ``c``
+       in front of us.
+    
+       By default the camera points in the negative z-axis
+       direction.
+
+    .. py:attribute:: pivot
+
+       :type: np.ndarray(3, dtype=float)
+       :default: np.array([0.0, 0.0, 0.0])
+    
+       The point we will orbit around by using
+       :py:meth:`Camera.orbit_x` and :py:meth:`Camera.orbit_y`.
+       
+    .. py:attribute:: matrix
+
+       :type: np.ndarray((4,4), dtype=float)
+       
+       Camera matrix, it contains the rotations and translations
+       needed to transform the world according to the camera position.
+       It is generated from the ``a``,``b``,``c`` vectors.
+    
+    .. py:attribute:: projection
+
+       :type: np.ndarray((4, 4),dtype=float)
+       
+       Projection matrix, generated from the projection parameters.
+    
+    .. py:attribute:: z_near, z_far
+       
+       :type: float, float
+    
+       Near and far clipping planes. For more info refer to:
+       http://www.lighthouse3d.com/tutorials/view-frustum-culling/
+    
+    .. py:attribute:: scale
+       
+       :type: float
+    
+       Scale factor used to generate the projection matrix.
+    
+    .. py:attribute:: aspectratio
+
+       :type: float
+        
+       Aspect ratio for the projection matrix, this should be adapted
+       when the application window is resized.
+
+    """
+
     def __init__(self):
         self.position = np.array([0.0, 0.0, 5.0]) # Position in real coordinates
         
@@ -28,6 +100,14 @@ class Camera:
         self.c = np.array([0.0, 0.0, -1.0])
         
     def orbit_y(self, angle):
+        '''Orbit around the point ``Camera.pivot`` by the angle
+        *angle* expressed in radians. The axis of rotation is the
+        camera "right" vector, ``Camera.a``.
+
+        In practice, we move around a point like if we were on a Ferris
+        wheel.
+
+        '''
         
         # Subtract pivot point
         self.position -= self.pivot
@@ -44,6 +124,14 @@ class Camera:
         self.c = np.dot(rot, self.c)        
         
     def orbit_x(self, angle):
+        '''Same as :py:meth:`~chemlab.graphics.camera.Camera.orbit_y`
+        but the axis of rotation is the :py:attr:`Camera.b` vector.
+        
+        We rotate around the point like if we sit on the side of a salad
+        spinner.
+
+        '''
+        
         # Subtract pivot point
         self.position -= self.pivot
         
@@ -59,11 +147,21 @@ class Camera:
         self.c = np.dot(rot, self.c)        
         
     def mouse_rotate(self, dx, dy):
+        '''Convenience function to implement the mouse rotation by
+        giving two displacements in the x and y directions.
+
+        '''
         fact = 1.5
         self.orbit_y(-dx*fact)
         self.orbit_x(dy*fact)
 
     def mouse_zoom(self, inc):
+        '''Convenience function to implement a zoom function.
+
+        This is achieved by moving ``Camera.position`` in the
+        direction of the ``Camera.c`` vector.
+
+        '''
         # Square Distance from pivot
         dsq = np.linalg.norm(self.position - self.pivot)
         minsq = 1.0**2  # How near can we be to the pivot
@@ -121,10 +219,26 @@ class Camera:
         return ret
         
     def unproject(self, x, y, z=-1.0):
-        """Receive x and y as screen coordinates, between -1 and 1
-        and returns a point in world coordinates. This is useful for
-        picking. The z also goes from -1 to 1, where -1 is the
-        "projection" plane, that is the plane nearest to us.
+        """Receive x and y as screen coordinates and returns a point
+        in world coordinates.
+
+        This function comes in handy each time we have to convert a 2d
+        mouse click to a 3d point in our space.
+
+        **Parameters**
+        
+        x: float in the interval [-1.0, 1.0]
+            Horizontal coordinate, -1.0 is leftmost, 1.0 is rightmost.
+        
+        y: float in the interval [1.0, 1.0]
+            Vertical coordinate, -1.0 is down, 1.0 is up.
+        
+        z: float in the interval [1.0, -1.0]
+            Depth, -1.0 is the near plane, that is exactly behind our
+            screen, 1.0 is the far clipping plane.
+        
+        :rtype: np.ndarray(3,dtype=float)
+        :return: The point in 3d coordinates (world coordinates).
         
         """
 

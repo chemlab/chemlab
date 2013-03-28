@@ -9,7 +9,13 @@ The QChemlabWidget class
 
 This is the molecular viewer widget used by chemlab.
 
-.. autoclass:: chemlab.graphics.qchemlabwidget.QChemlabWidget
+.. autoclass:: chemlab.graphics.QChemlabWidget
+    :members:
+
+The Camera class
+----------------
+
+.. autoclass:: chemlab.graphics.camera.Camera
     :members:
 
 Renderers

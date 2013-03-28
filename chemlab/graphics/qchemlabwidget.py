@@ -80,7 +80,7 @@ class QChemlabWidget(QGLWidget):
 
     '''
     
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super(QChemlabWidget, self).__init__(parent)
     
     def sizeHint(self):
