@@ -14,7 +14,8 @@ it's extremely easy to build a molecular viewer and add a bunch of
 custom features to it.
 
 The typical approach when developing a graphics application is to
-create a ``Viewer`` instance and add 3D features to it::
+create a :py:class:`~chemlab.graphics.QtViewer` instance and add 3D
+features to it::
 
 >>> from chemlab.graphics import QtViewer
 >>> v = QtViewer()
@@ -61,10 +62,12 @@ Renderers
 
 Renderers are simply classes used to draw 3D objects. They are
 tecnically required to provide just one method, *draw* and they must
-take an instance of `GLWidget` as their first argument (check out
-the `AbstractRenderer` class). In this way they provide the maximum
-flexibility required to build efficient opengl routines. Renderers may
-be subclass other renderers as well as use other renderers.
+take an instance of :py:class:`~chemlab.graphics.QChemlabWidget` as
+their first argument (check out the
+:py:class:`~chemlab.graphics.renderers.AbstractRenderer` class). In
+this way they provide the maximum flexibility required to build
+efficient opengl routines. Renderers may be subclass other renderers
+as well as use other renderers.
 
 A very useful renderer is TriangleRenderer, used to render efficiently
 a list of triangles, it constitutes a base for writing other
@@ -90,11 +93,13 @@ triangle in the world::
 		   
 If you pass 6 vertices/normals/colors, he will display 2 triangles and
 so on. As a sidenote, he is very efficient and in fact
-TriangleRenderer is used as a backend for a lot of other renderers
-such as SphereRenderer and CylinderRenderer. If you can reduce a shape
-in triangles, you can easily write a renderer for it.
+:py:class:`chemlab.graphics.renderers.TriangleRenderer` is used as a
+backend for a lot of other renderers such as
+:py:class:`~chemlab.graphics.renderers.SphereRenderer` and
+:py:class:`~chemlab.graphics.renderers.CylinderRenderer`. If you can
+reduce a shape in triangles, you can easily write a renderer for it.
 
-In addition to that, TriangleRenderer provides also a method to update
+In addition to that, ``TriangleRenderer`` provides also a method to update
 vertices, normals and colors. We can demonstrate that from the last
 example by defining an update function that rotates our triangle::
   
@@ -107,7 +112,7 @@ example by defining an update function that rotates our triangle::
       # rotate homogeneous (4D) coordinates. 
       rot = rotation_matrix(3.14/32, y_axis)[:3, :3]
    
-      # This is the numpy equivalent to applying rot to each coordinate
+      # This is the numpy-efficient way of applying rot to each coordinate
       vertices[:] = np.dot(vertices, rot.T)
       normals[:] = np.dot(vertices, rot.T)
       
@@ -136,7 +141,8 @@ straight from `Wikipedia <http://en.wikipedia.org/wiki/Tetrahedron>`_::
     v3 = np.array([0.0, 1.0, 1.0/np.sqrt(2)])
     v4 = np.array([0.0, -1.0, 1.0/np.sqrt(2)])
     
-We can quickly verify if this is correcty by using a `PointRenderer`::
+We can quickly verify if this is correcty by using a
+:py:class:`~chemlab.graphics.renderers.PointRenderer`::
    
     from chemlab.graphics import QtViewer
     from chemlab.graphics.renderers import PointRenderer
@@ -200,7 +206,7 @@ renderer that, given a set of coordinates will display many tetrahedra.
 We can start by defining a Renderer class, inheriting from
 AbstractRenderer, the main thing you should notice is that you need an
 additional argument `widget` that will be passed when you use the
-method `Viewer.add_renderer`::
+method `QtViewer.add_renderer`::
 
 
     from chemlab.graphics.renderers import AbstractRenderer
