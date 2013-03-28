@@ -646,7 +646,6 @@ def subsystem_from_atoms(orig, selection):
     # Which atom belongs to which molecule
     atomic_ids = _selection_to_index(selection)    
     
-    print atomic_ids
     molecule_ids = np.digitize(atomic_ids, orig.mol_indices)-1
     molecule_ids = np.unique(molecule_ids)
 
