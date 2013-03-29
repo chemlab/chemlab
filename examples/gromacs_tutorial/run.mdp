@@ -1,0 +1,21 @@
+integrator = md
+dt = 0.001
+nsteps = 200000
+
+rlist = 0.9
+coulombtype = pme
+rcoulomb = 0.9
+rvdw = 0.9
+
+tcoupl = v-rescale
+tc-grps = System
+ref_t = 300
+tau_t = 0.1
+
+pcoupl = berendsen
+compressibility = 4.5e-5
+ref_p = 1.0
+
+gen_vel = yes
+gen_temp = 300
+constraints = all-bonds

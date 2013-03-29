@@ -1,0 +1,10 @@
+; We simply import ready-made definitions for the molecule type
+; SOL and the atom types OW, HW1 and HW2 
+#include "ffoplsaa.itp"
+#include "spce.itp"
+
+[ system ]
+Simple box of water
+
+[ molecules ]
+SOL 512

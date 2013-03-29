@@ -45,8 +45,6 @@ class BoxRenderer(ShaderBaseRenderer):
         b3 = b + a
         b4 = a
 
-        
-        
         lines_vertices = np.array([
             f1, f2, f2, f3, f3, f4, f4, f1,
             b1, b2, b2, b3, b3, b4, b4, b1,
