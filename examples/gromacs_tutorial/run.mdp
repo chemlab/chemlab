@@ -1,6 +1,7 @@
 integrator = md
 dt = 0.001
 nsteps = 200000
+nstxtcout = 100
 
 rlist = 0.9
 coulombtype = pme

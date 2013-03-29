@@ -138,6 +138,7 @@ run.mdp
     integrator = md
     dt = 0.001
     nsteps = 200000
+    nstxtcout = 100
      
     rlist = 0.9
     coulombtype = pme
@@ -184,4 +185,38 @@ To run the simulation with gromacs we have to do two steps:
 Viewing the results, the command-line way
 -----------------------------------------
 
+To quickly preview trajectories and system energies you can use the
+script `chemlab` included in the distribution in `scripts/chemlab`.
+
+GROMACS can store the trajectory (in the form of atomic coordinates) in
+the `.xtc` file. To play the trajectory you can use the command::
+
+  $ chemlab view start.gro --traj traj.xtc
+
+.. note:: the ``nstxtcout = 100`` option in the mdp file sets the
+          output frequency in the xtc file
+
+You may also be interested to look at some other properties, such as 
+the potential energy, pressure, temperature and density. This information
+is written by GROMACS in the ".edr" file. You can use the chemlab script 
+to view that:
+
+  $ chemlab gromacs ener.edr -e Pressure
+  $ chemlab gromacs ener.edr -e Temperature
+  $ chemlab gromacs ener.edr -e Potential
+  $ chemlab gromacs ener.edr -e Density
+
+.. warning:: The chemlab gromacs command is a work in progress, the
+             syntax may change in the future.
+
+It is also possible to view and get the results by directly reading
+the files and have direct access to the xtc coordinates and the energy
+stored in the edr files. Take a look at the reference for
+:py:class:`chemlab.io.handlers.XtcIO` and
+:py:class:`chemlab.io.handlers.EdrIO`.
+
+
+The tutorial is over, if you have any problem or want to know more, 
+just drop an email on the mailing list python-chemlab@googlegroups.com
+or file an issue on github https://github.com/chemlab/chemlab/issues
 
