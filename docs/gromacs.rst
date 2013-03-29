@@ -56,6 +56,7 @@ To generate such a box we will:
 3) Add the molecule to a preinitialized :py:class:`~chemlab.core.System`.
 
 ::
+   
     import numpy as np
     from chemlab.core import Atom, Molecule, System
     from chemlab.graphics import display_system
@@ -103,7 +104,7 @@ In this specific case, gromacs defines its own atom and molecule
 names in the ".top" file and then matches those to the ".gro" file
 to infer the bonds and interactions.
 
-.. todo:: Add picture of the export dictionary
+TODO Add picture of the export dictionary
 
 How do we write the .gro file? Since we've already setup our export
 information, this is an one-liner::
@@ -121,6 +122,7 @@ of water, just create those files in your working directory:
 topol.top
 
 ::
+
     ; We simply import ready-made definitions for the molecule type
     ; SOL and the atom types OW, HW1 and HW2 
     #include "ffoplsaa.itp"
@@ -135,6 +137,7 @@ topol.top
 run.mdp
 
 ::
+
     integrator = md
     dt = 0.001
     nsteps = 200000
@@ -199,7 +202,7 @@ the `.xtc` file. To play the trajectory you can use the command::
 You may also be interested to look at some other properties, such as 
 the potential energy, pressure, temperature and density. This information
 is written by GROMACS in the ".edr" file. You can use the chemlab script 
-to view that:
+to view that::
 
   $ chemlab gromacs ener.edr -e Pressure
   $ chemlab gromacs ener.edr -e Temperature
