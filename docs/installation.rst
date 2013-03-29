@@ -27,7 +27,7 @@ Once you're setup you're ready to go to dig in chemlab's features.
 Quickstart
 ----------
 
-.. todo:: This section is still to do.
+This section is still to do.
 
     
 Development
