@@ -1,5 +1,5 @@
-List of included renderers
-==========================
+List of available renderers
+===========================
 
 Interfaces
 ----------

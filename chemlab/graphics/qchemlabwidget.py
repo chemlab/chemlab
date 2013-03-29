@@ -31,7 +31,20 @@ class QChemlabWidget(QGLWidget):
         widget = QChemlabWidget()
         widget.renderers.append(SphereRenderer(widget, ...))
 
+    You can also add other elements for the scene such as user interface
+    elements, for example some text. This is done in a way similar to
+    renderers::
 
+        from chemlab.graphics import QChemlabWidget
+        from chemlab.graphics.uis import TextUI
+        
+        widget = QChemlabWidget()
+        widget.uis.append(TextUI(widget, 200, 200, 'Hello, world!'))
+
+    .. warning:: At this point there is only one ui element available.
+                PySide provides a lot of UI elements so there's the
+                possibility that UI elements will be converted into renderers.
+    
     QChemlabWidget has its own mouse gestures:
 
     - Left Mouse Drag: Orbit the scene;

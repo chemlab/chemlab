@@ -2,8 +2,26 @@ from OpenGL.GL import *
 from PySide.QtGui import QFont, QPainter
 
 class TextUI(object):
-    def __init__(self, viewer, x, y, text):
-        self.viewer = viewer
+    '''Display an overlay text at the point `x`, `y` in screen space.
+
+    .. warning:: The API for this element and uis in general is not
+                 yet finalized.
+
+    **Parameters**
+    
+    widget:
+        The parent `QChemlabWidget`
+    x, y: int
+        Points in screen coordinates. `x` pixels from left,
+        `y` pixels from top.
+    text: str
+        String of text to display
+    
+    '''
+    
+    
+    def __init__(self, widget, x, y, text):
+        self.viewer = widget
         w, h = viewer.width(), viewer.height()
         self.x, self.y = x, y
         self.text = text

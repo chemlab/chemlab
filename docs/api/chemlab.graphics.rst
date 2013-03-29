@@ -14,8 +14,37 @@ and animate a :py:class:`~chemlab.core.System` in chemlab.
 		 
 .. autofunction:: chemlab.graphics.display_trajectory		 
 
+
+
+Builtin 3D viewers
+-------------------
+
+The QtViewer class
+..................
+
+.. autoclass:: chemlab.graphics.QtViewer
+    :members:
+
+The QtTrajectoryViewer class
+............................
+
+.. autoclass:: chemlab.graphics.QtTrajectoryViewer
+     :members:
+	
+Renderers and UIs
+-----------------
+
+.. toctree::
+    chemlab.graphics.renderers
+
+.. toctree::
+    chemlab.graphics.uis
+    
+Low level widgets		  
+-----------------
+
 The QChemlabWidget class
-------------------------
+........................
 
 This is the molecular viewer widget used by chemlab.
 
@@ -23,25 +52,7 @@ This is the molecular viewer widget used by chemlab.
     :members:
 
 The Camera class
-----------------
+................
 
 .. autoclass:: chemlab.graphics.camera.Camera
     :members:
-
-Renderers
----------
-
-.. toctree::
-    chemlab.graphics.renderers
-
-The QtViewer class
-------------------
-
-.. autoclass:: chemlab.graphics.QtViewer
-    :members:
-
-The QtTrajectoryViewer class
-----------------------------
-
-.. autoclass:: chemlab.graphics.QtTrajectoryViewer
-     :members:

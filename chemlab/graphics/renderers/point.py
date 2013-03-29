@@ -47,6 +47,11 @@ class PointRenderer(ShaderBaseRenderer):
         
         glDrawArrays(GL_POINTS, 0, self.n_points)
         
+        glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
+        
+        self._vbo_v.unbind()
+        self._vbo_c.unbind()
         
     def update_positions(self, vertices):
         '''Update the point positions

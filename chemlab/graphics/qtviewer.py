@@ -32,7 +32,30 @@ class QtViewer(QMainWindow):
     View objects in space.
 
     This class can be used to build your own visualization routines by
-    attaching :doc:`renderers <chemlab.graphics.renderers>` to it.
+    attaching :doc:`renderers <chemlab.graphics.renderers>`  and
+    :doc:`uis <chemlab.graphics.uis>` to it.
+    
+    .. seealso:: :doc:`/graphics`
+    
+    **Example**
+    
+    In this example we can draw 3 blue dots and some overlay text::
+
+        from chemlab.graphics import QtViewer
+        from chemlab.graphics.renderers import PointRenderer
+        from chemlab.graphics.uis import TextUI
+         
+        vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
+        blue = (0, 255, 255, 255)
+         
+        colors = [blue,] * 3
+         
+        v = QtViewer()
+         
+        pr = v.add_renderer(PointRenderer, vertices, colors)
+        tu = v.add_ui(TextUI, 100, 100, 'Hello, world!')
+         
+        v.run()
     
     """
     
@@ -118,6 +141,12 @@ class QtViewer(QMainWindow):
         return renderer
     
     def add_ui(self, klass, *args, **kwargs):
+        '''Add an UI element for the current scene. The approach is
+        the same as renderers.
+
+        .. warning:: The UI api is not yet finalized
+
+        '''
         ui = klass(self.widget, *args, **kwargs)
         self.widget.uis.append(ui)
         return ui

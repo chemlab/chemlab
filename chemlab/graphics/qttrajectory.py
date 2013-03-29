@@ -294,6 +294,13 @@ class QtTrajectoryViewer(QMainWindow):
         return renderer
     
     def add_ui(self, klass, *args, **kwargs):
+        '''Add an UI element for the current scene. The approach is
+        the same as renderers.
+
+        .. warning:: The UI api is not yet finalized
+
+        '''
+
         ui = klass(self.widget, *args, **kwargs)
         self.widget.uis.append(ui)
         return ui
