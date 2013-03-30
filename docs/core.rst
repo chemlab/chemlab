@@ -90,52 +90,78 @@ Ar) you need to wrap the atoms in a Molecule::
    >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
    >>> mol = Molecule([ar])
  
-Also System exposes arrays to be used, and more molecules can be added
-to a System besides initialization. System, similarly to Molecule can
-expose data by using arrays. By default, system inherits the atomic
-data from the constituent molecules, in this way you can, for
-instance, easily and efficienntly iterate over the atomic coordinates by
-using the attribute System.r_array. To understand the relation between 
-Atom.r, Molecule.r_array and System.r_array refer to the picture below.
+System, similarly to Molecule can expose data by using arrays. By
+default, system inherits the atomic data from the constituent
+molecules, in this way you can easily and efficiently access all the
+atomic coordinates by using the attribute
+:py:attr:`System.r_array`. To understand the relation between Atom.r,
+Molecule.r_array and System.r_array refer to the picture below.
  
 .. image:: _static/core_types_copy.png
       :scale: 70 %
       :align: center
 
+You can preallocate a `System` by using the classmethod
+:py:meth:`System.empty <chemlab.core.System.empty>` (pretty much like
+you can preallocate numpy arrays with `np.empty` or `np.zeros`) and
+then add the molecules one by one::
+  
 
-..
-   Selecting groups in a System
-   ----------------------------
-    
-   Say you want to select a subsystem of 
-    
-       s.select_molecules()
-       [0, 2, 3, 6, 8 ...]
-    
-   To illustrate how they are built and what their interaction are let's
-   look at some examples.  In a typical molecular simulation you may want
-   to define a system composed of different bodies, that we may identify
-   with molecules. For example let's consider a system comprised of a
-   single water molecule. in the chemlab language we have to define a
-   molecules and add this molecule to the System.
-    
-    
-       >>> s = System()
-       >>> s.add(m)
-    
-   Now, imagine that we want a system comprised of 10 spaced water
-   molecules disposed on the x-axis. A good strategy to build such a
-   system would be to add multiple water molecules by traslating along
-   the x-axis the coordinates of each atom, the Molecule class let you
-   access directly the atoms coordinate array through the attribute
-   r_array, in the following snippet we used the broadcasting to add the
-   array [1.0, 0.0, 0.0] to each of the position of each atom::
-    
-       m = Molecule(...)
-       dr = np.array([0.0, 0.0, 0.0])
-       for i in range(3):
-           m.r_array += dr
-           s.add(m)
-    
-   In a certain sense, a Molecule instance acts as a template to build your
-   system.
+  import numpy as np
+  from chemlab.core import Atom, Molecule, System
+  from chemlab.graphics import display_system
+  
+  # Template molecule
+  wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),
+                  Atom('H', [0.00, 0.08,-0.05]),
+                  Atom('H', [0.00,-0.08,-0.05])])
+		  
+  # Initialize a system with four water molecules.    
+  s = System.empty(4, 12) # 4 molecules, 12 atoms
+  
+  for i in range(4):
+      wat.move_to(np.random.rand(3)) # randomly displace the water molecule
+      s.add(wat) # data gets copied each time
+  
+  display_system(s)
+
+Since the data is copied, the ``wat`` molecule act as a `template` so
+you can move it around and keep adding it to the System.
+
+Preallocating and adding molecules is a pretty fast way to build a
+`System`, but the fastest way (in terms of processing time) is to
+build the system by passing ready-made arrays, this is done by using
+:py:meth:`chemlab.core.System.from_arrays`.
+
+Building Crystals
+.................
+
+chemlab provides an handy way to build crystal structures from the
+atomic coordinates and the space group information. If you basically have
+the crystallographic informations, you can easily build a crystal::
+
+  from chemlab.core import Atom, Molecule, crystal
+  from chemlab.graphics import display_system
+  
+  # Molecule templates
+  na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
+  cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
+  
+  s = crystal([[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]], # Equivalent Positions
+              [na, cl], # Molecules
+	      225, # Space Group
+	      cellpar = [.54, .54, .54, 90, 90, 90], # unit cell parameters
+	      repetitions = [5, 5, 5]) # unit cell repetitions in each direction
+
+  display_system(s)
+	     
+.. seealso:: :py:func:`chemlab.core.crystal`
+	     
+.. note:: If you'd like to implement a .cif file reader, you're
+          welcome! Drop a patch on github.
+
+
+Manipulating Systems
+....................
+
+
