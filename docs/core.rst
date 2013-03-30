@@ -164,4 +164,16 @@ the crystallographic informations, you can easily build a crystal::
 Manipulating Systems
 ....................
 
+You can manipulate systems by using some simple but flexible
+functions. It is really easy to generate a system by selecting a part
+from a bigger system, this is implemented in the functions
+:py:func:`chemlab.core.subsystem_from_atoms` and
+:py:func:`chemlab.core.subsystem_from_molecules`.
+
+The following example shows an easy way to take the molecules that
+are in the region of space `x > 0`::
+
+  from chemlab.core import crystal
+
+
 
