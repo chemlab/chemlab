@@ -194,7 +194,7 @@ import numpy
 
 __version__ = '2012.01.01'
 __docformat__ = 'restructuredtext en'
-__all__ = []
+#__all__ = []
 
 
 def identity_matrix():

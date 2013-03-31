@@ -56,3 +56,8 @@ The Camera class
 
 .. autoclass:: chemlab.graphics.camera.Camera
     :members:
+
+Transformations
+---------------
+
+.. toctree:: chemlab.graphics.transformations

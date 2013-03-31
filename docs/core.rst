@@ -2,11 +2,11 @@
 Atoms, Molecules and Systems
 ============================
 
-In chemlab, atoms can be represented using the Atom data structure,
-and it contains some common information about our particles like type,
-mass and position. Atom instances are easily created by initializing
-them with data obtained in appropriate units, for the atomic coordinates
-you should use nanometers::
+In chemlab, atoms can be represented using the
+:py:class:`chemlab.core.Atom` data structure that contains some
+common information about our particles like type, mass and
+position. Atom instances are easily created by initializing them with
+data ::
 
     >>> from chemlab.core import Atom
     >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
@@ -15,23 +15,22 @@ you should use nanometers::
     >>> ar.r
     np.array([0.0, 0.0, 0.0])
 
-A Molecule is an entity composed of more atoms and most of the
-Molecule properties are inherited from the constituent atoms. To
-initialize a Molecule you can, for example pass a list of atom
-instances to its constructor::
+.. note:: for the atomic coordinates you should use nanometers
+
+A :py:class:`chemlab.core.Molecule` is an entity composed of more
+atoms and most of the Molecule properties are inherited from the
+constituent atoms. To initialize a Molecule you can, for example pass
+a list of atom instances to its constructor::
 
     >>> from chemlab.core import Molecule
     >>> mol = Molecule([at1, at2, at3])
-
-There are two main ways to access atomic data in Molecules, by arrays
-or by atom.  
 
 Manipulating Molecules
 ----------------------
 
 Molecules are easily and efficiently manipulated through the use of
 numpy arrays. One of the most useful arrays contained in Molecule is
-the array of coordinates Molecule.r_array.  The array of coordinates
+the array of coordinates :py:attr:`Molecule.r_array`.  The array of coordinates
 is a numpy array of shape ``(NA,3)`` where ``NA`` is the number of
 atoms in the molecule.  According to the numpy broadcasting rules, if
 you the sum with an array with 3 components ``(NA,3)`` + ``(3,)``,
@@ -49,7 +48,7 @@ origin and translating it::
     wat.r_array += np.random.rand(3)
 
 Using the same principles you can also apply other kind of
-transformation such as matrices.  You can for example rotate the
+transformations such as matrices.  You can for example rotate the
 molecule about 90 degrees around the z-axis::
 
     from chemlab.graphics.transformations import rotation_matrix
