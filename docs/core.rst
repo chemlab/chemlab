@@ -164,16 +164,80 @@ the crystallographic informations, you can easily build a crystal::
 Manipulating Systems
 ....................
 
+Selections
+----------
+
 You can manipulate systems by using some simple but flexible
 functions. It is really easy to generate a system by selecting a part
 from a bigger system, this is implemented in the functions
 :py:func:`chemlab.core.subsystem_from_atoms` and
 :py:func:`chemlab.core.subsystem_from_molecules`.
 
-The following example shows an easy way to take the molecules that
-are in the region of space `x > 0`::
+Those two functions take as first argument the System from where to
+select a part, and as the second argument a `selection`. A `selection`
+is either a boolean array that is True when we want to select that
+element and False otherwise or an integer array containing the 
+elements that we want to select. By using those two functions
+we can create subsystem by making such selections
 
-  from chemlab.core import crystal
+The following example shows an easy way to take the molecules that contain
+atoms in the region of space `x > 0.5` by using ``subsystem_from_atoms``::
+
+  import numpy as np
+  from chemlab.core import crystal, Molecule, Atom, subsystem_from_atoms
+  from chemlab.graphics import display_system
+   
+  # Template molecule
+  wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),
+   		Atom('H', [0.00, 0.08,-0.05]),
+   		Atom('H', [0.00,-0.08,-0.05])])
+   
+  s = crystal([[0.0, 0.0, 0.0]], [wat], 225,
+       cellpar = [.54, .54, .54, 90, 90, 90], # unit cell parameters
+       repetitions = [5, 5, 5]) # unit cell repetitions in each direction
+   
+  selection = s.r_array > [0.5, 0.0, 0.0]
+  # The result is a bool array of shape (NATOMS, 3)
+  # array([[False, False, False],
+  #        [False,  True, False],
+  #        [False, False, False],
+  #        ..., 
+  #        [ True,  True,  True],
+  #        [ True,  True,  True],
+  #        [ True,  True,  True]], dtype=bool)
+   
+  # We have to make this array of shape (NATOMS)
+  # If all 3 coordinate-comparisons are True, we take the atom
+  selection = np.all(selection, axis=1)
+  # array([False,  False, False, ...,  True,  True,  True], dtype=bool)
+   
+  sub_s = subsystem_from_atoms(s, selection)
+  display_system(sub_s)
+
+.. image:: /_static/subsystem_from_atoms.png
+
+It is also possible to select a subsystem by selecting specific
+molecules, in the following example we select the first 10 water
+molecules by using ``subsystem_from_molecules``::
+
+  from chemlab.core import subsystem_from_molecules
+
+  selection = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  sub_s = subsystem_from_molecules(s, selection)
+
+.. note:: chemlab will provide other selection utilities in the
+          future, if you have a specific request, file an issue on
+          `github <https://github.com/chemlab/chemlab/issues>`_
+
+Merging systems
+---------------
+
+You can also create a system by merging two different systems. In the
+following example we will see how to make a NaCl/H2O interface by
+using :py:func:`chemlab.core.merge_systems`
 
 
+# Make water part
+
+# Make
 

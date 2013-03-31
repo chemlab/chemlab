@@ -606,12 +606,7 @@ def subsystem_from_molecules(orig, selection):
         attr = getattr(ret, arr_name)
         attr[:] = o_attr[index]
 
-    # Boxsize
-    x = max(abs(ret.r_array[:,0]))
-    y = max(abs(ret.r_array[:,1]))
-    z = max(abs(ret.r_array[:,2]))
-    
-    ret.box_vectors = np.array([[x,0,0], [0,y,0], [0,0,z]])
+    ret.box_vectors = s.box_vectors
     
     return ret
     
@@ -658,6 +653,8 @@ def _selection_to_index(selection):
     else:
         index = selection
     
+    if len(index) == 0:
+        raise Exception('The selection you performed is void.')
     return index
     
     
