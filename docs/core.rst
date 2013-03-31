@@ -98,8 +98,7 @@ atomic coordinates by using the attribute
 Molecule.r_array and System.r_array refer to the picture below.
  
 .. image:: _static/core_types_copy.png
-      :scale: 70 %
-      :align: center
+      :width: 600px
 
 You can preallocate a `System` by using the classmethod
 :py:meth:`System.empty <chemlab.core.System.empty>` (pretty much like
@@ -165,7 +164,7 @@ Manipulating Systems
 ....................
 
 Selections
-----------
+~~~~~~~~~~
 
 You can manipulate systems by using some simple but flexible
 functions. It is really easy to generate a system by selecting a part
@@ -181,7 +180,7 @@ elements that we want to select. By using those two functions
 we can create subsystem by making such selections
 
 The following example shows an easy way to take the molecules that contain
-atoms in the region of space `x > 0.5` by using ``subsystem_from_atoms``::
+atoms in the region of space `x > 0.5` by using :py:func:`subsystem_from_atoms`::
 
   import numpy as np
   from chemlab.core import crystal, Molecule, Atom, subsystem_from_atoms
@@ -196,25 +195,13 @@ atoms in the region of space `x > 0.5` by using ``subsystem_from_atoms``::
        cellpar = [.54, .54, .54, 90, 90, 90], # unit cell parameters
        repetitions = [5, 5, 5]) # unit cell repetitions in each direction
    
-  selection = s.r_array > [0.5, 0.0, 0.0]
-  # The result is a bool array of shape (NATOMS, 3)
-  # array([[False, False, False],
-  #        [False,  True, False],
-  #        [False, False, False],
-  #        ..., 
-  #        [ True,  True,  True],
-  #        [ True,  True,  True],
-  #        [ True,  True,  True]], dtype=bool)
-   
-  # We have to make this array of shape (NATOMS)
-  # If all 3 coordinate-comparisons are True, we take the atom
-  selection = np.all(selection, axis=1)
-  # array([False,  False, False, ...,  True,  True,  True], dtype=bool)
-   
+  selection = s.r_array[:, 0] > 0.5
   sub_s = subsystem_from_atoms(s, selection)
+  
   display_system(sub_s)
 
 .. image:: /_static/subsystem_from_atoms.png
+    :width: 800px
 
 It is also possible to select a subsystem by selecting specific
 molecules, in the following example we select the first 10 water
@@ -230,14 +217,42 @@ molecules by using ``subsystem_from_molecules``::
           `github <https://github.com/chemlab/chemlab/issues>`_
 
 Merging systems
----------------
+~~~~~~~~~~~~~~~
 
 You can also create a system by merging two different systems. In the
 following example we will see how to make a NaCl/H2O interface by
-using :py:func:`chemlab.core.merge_systems`
+using :py:func:`chemlab.core.merge_systems`::
 
+  import numpy as np
+  from chemlab.core import Atom, Molecule, crystal
+  from chemlab.core import subsystem_from_atoms, merge_systems
+  from chemlab.graphics import display_system
+   
+  # Make water crystal
+  wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),
+   	Atom('H', [0.00, 0.08,-0.05]),
+   	Atom('H', [0.00,-0.08,-0.05])])
+   
+  water_crystal = crystal([[0.0, 0.0, 0.0]], [wat], 225,
+       cellpar = [.54, .54, .54, 90, 90, 90], # unit cell parameters
+       repetitions = [5, 5, 5]) # unit cell repetitions in each direction
+   
+  # Make nacl crystal
+  na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
+  cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
+    
+  nacl_crystal = crystal([[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]], [na, cl], 225,
+        cellpar = [.54, .54, .54, 90, 90, 90],
+        repetitions = [5, 5, 5])
+   
+  water_half = subsystem_from_atoms(water_crystal, 
+                  water_crystal.r_array[:,0] > 1.2)
+  nacl_half = subsystem_from_atoms(nacl_crystal, 
+                  nacl_crystal.r_array[:,0] < 1.2)
+   
+  interface = merge_systems(water_half, nacl_half)
+  display_system(interface)
 
-# Make water part
-
-# Make
+.. image:: /_static/merge_systems.png
+    :width: 800px
 

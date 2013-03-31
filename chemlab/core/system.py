@@ -606,7 +606,7 @@ def subsystem_from_molecules(orig, selection):
         attr = getattr(ret, arr_name)
         attr[:] = o_attr[index]
 
-    ret.box_vectors = s.box_vectors
+    ret.box_vectors = orig.box_vectors
     
     return ret
     
@@ -658,7 +658,7 @@ def _selection_to_index(selection):
     return index
     
     
-def merge_systems(sysa, sysb, bounding=0.2):
+def merge_systems(sysa, sysb, bounding=0.0):
     '''Generate a system by overlapping *sysa* and *sysb*. Overlapping
     molecules are removed by cutting the molecules of *sysa* that are
     found inside the space defined by :py:attr:`sysb.box_vectors
