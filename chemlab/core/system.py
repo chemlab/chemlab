@@ -465,6 +465,14 @@ class System(object):
         return np.array(arr)
         
     def get_molecule(self, index):
+        '''Get the Molecule instance corresponding to the molecule at
+        *index*.
+
+        This method is useful to use Molecule properties that are
+        generated each time, such as Molecule.formula and
+        Molecule.center_of_mass
+
+        '''
         start_index, end_index = self._get_start_end_index(index)
         
         kwargs = {}

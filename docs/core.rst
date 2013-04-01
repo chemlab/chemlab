@@ -30,26 +30,28 @@ Manipulating Molecules
 
 Molecules are easily and efficiently manipulated through the use of
 numpy arrays. One of the most useful arrays contained in Molecule is
-the array of coordinates :py:attr:`Molecule.r_array`.  The array of coordinates
-is a numpy array of shape ``(NA,3)`` where ``NA`` is the number of
-atoms in the molecule.  According to the numpy broadcasting rules, if
-you the sum with an array with 3 components ``(NA,3)`` + ``(3,)``,
-each row of the coordinate array get summed by this quantity. Let's
-say we have a water molecule and we want to displace it randomly in a
-box, this is easily accomplished by initializing a Molecule around the
-origin and translating it::
+the array of coordinates :py:attr:`Molecule.r_array`.  The array of
+coordinates is a numpy array of shape ``(NA,3)`` where ``NA`` is the
+number of atoms in the molecule.  According to the numpy broadcasting
+rules, if you sum two arrays with shapes ``(NA,3)`` and ``(3,)``, each
+row of the first array get summed by the second array. Let's say we
+have a water molecule and we want to displace it randomly in a box,
+this is easily accomplished by initializing a Molecule at the
+origin and summing its coordinates by a random displacement::
 
     import numpy as np
     
     wat = Molecule([Atom("H", [0.0, 0.0, 0.0]),
                     Atom("H", [0.0, 1.0, 0.0]),
                     Atom("O", [0.0, 0.0, 1.0])])
-    
+ 
+    # Shapes (NA, 3) and (3,)
     wat.r_array += np.random.rand(3)
+    
 
-Using the same principles you can also apply other kind of
+Using the same principles you can also apply other kinds of
 transformations such as matrices.  You can for example rotate the
-molecule about 90 degrees around the z-axis::
+molecule by 90 degrees around the z-axis::
 
     from chemlab.graphics.transformations import rotation_matrix
     
@@ -60,41 +62,42 @@ molecule about 90 degrees around the z-axis::
     for i,r in enumerate(wat.r_array):
         wat.r_array[i] = np.dot(M,r)
 
-    # numpy efficient trick to do the same:
+    # numpy efficient way to do the same:
     # wat.r_array = np.dot(wat.r_array, M.T)
 
-The array-based interaction is done provide a massive increase in performance
-and a more straightforward integration with C libraries through a
-generous use of numpy arrays. This decision comes at a cost: the data
-contained in the atom that you pass to the constructor is copied into
-the molecule, this means that change in the costituents atoms are not
-reflected to the Molecule and viceversa. At first sight this may seem
-a big problem, but actually it isn't because it limits unexpected 
-side effects making the code more predictable.
+The array-based API provides a massive increase in performance and a
+more straightforward integration with C libraries thanks to the numpy
+arrays. This feature comes at a cost: the data is copied between atoms
+and molecules, in other words the changes in the costituents atoms are
+not reflected in the Molecule and viceversa. Even if it may look a bit
+unnatural, this approach limits side effects making the code more
+predictable and easy to follow.
 
 Systems
 -------
  
-In molecular simulations it is customary to introduce a new data
-structure called System. This represents a collection of Molecules
-that will evolve during the simulation::
+In context such as molecular simulations it is customary to introduce
+a new data structure called :py:class:`~chemlab.core.System`. A
+*System* represents a collection of molecules, and optionally (but
+recommended) you can pass also periodic box information::
  
    >>> from chemlab.core import System
-   >>> s = System(molecules) # molecule is a list of Molecule instances
+   # molecule = a list of Molecule instances
+   >>> s = System(molecules, boxsize=2.0) 
  
-System do not take directly Atom as its constituents, therefore if you
-need to simulate a system made of single atoms (say, a box of liquid
-Ar) you need to wrap the atoms in a Molecule::
+*System* do not take directly *Atom* instances as its constituents,
+therefore if you need to simulate a system made of single atoms (say,
+a box of liquid Ar) you need to wrap the atoms into a Molecule::
  
    >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
    >>> mol = Molecule([ar])
  
-System, similarly to Molecule can expose data by using arrays. By
-default, system inherits the atomic data from the constituent
-molecules, in this way you can easily and efficiently access all the
-atomic coordinates by using the attribute
-:py:attr:`System.r_array`. To understand the relation between Atom.r,
-Molecule.r_array and System.r_array refer to the picture below.
+System, similarly to Molecule can expose data by using arrays and it
+inherits atomic data from the constituent molecules. For instance,
+you can easily and efficiently access all the atomic coordinates by
+using the attribute :py:attr:`System.r_array`. To understand the
+relation between :py:attr:`Atom.r`, :py:attr:`Molecule.r_array` and
+:py:attr:`System.r_array` you can refer to the picture below:
  
 .. image:: _static/core_types_copy.png
       :width: 600px
@@ -103,7 +106,6 @@ You can preallocate a `System` by using the classmethod
 :py:meth:`System.empty <chemlab.core.System.empty>` (pretty much like
 you can preallocate numpy arrays with `np.empty` or `np.zeros`) and
 then add the molecules one by one::
-  
 
   import numpy as np
   from chemlab.core import Atom, Molecule, System
@@ -123,8 +125,8 @@ then add the molecules one by one::
   
   display_system(s)
 
-Since the data is copied, the ``wat`` molecule act as a `template` so
-you can move it around and keep adding it to the System.
+Since the data is copied, the ``wat`` molecule act as a *template* so
+you can move it around and keep adding it to the *System*.
 
 Preallocating and adding molecules is a pretty fast way to build a
 `System`, but the fastest way (in terms of processing time) is to
@@ -135,8 +137,8 @@ Building Crystals
 .................
 
 chemlab provides an handy way to build crystal structures from the
-atomic coordinates and the space group information. If you basically have
-the crystallographic informations, you can easily build a crystal::
+atomic coordinates and the space group information. If you have
+the crystallographic data, you can easily build a crystal::
 
   from chemlab.core import Atom, Molecule, crystal
   from chemlab.graphics import display_system
@@ -171,15 +173,16 @@ from a bigger system, this is implemented in the functions
 :py:func:`chemlab.core.subsystem_from_atoms` and
 :py:func:`chemlab.core.subsystem_from_molecules`.
 
-Those two functions take as first argument the System from where to
-select a part, and as the second argument a `selection`. A `selection`
-is either a boolean array that is True when we want to select that
-element and False otherwise or an integer array containing the 
-elements that we want to select. By using those two functions
-we can create subsystem by making such selections
+Those two functions take as first argument the original *System*, and as
+the second argument a `selection`. A `selection` is either a boolean
+array that is True when we want to select that element and False
+otherwise or an integer array containing the elements that we want to
+select. By using those two functions we can create subsystem by building
+those selections.
 
-The following example shows an easy way to take the molecules that contain
-atoms in the region of space `x > 0.5` by using :py:func:`subsystem_from_atoms`::
+The following example shows an easy way to take the molecules that
+contain atoms in the region of space `x > 0.5` by employing
+:py:func:`subsystem_from_atoms`::
 
   import numpy as np
   from chemlab.core import crystal, Molecule, Atom, subsystem_from_atoms
@@ -204,7 +207,7 @@ atoms in the region of space `x > 0.5` by using :py:func:`subsystem_from_atoms`:
 
 It is also possible to select a subsystem by selecting specific
 molecules, in the following example we select the first 10 water
-molecules by using ``subsystem_from_molecules``::
+molecules by using :py:func:`~chemlab.core.subsystem_from_molecules`::
 
   from chemlab.core import subsystem_from_molecules
 
@@ -255,3 +258,15 @@ using :py:func:`chemlab.core.merge_systems`::
 .. image:: /_static/merge_systems.png
     :width: 800px
 
+At the present time, the merging will avoid overlapping by creating a
+bounding box around the two systems and removing the molecules of the
+first system that are inside the second system bounding box. In the
+future there will be more clever ways to handle this overlaps.
+
+Sorting
+~~~~~~~
+
+If you use chemlab in conjunction with GROMACS, you may use the
+:py:meth:`chemlab.core.System.sort` to sort the molecules according to 
+their molecular formulas before exporting. The topology file expect to 
+have a file with the same molecule type ordererd.
