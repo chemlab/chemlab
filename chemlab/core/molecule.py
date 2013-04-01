@@ -156,7 +156,7 @@ class Molecule(object):
     
        Array of masses.
     
-    .. py:attribute:: atom_export_array {numpy.array[N] of dict}
+    .. py:attribute:: atom_export_array
     
        :type: np.ndarray(N, dtype=object) *array of dicts*
        :derived from: Atom

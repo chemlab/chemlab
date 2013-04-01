@@ -24,6 +24,8 @@ class XyzIO(IOHandler):
         self.filename = filename
         
     def read(self, feature):
+        self.check_feature(feature, "read")
+        
         lines = open(self.filename).readlines()
         
         num = int(lines[0])
@@ -47,6 +49,8 @@ class XyzIO(IOHandler):
             
             
     def write(self, feature, mol):
+        self.check_feature(feature, "write")
+        
         lines = []
         if feature == 'molecule':
             lines.append(str(mol.n_atoms))

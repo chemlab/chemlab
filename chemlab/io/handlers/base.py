@@ -45,11 +45,11 @@ class IOHandler(object):
         Subclasses can reimplement this method to add functionality::
         
             class XyzIO(IOHandler):
-                can_read = ['geometry']
+                can_read = ['molecule']
         
                 def read(self, feature, *args, **kwargs):
                     self.check_feature(feature, "read")
-                    if feature == 'geometry':
+                    if feature == 'molecule':
                        # Do stuff
                        return geom
         
@@ -67,11 +67,11 @@ class IOHandler(object):
         ::
         
             class XyzIO(IOHandler):
-                can_write = ['geometry']
+                can_write = ['molecule']
         
                 def write(self, feature, value, *args, **kwargs):
                     self.check_feature(feature, "write")
-                    if feature == 'geometry':
+                    if feature == 'molecule':
                        # Do stuff
                        return geom
         
