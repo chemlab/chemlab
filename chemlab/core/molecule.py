@@ -191,7 +191,7 @@ class Molecule(object):
     
     .. py:attribute:: formula
     
-       :type: float
+       :type: str
     
        The brute formula of the Molecule. i.e. ``"H2O"``
        
