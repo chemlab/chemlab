@@ -70,6 +70,8 @@ an issue on the github page to discuss any aspect that you like or
 don't like and any idea that comes to your mind. Get involved!
 
 
+.. _user-manual:
+
 User Manual
 -----------
 

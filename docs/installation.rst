@@ -22,12 +22,11 @@ on `github <http://github.com/chemlab/chemlab/issues>`_.
 .. image:: _static/licl.png
            :width: 600px
 
-Once you're setup you're ready to go to dig in chemlab's features.
+Once you're setup you're ready to go to dig in chemlab's
+features. 
 
-Quickstart
-----------
+:ref:`user-manual`
 
-This section is still to do.
 
     
 Development
@@ -35,7 +34,7 @@ Development
 
 After installing the dependencies, grab the chemlab source from git::
 
-    $ git clone https://github.com/chemlab/chemlab.git
+    $ git clone --recursive https://github.com/chemlab/chemlab.git
    
 Complile the included extensions::
 
