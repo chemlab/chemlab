@@ -1,11 +1,9 @@
 {% extends "_base.html" %}
 {% block content %}
-
-    <div class="container">
-
       <div class="hero-unit">
 	<h1 class="text-center">chemlab</h1>
-	<p class="text-center">Chemistry has never been so easy</p>
+	<p class="text-center">The python chemistry package you were
+	waiting for</p>
 	<p class="text-center">
 	  <a class="btn btn-large btn-success"  
 	     href="http://github.com/chemlab/chemlab">
@@ -16,13 +14,15 @@
 	    <i class="icon-beaker icon-2x pull-left"></i> Get
 	    Started<br/><small><em>Docs</em></small></a>
 	</p>
+      </div> <!-- /hero-unit -->
+      <div class="hero-separator"></div>
 
-      </div> <!-- /container -->
-
+    <div class="container">
       
       <div class="row">
 	<div class="span4">
-	  <h2>Molecular Viewer</h2>
+	   <h2><i class="icon-screenshot"></i>
+	     Molecular Viewer</h2>
 	  <p>Built-in molecular viewer to quickly visualize your
 	  systems.</p>
 	  
@@ -30,20 +30,34 @@
 	</div>
 	
 	<div class="span4">
-	  <h2>Python Powered</h2>
+	  <h2><i class="icon-tasks"></i>
+            Python Powered</h2>
 	  <p>Built on the flexible, fast and well-tested scientific
-	  python stack.</p>
-	  <img src="media/img/python-powered-h-140x182.png"/>
-	  <img src="media/img/pysidelogo.png"/>
-	  <img src="media/img/numpy_logo.png"/>
-	  <img src="media/img/cythonlogo.png"/>
+	    python stack.</p>
+	</div>
+	<div class="span4">
+	  <h2><i class="icon-cogs"></i>
+              Extensible</h2>
+	  <p>Well documented and developer-friendly.</p>
+	</div>
+      </div>
+      <div class="row">
+	<div class="span4">
+	   <h2><i class="icon-beer"></i>
+	     Free</h2>
+	  <p>Free as in speech and as in beer.</p>
+	  
 	</div>
 	
 	<div class="span4">
-	  <h2>Designed to be extensible</h2>
-	  <p>Well documented and developer-friendly.</p>
-	  
-	  <i class="icon-cogs icon-4x"></i>
+	  <h2><i class="icon-dashboard"></i>
+            Fast</h2>
+	  <p>Thanks to numpy arrays.</p>
+	</div>
+	<div class="span4">
+	  <h2><i class="icon-retweet"></i>
+              Interoperable</h2>
+	  <p>Includes different file formats.</p>
 	</div>
       </div>
       
@@ -53,4 +67,5 @@
       by <a href="http://fortawesome.github.com/Font-Awesome/">FontAwesome</a></footer>
 
     </div>
+    
     {% endblock %}
