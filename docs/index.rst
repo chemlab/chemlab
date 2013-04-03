@@ -46,20 +46,19 @@ Chemlab long term goal is to be:
   and efficient data structures. When everything else fails we can still
   write the hard bits in C with the help of cython.
 
-Current Status (pre 0.1)
+Current Status
 ------------------------
 
-This package is still in its early development, going forward to the
-first 0.1 release. Computational and theoretical chemistry is a huge
-field, and providing a program that encompasses all aspect of it is an
-impossible task. The spirit of chemlab is to provide a common ground
-from where you can build specific programs. For this reason it
-includes an :doc:`fully programmable </graphics>` molecular viewer.
+Computational and theoretical chemistry is a huge field, and providing
+a program that encompasses all aspect of it is an impossible task. The
+spirit of chemlab is to provide a common ground from where you can
+build specific programs. For this reason it includes an :doc:`fully
+programmable </graphics>` molecular viewer.
 
 chemlab is in its early developement and it provides the most basic
 data structures. The molecular viewer has a solid ground and can
 actually draw and play trajectories in an efficient way. To get
-started be sure to check the user manual.
+started be sure to check the :ref:`user-manual`.
 
 chemlab is developer-friendly, this means a good documentation and an
 easy structure to get in. Feel free to send me anything that you may
@@ -68,7 +67,6 @@ graphic renderer, even if you don'think it's perfect. Send an email to
 the `mailing list <mailto:python-chemlab.googlegroups.com>`_ or file
 an issue on the github page to discuss any aspect that you like or
 don't like and any idea that comes to your mind. Get involved!
-
 
 .. _user-manual:
 

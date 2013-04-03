@@ -2,8 +2,6 @@ from distribute_setup import use_setuptools
 use_setuptools()
 from setuptools import setup, find_packages, Extension
 from Cython.Distutils import build_ext
-#import numpy
-#numpy_include = numpy.get_include()
 
 ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
 
@@ -41,8 +39,7 @@ setup(
     to bring a consistent and simple API by following the python
     guidelines.
 
-    This package is still in its early development, going forward to the
-    first 0.1 release. Computational and theoretical chemistry is a huge
+    Computational and theoretical chemistry is a huge
     field, and providing a program that encompasses all aspects of it is an
     impossible task. The spirit of chemlab is to provide a common ground
     from where you can build specific programs. For this reason it
