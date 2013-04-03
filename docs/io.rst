@@ -7,7 +7,7 @@ The jungle of file formats
 
 There are *a lot* of file formats used and produced by chemistry
 applications. Each program has his way to store geometries,
-trajectories, energies and properties etc. Chemlab has tries to 
+trajectories, energies and properties etc. chemlab tries to 
 encompass all of those different properties by using a lightweight
 way to handle such differences.
 
