@@ -14,7 +14,7 @@ package::
 
 Test the newly installed package by typing::
 
-    $ chemlab view tests/data/licl.gro
+    $ chemlab view tests/data/cry.gro
 
 The molecular viewer should display a crystal, if not, file an issue
 on `github <http://github.com/chemlab/chemlab/issues>`_.
