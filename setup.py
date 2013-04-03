@@ -24,7 +24,8 @@ setup(
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.resources' : ["*"],
-                    'chemlab.data' : ['*']},
+                    'chemlab.data' : ['*'],
+                    'chemlab.core.spacegroup': ['*']},
     
     author = "Gabriele Lanaro",
     scripts = ['scripts/chemlab'],
