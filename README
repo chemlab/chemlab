@@ -2,7 +2,7 @@ chemlab - the python chemistry package you were waiting for
 -----------------------------------------------------------
 
 :Version:
-   0.1 (not yet)
+   0.1
 
 :Author:
    Gabriele Lanaro
@@ -20,29 +20,24 @@ chemlab - the python chemistry package you were waiting for
     http://github.com/chemlab/chemlab
 
 
-chemlab is a ptyhon library and a set of utilities built to ease the
+chemlab is a python library and a set of utilities built to ease the
 life of the computational chemist. It takes inspiration from other
-python scientific library such as numpy scipy and matplotlib, and aims
+python scientific library such as numpy, scipy and matplotlib, and aims
 to bring a consistent and simple API by following the python
 guidelines.
 
-This package is still in its early development, going forward to the
-first 0.1 release. Computational and theoretical chemistry is a huge
-field, and providing a program that encompasses all aspect of it is an
-impossible task. The spirit of chemlab is to provide a common ground
-from where you can build specific programs. For this reason it
-includes an easily extendable molecular viewer and flexible data
-structures field-independent.
+Computational and theoretical chemistry is a huge field, and providing
+a program that encompasses all aspect of it is an impossible task. The
+spirit of chemlab is to provide a common ground from where you can
+build specific programs. For this reason it includes an easily
+extendable molecular viewer and flexible field-independent data
+structures.
 
-While you wait for the full release, take a look at the
-tests/test_core.py and tests/test_graphics.py as well as the examples
-directory (some example may be outdated) to get a taste of it.
-
-chemlab wants to be really contributor-friendly, this means having a
-good documentation and an easy structure to get in. Feel free to send
-me anything that you may do with chemlab, from supporting a new file
-format to writing a new graphic renderer, even if you don'think it's
-perfect. Send me an email or write an issue on the github page.
+chemlab is looking for contributors, it includes a good documentation
+and has an easy structure to get in. Feel free to send me anything that
+you may do with chemlab, from supporting a new file format to writing
+a new graphic renderer, even if you don'think it's perfect. Send me an
+email or write an issue on the github page.
 
 Installation
 ------------
@@ -52,7 +47,7 @@ TIP: more updated instructions are located in the docs:
 
 chemlab is currently tested on Ubuntu 12.10. First install the dependencies:
 
-    $ sudo apt-get install python-numpy python-scipy python-pyside python-opengl cython
+    $ sudo apt-get install python-numpy python-scipy python-pyside python-opengl cython python-matplotlib
 
 Then install chemlab from the setup.py included:
 
@@ -66,7 +61,7 @@ Refer to the documentation link at the beginning of this file.
 Bug Reports
 -----------
 
-Go to http://github.com/chemlab/chemlab or send me an email.
+Go to http://github.com/chemlab/chemlab or send an email to python-chemlab@googlegroups.com.
 
 License
 -------

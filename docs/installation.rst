@@ -22,15 +22,11 @@ on `github <http://github.com/chemlab/chemlab/issues>`_.
 .. image:: _static/licl.png
            :width: 600px
 
-Once you're setup you're ready to go to dig in chemlab's
-features. 
+Once you're setup you're ready to to dig in chemlab's
+features contained in the :ref:`user-manual`.
 
-:ref:`user-manual`
-
-
-    
-Development
------------
+Developement
+------------
 
 After installing the dependencies, grab the chemlab source from git::
 
@@ -43,5 +39,3 @@ Complile the included extensions::
 Just add the chemlab directory to the PYTHONPATH in your .bashrc::
 
     export PYTHONPATH=$PYTHONPATH:/path/to/chemlab
-
-
