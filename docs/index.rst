@@ -55,18 +55,18 @@ spirit of chemlab is to provide a common ground from where you can
 build specific programs. For this reason it includes an :doc:`fully
 programmable </graphics>` molecular viewer.
 
-chemlab is in its early developement and it provides the most basic
+Chemlab is in its early developement and it provides the most basic
 data structures. The molecular viewer has a solid ground and can
 actually draw and play trajectories in an efficient way. To get
 started be sure to check the :ref:`user-manual`.
 
-chemlab is developer-friendly, this means a good documentation and an
-easy structure to get in. Feel free to send me anything that you may
-do with chemlab, from supporting a new file format to writing a new
-graphic renderer, even if you don'think it's perfect. Send an email to
-the `mailing list <mailto:python-chemlab.googlegroups.com>`_ or file
-an issue on the github page to discuss any aspect that you like or
-don't like and any idea that comes to your mind. Get involved!
+Chemlab is developer-friendly, it provides good documentation and has
+an easy structure to get in. Feel free to send me anything that you
+may do with chemlab, like supporting a new file format, a new graphic
+renderer, a nice example, even if you don'think it's perfect. Send an
+email to the `mailing list <mailto:python-chemlab.googlegroups.com>`_
+or file an issue on the github page to discuss any idea that comes to
+your mind. Get involved!
 
 .. _user-manual:
 
@@ -99,4 +99,6 @@ Reference Documentation
 License
 -------
 
-Chemlab is released under the `GNU GPLv3 <http://www.gnu.org/licenses/gpl.html>`_ and its main developer is Gabriele Lanaro.
+Chemlab is released under the `GNU GPLv3
+<http://www.gnu.org/licenses/gpl.html>`_ and its main developer is
+Gabriele Lanaro.
