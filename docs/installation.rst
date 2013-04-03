@@ -7,8 +7,9 @@ install the dependencies::
 
     $ sudo apt-get install python-numpy python-scipy python-matplotlib python-pyside python-opengl cython 
 
-Download chemlab and install it from the setup.py included in the
-package::
+`Download
+<https://pypi.python.org/packages/source/c/chemlab/chemlab-0.1.tar.gz>`_
+chemlab and install it from the setup.py included in the package::
 
     $ sudo python setup.py install
 
