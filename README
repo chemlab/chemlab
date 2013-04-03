@@ -2,7 +2,7 @@ chemlab - the python chemistry package you were waiting for
 -----------------------------------------------------------
 
 :Version:
-   0.1 (not yet)
+   0.1
 
 :Author:
    Gabriele Lanaro
@@ -20,7 +20,7 @@ chemlab - the python chemistry package you were waiting for
     http://github.com/chemlab/chemlab
 
 
-chemlab is a ptyhon library and a set of utilities built to ease the
+chemlab is a python library and a set of utilities built to ease the
 life of the computational chemist. It takes inspiration from other
 python scientific library such as numpy scipy and matplotlib, and aims
 to bring a consistent and simple API by following the python
