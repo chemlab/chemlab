@@ -4,7 +4,6 @@
 from chemlab.core.spacegroup.crystal import crystal
 from chemlab.molsim.analysis import radial_distribution_function
 from chemlab.data import moldb
-from chemlab.io.gro import write_gro
 
 from pylab import *
 
