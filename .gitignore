@@ -1,3 +1,5 @@
+/chemlab/utils/celllinkedlist.html
+/chemlab/utils/celllinkedlist.c
 /chemlab/libs/ckdtree.c
 /chemlab/libs/pyxdr/_xdrfile.c
 *.pyc
