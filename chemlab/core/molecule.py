@@ -83,7 +83,7 @@ class Atom(object):
         else:
             self.export = {}
 
-        self.atno = symbols.symbol_list.index(type.lower()) + 1
+        #self.atno = symbols.symbol_list.index(type.lower()) + 1
         self.mass = masses.typetomass[type]
 
     @classmethod

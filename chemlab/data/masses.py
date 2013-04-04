@@ -1,6 +1,7 @@
 from .utils import InsensitiveDict
 
 typetomass = {
+"Xx": 0.0000, # Unknown atom
 "H" : 1.0079,
 "He" : 4.0026,
 "Li" : 6.941,
