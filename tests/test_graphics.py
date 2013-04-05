@@ -157,7 +157,7 @@ def test_bond_renderer():
     ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
 
-    #v.run()
+    v.run()
     
     
 def test_text_ui():
