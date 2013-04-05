@@ -5,10 +5,10 @@ import numpy as np
 cimport numpy as np
 from cython.view cimport array as cyarray
 from ..transformations import (normalized,
-                               unit_vector, distance,
-                               rotation_matrix)
-
-
+                               unit_vector, distance)
+from ..transformations import angle_between_vectors as t_angle_between_vectors
+from ..transformations import vector_product as t_vector_product
+from ..transformations import rotation_matrix as t_rotation_matrix
 cdef extern from "math.h":
     double acos(double x)    
     double sqrt(double x)
@@ -48,37 +48,37 @@ cdef int allclose_d(double[:] a,double[:] b):
         
     return ret
     
-# cdef rotation_matrix(double angle, double[:] d, double[:, :] M):
-#      """
-#      Create a rotation matrix corresponding to the rotation around a general
-#      axis by a specified angle.
+cdef rotation_matrix(double angle, double[:] d, double[:, :] M):
+     """
+     Create a rotation matrix corresponding to the rotation around a general
+     axis by a specified angle.
 
-#      R = dd^T + cos(a) (I - dd^T) + sin(a) skew(d)
+     R = dd^T + cos(a) (I - dd^T) + sin(a) skew(d)
 
-#      Parameters:
+     Parameters:
 
-#          angle : float a
-#          direction : array d
-#      """
-#      cdef double cost = cos(angle)
-#      cdef double sint = sin(angle)
-#      cdef double ux, uy, uz
+         angle : float a
+         direction : array d
+     """
+     cdef double cost = cos(angle)
+     cdef double sint = sin(angle)
+     cdef double ux, uy, uz
      
-#      ux = d[0]
-#      uy = d[1]
-#      uz = d[2]
+     ux = d[0]
+     uy = d[1]
+     uz = d[2]
      
-#      M[0, 0] = cost + ux*ux*(1-cost)
-#      M[1, 0] = ux*uy*(1 - cost) - uz*sint
-#      M[2, 0] = ux*uz*(1 - cost) + uy*sint
+     M[0, 0] = cost + ux*ux*(1-cost)
+     M[1, 0] = ux*uy*(1 - cost) - uz*sint
+     M[2, 0] = ux*uz*(1 - cost) + uy*sint
      
-#      M[0, 1] = uy*ux*(1 - cost) + uz*sint
-#      M[1, 1] = cost + uy*uy*(1 - cost)
-#      M[2, 1] = uy*uz*(1-cost) - ux*sint
+     M[0, 1] = uy*ux*(1 - cost) + uz*sint
+     M[1, 1] = cost + uy*uy*(1 - cost)
+     M[2, 1] = uy*uz*(1-cost) - ux*sint
 
-#      M[0, 2] = uz*ux*(1-cost) - uy*sint
-#      M[1, 2] = uz*uy*(1-cost) + ux*sint
-#      M[2, 2] = cost + uz*uz*(1-cost)
+     M[0, 2] = uz*ux*(1-cost) - uy*sint
+     M[1, 2] = uz*uy*(1-cost) + ux*sint
+     M[2, 2] = cost + uz*uz*(1-cost)
      
      
 
@@ -101,10 +101,11 @@ def fast_cylinder_translate(reference_verts, reference_norms,
     normals = []
     cdef int i, ii
     cdef int ncyl = len(bounds)
-    cdef double[:] s, e, sme = np.array([0.0, 0.0, 0.0])
+    cdef double[:] sme = np.array([0.0, 0.0, 0.0])
+    cdef double[:] s, e
     cdef double[:] z_axis = np.array([0.0, 0.0, 1.0])
     cdef double[:] axis = np.array([0.0, 0.0, 0.0])
-    cdef double ang
+    cdef double ang, nm
 
     cdef double[:, :] rot = np.zeros((3,3))
     
@@ -121,16 +122,18 @@ def fast_cylinder_translate(reference_verts, reference_norms,
 
         # Special case, if the axis is the z-axis
         vec3_sub(e, s, sme)
+        
         ang = angle_between_vectors(z_axis, sme)
         vector_product(z_axis, sme, axis)
 
         if ang==0 or allclose_d(axis, np.array([0.0, 0.0, 0.0])):
             rot = np.eye(3)
         else:
+            nm = norm(axis)
             for ii in range(3):
-                axis[ii] = axis[ii]/norm(axis)
-            #rotation_matrix(ang, axis, rot)
-            rot = rotation_matrix(ang, axis)[:3,:3]
+                axis[ii] = axis[ii] / nm
+            
+            rotation_matrix(ang, axis, rot)
 
         vertices.extend(np.dot(vrt, rot) + e)
         normals.extend(np.dot(reference_norms, rot))
