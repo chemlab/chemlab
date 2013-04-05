@@ -234,3 +234,12 @@ cdef class CellLinkedList:
                                     i_point = self.point_linked_list[i_point]
         
         return pairs
+
+        
+def minimum_image_distance(a, b, periodic):
+    d = b - a
+    d[0] = d[0] - periodic[0] * int(d[0]/periodic[0])
+    d[1] = d[1] - periodic[1] * int(d[1]/periodic[1])
+    d[2] = d[2] - periodic[2] * int(d[2]/periodic[2])
+    
+    return np.sqrt((d*d).sum())

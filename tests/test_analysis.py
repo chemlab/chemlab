@@ -12,7 +12,7 @@ from pylab import *
 
 
 def test_rdf():
-    system = datafile("tests/data/water.gro").read('system')
+    system = datafile("examples/gromacs_tutorial/confout.gro").read('system')
     # Fix for this particular system water.gro
     #system.r_array += system.box_vectors[0,0]/2
     
@@ -28,11 +28,14 @@ def test_rdf():
         rdf = radial_distribution_function(r_array,
                                            r_array, nbins/2, cutoff=size*0.99,
                                            periodic = system.box_vectors)
-        rdfs.append(rdf)
-        print "frame", i
+        rdfs.append(rdf[1])
+        rdf[1] = np.array(rdfs).sum(axis=0)/len(rdfs)        
+        plot(rdf[0], rdf[1], 'blue')
+        plot(gro_rdf[0], gro_rdf[1], color='red')
+        print "frame ", i
         i += 1
     
-    rdf = np.array(rdfs).sum(axis=0)/len(rdfs)
+
     
     plot(rdf[0], rdf[1], 'blue')
     plot(gro_rdf[0], gro_rdf[1], color='red')
