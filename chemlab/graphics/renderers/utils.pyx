@@ -96,7 +96,7 @@ cdef void apply_matrix(double [:,:] M, double[:] v):
     
     for i in range(3):
         for j in range(3):
-          res[i] += M[j, i] * v[j]
+          res[i] += M[i, j] * v[j]
     
     for i in range(3):
         v[i] = res[i]
@@ -120,7 +120,6 @@ def fast_cylinder_translate(reference_verts, reference_norms,
     '''Optimization of cylinder renderer
 
     '''
-    #normals = []
     cdef int i, ii, j, ind, k
     cdef int ncyl = len(bounds)
     cdef int nverts = len(reference_verts)
@@ -141,7 +140,6 @@ def fast_cylinder_translate(reference_verts, reference_norms,
     normals = np.tile(reference_norms, (ncyl, 1))
     cdef double[:, :] normbuf = normals
     
-    #p_vertices = []
     for i in range(ncyl):
         s = bounds[i, 0]
         e = bounds[i, 1]
@@ -155,11 +153,7 @@ def fast_cylinder_translate(reference_verts, reference_norms,
             vertbuf[ind, 1] *= radiibuf[i]            
             vertbuf[ind, 2] *= lengthsbuf[i]
         
-        #vrt[:, 0:2] *= radii[i]
-        #vrt[:, 2] *= lengths[i]
-
         # Generate rotation matrix
-
         # Special case, if the axis is the z-axis
         vec3_sub(e, s, sme)
         
@@ -176,16 +170,10 @@ def fast_cylinder_translate(reference_verts, reference_norms,
             rotation_matrix(ang, axis, rot)
         
         for j in range(nverts):
-            apply_matrix(rot, vertbuf[i*nverts + j])
+            apply_matrix(rot.T, vertbuf[i*nverts + j])
             for k in range(3):
                 vertbuf[i*nverts + j, k] += e[k]
             
-            apply_matrix(rot, normbuf[i*nverts + j])
+            apply_matrix(rot.T, normbuf[i*nverts + j])
             
-        #p_vertices.extend(vrt)
-        
-        #normals.extend(np.dot(reference_norms, rot))
-    #print reference_verts[0]
-    #print np.array(p_vertices)[0]
-    #print vertices[0]
     return vertices, normals
