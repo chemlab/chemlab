@@ -29,13 +29,9 @@ def test_rdf():
                                            r_array, nbins/2, cutoff=size*0.99,
                                            periodic = system.box_vectors)
         rdfs.append(rdf[1])
-        rdf[1] = np.array(rdfs).sum(axis=0)/len(rdfs)        
-        plot(rdf[0], rdf[1], 'blue')
-        plot(gro_rdf[0], gro_rdf[1], color='red')
         print "frame ", i
         i += 1
     
-
     
     plot(rdf[0], rdf[1], 'blue')
     plot(gro_rdf[0], gro_rdf[1], color='red')

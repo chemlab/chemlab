@@ -235,11 +235,30 @@ cdef class CellLinkedList:
         
         return pairs
 
-        
-def minimum_image_distance(a, b, periodic):
-    d = b - a
-    d[0] = d[0] - periodic[0] * int(d[0]/periodic[0])
-    d[1] = d[1] - periodic[1] * int(d[1]/periodic[1])
-    d[2] = d[2] - periodic[2] * int(d[2]/periodic[2])
+def distance_array(arr_a, arr_b, double[:] period, double cutoff):
+    cdef int i, j
+    cdef int na = len(arr_a), nb = len(arr_b)
+    cdef double d
     
-    return np.sqrt((d*d).sum())
+    cdef double[:,:] bufa = arr_a.astype(np.double)
+    cdef double[:,:] bufb = arr_b.astype(np.double)
+    
+    distances = []
+    
+    for i in range(na):
+        for j in range(nb):
+            if i < j:
+                dist = minimum_image_distance(bufa[i], bufa[j], period)
+                if dist < cutoff:
+                    distances.append(dist)
+
+    return distances
+
+cdef double minimum_image_distance(double[:] a,double[:] b, double[:] periodic):
+    cdef double d[3]
+    
+    for i in range(3):
+        d[i] = b[i] - a[i]
+        d[i] = d[i] - periodic[i] * int(d[i]/periodic[i])
+    
+    return sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
