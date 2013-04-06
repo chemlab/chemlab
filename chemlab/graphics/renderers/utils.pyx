@@ -1,14 +1,17 @@
-# cython: profile=True
 '''Speed utilities'''
 
 import numpy as np
 cimport numpy as np
+cimport cython
 from cython.view cimport array as cyarray
 from ..transformations import (normalized,
                                unit_vector, distance)
 from ..transformations import angle_between_vectors as t_angle_between_vectors
 from ..transformations import vector_product as t_vector_product
 from ..transformations import rotation_matrix as t_rotation_matrix
+
+import time
+
 cdef extern from "math.h":
     double acos(double x)    
     double sqrt(double x)
@@ -47,8 +50,9 @@ cdef int allclose_d(double[:] a,double[:] b):
         ret = ret and (fabs(a[i] - b[i]) < eps)
         
     return ret
-    
-cdef rotation_matrix(double angle, double[:] d, double[:, :] M):
+
+@cython.boundscheck(False)
+cdef void rotation_matrix(double angle, double[:] d, double[:, :] M):
      """
      Create a rotation matrix corresponding to the rotation around a general
      axis by a specified angle.
@@ -82,6 +86,21 @@ cdef rotation_matrix(double angle, double[:] d, double[:, :] M):
      
      
 
+@cython.boundscheck(False)
+cdef void apply_matrix(double [:,:] M, double[:] v):
+    cdef double[3] res
+    cdef int i, j
+    
+    for i in range(3):
+        res[i] = 0
+    
+    for i in range(3):
+        for j in range(3):
+          res[i] += M[j, i] * v[j]
+    
+    for i in range(3):
+        v[i] = res[i]
+
 cdef void mat3_transpose(double [:, :] M):
         cdef double tmp
         cdef int i, j
@@ -91,32 +110,53 @@ cdef void mat3_transpose(double [:, :] M):
                 tmp = M[i, j]
                 M[i, j] = M[j, i]
                 M[j, i] = tmp
-        
+
+
+
+@cython.boundscheck(False)
+@cython.cdivision(True)
 def fast_cylinder_translate(reference_verts, reference_norms,
                             np.ndarray bounds, radii, lengths):
     '''Optimization of cylinder renderer
 
     '''
-    vertices = []
-    normals = []
-    cdef int i, ii
+    #normals = []
+    cdef int i, ii, j, ind, k
     cdef int ncyl = len(bounds)
+    cdef int nverts = len(reference_verts)
+    
     cdef double[:] sme = np.array([0.0, 0.0, 0.0])
     cdef double[:] s, e
-    cdef double[:] z_axis = np.array([0.0, 0.0, 1.0])
+    cdef double[:] z_axis = np.array([0.0, 0.0, 1.0]), zero_axis = np.zeros(3)
     cdef double[:] axis = np.array([0.0, 0.0, 0.0])
     cdef double ang, nm
+    cdef double[:] tmpv
 
     cdef double[:, :] rot = np.zeros((3,3))
+    cdef double[:] radiibuf = np.array(radii)
+    cdef double[:] lengthsbuf = np.array(lengths)
+
+    vertices = np.tile(reference_verts, (ncyl, 1))
+    cdef double[:, :] vertbuf = vertices
+    normals = np.tile(reference_norms, (ncyl, 1))
+    cdef double[:, :] normbuf = normals
     
+    #p_vertices = []
     for i in range(ncyl):
-        s = bounds[i][0]
-        e = bounds[i][1]
+        s = bounds[i, 0]
+        e = bounds[i, 1]
         
         # Scale the radii and the length
-        vrt = reference_verts.copy()
-        vrt[:, 0:2] *= radii[i]
-        vrt[:, 2] *= lengths[i]
+        #vrt = reference_verts.copy()
+
+        for j in range(nverts):
+            ind = i*nverts + j
+            vertbuf[ind, 0] *= radiibuf[i]
+            vertbuf[ind, 1] *= radiibuf[i]            
+            vertbuf[ind, 2] *= lengthsbuf[i]
+        
+        #vrt[:, 0:2] *= radii[i]
+        #vrt[:, 2] *= lengths[i]
 
         # Generate rotation matrix
 
@@ -126,7 +166,7 @@ def fast_cylinder_translate(reference_verts, reference_norms,
         ang = angle_between_vectors(z_axis, sme)
         vector_product(z_axis, sme, axis)
 
-        if ang==0 or allclose_d(axis, np.array([0.0, 0.0, 0.0])):
+        if ang==0 or allclose_d(axis, zero_axis):
             rot = np.eye(3)
         else:
             nm = norm(axis)
@@ -134,8 +174,18 @@ def fast_cylinder_translate(reference_verts, reference_norms,
                 axis[ii] = axis[ii] / nm
             
             rotation_matrix(ang, axis, rot)
-
-        vertices.extend(np.dot(vrt, rot) + e)
-        normals.extend(np.dot(reference_norms, rot))
-
+        
+        for j in range(nverts):
+            apply_matrix(rot, vertbuf[i*nverts + j])
+            for k in range(3):
+                vertbuf[i*nverts + j, k] += e[k]
+            
+            apply_matrix(rot, normbuf[i*nverts + j])
+            
+        #p_vertices.extend(vrt)
+        
+        #normals.extend(np.dot(reference_norms, rot))
+    #print reference_verts[0]
+    #print np.array(p_vertices)[0]
+    #print vertices[0]
     return vertices, normals
