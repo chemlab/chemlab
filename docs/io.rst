@@ -15,22 +15,24 @@ Reading and writing data
 ------------------------
 
 The classes responsible for the I/O are subclasses of
-:py:class:`chemlab.io.handlers.IOHandler`. These handlers work all in the same
+:py:class:`chemlab.io.handlers.IOHandler`. These handlers take a
+file-like object as the first argument and they work all in the same
 way, here is an example of GroHandler::
 
   from chemlab.io import GroIO
   
-  infile = GroIO('waterbox.gro')
+  fd = open('waterbox.gro')
+  infile = GroIO(fd)
   system = infile.read('system')
   
   # Modify system as you wish...
-  
-  outfile = GroIO('waterbox_out.gro')
+  fd = open('waterbox_out.gro', 'w')
+  outfile = GroIO(fd)
   outfile.write('system', system)
   
 You first create the handler instance for a certain format and then
 you can read a certain *feature* provided by the handler. In this example
-we read and write the *system* feature.
+we read and write the *system* feature. 
 
 Some file formats may have some extra data for each atom, molecule or
 system. For example the ".gro" file formats have his own way to call
@@ -94,12 +96,9 @@ Here is an example of the `xyz` handler::
       can_read = ['molecule']
       can_write = ['molecule']
       
-      def __init__(self, filename):
-          self.filename = filename
-          
       def read(self, feature):
           self.check_feature(feature, "read")
-          lines = open(self.filename).readlines()
+          lines = self.fd.readlines()
           
           num = int(lines[0])
           title = lines[1]
@@ -132,7 +131,7 @@ Here is an example of the `xyz` handler::
                   lines.append('    %s       %.6f      %.6f      %.6f' %
                                (t, x*10, y*10, z*10))
               
-              open(self.filename, 'w').write('\n'.join(lines))
+              self.fd.write('\n'.join(lines))
 
 A few remarks:
 

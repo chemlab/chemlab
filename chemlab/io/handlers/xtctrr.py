@@ -54,16 +54,13 @@ class XtcIO(IOHandler):
     can_read = ['trajectory']
     can_write = []
     
-    def __init__(self, filename):
-        self.filename = filename
-    
     def read(self, feature):
         import time
         t0 = time.time()
         
         if feature == 'trajectory':
             times = []
-            xtcreader = XTCReader(self.filename)
+            xtcreader = XTCReader(self.fd.name)
             frames = []
 
             for frame in xtcreader:

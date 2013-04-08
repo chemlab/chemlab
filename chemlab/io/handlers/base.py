@@ -1,16 +1,17 @@
 import difflib
 
 class IOHandler(object):
-    """Generic base class for file readers and writers. The
-    initialization function takes *filename* as input and sets the
-    instance attribute *filename*.
+    """Generic base class for file readers and writers.
+
+    The initialization function takes a file-like object *fd*, as an
+    argument.
     
     Subclasses can extend the methods *__init__*, *read* and *write*
     to implement their reading and writing routines.
     
     **Attributes**
     
-    .. py:attribute:: filename
+    .. py:attribute:: fd
     
     .. py:attribute:: IOHandler.can_read
         
@@ -23,13 +24,18 @@ class IOHandler(object):
         :type: list of str
         
         A list of *features* that IOHandler can write.
+
     """
 
     can_read = []
     can_write = []
     
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, fd):
+        # TODO: This is a deprecation warning
+        if isinstance(fd, str):
+            raise Exception("IOHandler takes a file-like object as its first argument")
+        
+        self.fd = fd
 
     def read(self, feature, *args, **kwargs):
         """Read and return the feature *feature*. It should raise an

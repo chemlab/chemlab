@@ -7,6 +7,7 @@ from .handlers import PdbIO
 from .handlers import EdrIO
 from .handlers import XyzIO
 from .handlers import XtcIO
+from .handlers import MolIO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
@@ -14,7 +15,8 @@ _default_handlers = [
     [XtcIO, 'xtc', '.xtc'],
     [PdbIO, 'pdb', '.pdb'],
     [EdrIO, 'edr', '.edr'],
-    [XyzIO, 'xyz', '.xyz']
+    [XyzIO, 'xyz', '.xyz'],
+    [MolIO, 'mol', '.mol']
 ]
 
 _handler_map = {}
@@ -53,7 +55,7 @@ def add_default_handler(ioclass, format, extension=None):
 for h in _default_handlers:
     add_default_handler(*h)
 
-def datafile(filename, format=None):
+def datafile(filename, mode="r", format=None):
     """Initialize the appropriate
     :py:class:`~chemlab.io.iohandler.IOHandler` for a given file
     extension or file format.
@@ -89,11 +91,11 @@ def datafile(filename, format=None):
         if format in _handler_map:
             hc = _handler_map[format]
             handler_class = hc
-            handler = hc(filename)
+            fd = open(filename, mode)
+            handler = hc(fd)
         else:
             matches = difflib.get_close_matches(format, _handler_map.keys())
             raise ValueError("Unknown Handler for format %s, close matches: %s"
                              % (format, str(matches)))
-        
         return handler
 
