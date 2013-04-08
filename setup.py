@@ -6,6 +6,8 @@ from Cython.Distutils import build_ext
 ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
                Extension('chemlab.utils.celllinkedlist',
                         ['chemlab/utils/celllinkedlist.pyx']),
+               Extension('chemlab.utils.cdist',
+                         ['chemlab/utils/cdist.pyx'], language="c++"),
                Extension('chemlab.graphics.renderers.utils', 
                          ['chemlab/graphics/renderers/utils.pyx']),
                Extension('chemlab.libs.pyxdr._xdrfile',

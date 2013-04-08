@@ -3,9 +3,9 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-cdef extern from "math.h":
-    double sqrt(double)
-    double rint(double)
+from cdist cimport minimum_image_distance, sqrt
+
+
 
 cdef int EMPTY = -1
 
@@ -33,7 +33,7 @@ cdef class CellLinkedList:
     cdef int[3] divisions
     
     def __init__(CellLinkedList self, points, periodic, spacing):
-        self.points = points
+        self.points = points.astype(np.double)
         self.periodic = periodic
         self.n_points = len(points)
         
@@ -67,10 +67,10 @@ cdef class CellLinkedList:
             # Cell index to which the atom belongs
             ind = (self.points[i]/rc).astype(int)
             
-            ind = (ind + ind.shape)%ind.shape
+            ind = ind % (self.divisions[0], self.divisions[1], self.divisions[2])
+            
             # Copy the previous head to the linked_list
             self.point_linked_list[i] = self.cell_heads[tuple(ind)]
-
             
             # Last goes to head
             self.cell_heads[tuple(ind)] = i
@@ -236,30 +236,3 @@ cdef class CellLinkedList:
         
         return pairs
 
-def distance_array(arr_a, arr_b, double[:] period, double cutoff):
-    cdef int i, j
-    cdef int na = len(arr_a), nb = len(arr_b)
-    cdef double d
-    
-    cdef double[:,:] bufa = arr_a.astype(np.double)
-    cdef double[:,:] bufb = arr_b.astype(np.double)
-    
-    distances = []
-    
-    for i in range(na):
-        for j in range(nb):
-            if i < j:
-                dist = minimum_image_distance(bufa[i], bufa[j], period)
-                if dist < cutoff:
-                    distances.append(dist)
-
-    return distances
-
-cdef double minimum_image_distance(double[:] a,double[:] b, double[:] periodic):
-    cdef double d[3]
-    
-    for i in range(3):
-        d[i] = b[i] - a[i]
-        d[i] = d[i] - periodic[i] * rint(d[i]/periodic[i])
-    
-    return sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])

@@ -2,7 +2,8 @@
 import numpy as np
 import time
 from scipy.spatial import distance
-from chemlab.utils.celllinkedlist import distance_array, CellLinkedList
+from chemlab.utils.celllinkedlist import CellLinkedList
+from chemlab.utils.cdist import distance_array
 
 def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, periodic=None, normalize=True):
     """Calculate the radial distribution function of *coords_a* against
@@ -34,16 +35,8 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
     # distances = cl.query_distances_other(cl2, cutoff)
 
     period = periodic[0, 0], periodic[1,1], periodic[2,2]
-    distances = distance_array(coords_a, coords_b, np.array(period, dtype=np.double), cutoff)    
-    
-    # distances = []
-    # for i, ri in enumerate(coords_a):
-    #     for j, rj in enumerate(coords_b):
-    #         if i > j:
-    #             dist = minimum_image_distance(ri, rj, period)
-    #             if dist < cutoff:
-    #                 distances.append(dist)
-    
+    distances = distance_array(coords_a, coords_b,
+                               np.array(period, dtype=np.double), cutoff)    
     n_a = len(coords_a)
     n_b = len(distances)/float(n_a)
 
@@ -65,10 +58,3 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
     
     return bin_edges[:-1], hist
 
-def minimum_image_distance(a, b, periodic):
-    d = b - a
-    d[0] = d[0] - periodic[0] * int(d[0]/periodic[0])
-    d[1] = d[1] - periodic[1] * int(d[1]/periodic[1])
-    d[2] = d[2] - periodic[2] * int(d[2]/periodic[2])
-    
-    return np.sqrt((d*d).sum())
