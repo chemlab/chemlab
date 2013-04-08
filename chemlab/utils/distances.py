@@ -26,6 +26,12 @@ def distances_within(coords_a, coords_b, cutoff,
        (periodic not available) and *cell-lists* uses the cell
        linked list method.
     """
-    pass
-
+    if method=="simple":
+        raise NotImplementedError()
+    elif method=="kdtree":
+        raise NotImplementedError()
+    elif method=="cell-lists":
+        raise NotImplementedError()
+    else:
+        raise Exception("Method {} not available.".format(method))
 
