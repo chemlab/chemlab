@@ -20,13 +20,10 @@ class XyzIO(IOHandler):
     can_read = ['molecule']
     can_write = ['molecule']
     
-    def __init__(self, filename):
-        self.filename = filename
-        
     def read(self, feature):
         self.check_feature(feature, "read")
         
-        lines = open(self.filename).readlines()
+        lines = self.fd.readlines()
         
         num = int(lines[0])
         title = lines[1]
@@ -60,5 +57,5 @@ class XyzIO(IOHandler):
                 lines.append('    %s       %.6f      %.6f      %.6f' %
                              (t, x*10, y*10, z*10))
             
-            open(self.filename, 'w').write('\n'.join(lines))
-        
+            self.fd.write('\n'.join(lines))
+    

@@ -29,8 +29,8 @@ class PdbIO(IOHandler):
     can_read = ['molecule', 'system']
     can_write = []
     
-    def __init__(self, filename):
-        self.lines = open(filename).readlines()
+    def __init__(self, fd):
+        self.lines = fd.readlines()
         self.atoms = []        
         self.atom_res = []
         

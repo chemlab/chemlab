@@ -25,7 +25,7 @@ def test_write_pdb():
     for i in range(200):
         sys.add(water.copy())
     
-    df = datafile('/tmp/dummy.gro')
+    df = datafile('/tmp/dummy.gro', mode="w")
     df.write("system", sys)
     
 def test_read_gromacs():
@@ -43,7 +43,7 @@ def test_write_gromacs():
     for i in range(200):
         sys.add(water.copy())
     
-    df = datafile('/tmp/dummy.gro')
+    df = datafile('/tmp/dummy.gro', mode="w")
     df.write('system', sys)
     
     df = datafile('/tmp/dummy.gro')
@@ -68,9 +68,10 @@ def test_read_xyz():
     mol1 = df.read('molecule')
     
     
-    df = datafile('/tmp/t.xyz')
+    df = datafile('/tmp/t.xyz', mode="w")
     df.write('molecule', mol1)
     
+    df = datafile('/tmp/t.xyz', mode="r")
     mol2 = df.read('molecule')
     
     assert np.allclose(mol1.r_array, mol2.r_array)

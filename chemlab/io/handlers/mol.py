@@ -23,7 +23,7 @@ class MolIO(IOHandler):
         self.check_feature(feature, "read")
         
         if feature == 'molecule':
-            string = open(self.filename).read()
+            string = self.fd.read()
             return parse_mol_string(string)
         
 def parse_mol_string(string):

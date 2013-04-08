@@ -58,8 +58,8 @@ class EdrIO(IOHandler):
     can_read = ['quantity', 'units', 'avail quantities']
     can_write = []
     
-    def __init__(self, filename):
-        super(EdrIO, self).__init__(filename)
+    def __init__(self, fd):
+        super(EdrIO, self).__init__(fd)
         self.processed = False
         
     def read(self, feature, *args):
@@ -101,7 +101,7 @@ class EdrIO(IOHandler):
             
     def process_frames(self):
         
-        f = open(self.filename).read()
+        f = self.fd.read()
         self.up = xdrlib.Unpacker(f)
 
         self.times = []
