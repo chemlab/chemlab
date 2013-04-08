@@ -7,6 +7,7 @@ from .handlers import PdbIO
 from .handlers import EdrIO
 from .handlers import XyzIO
 from .handlers import XtcIO
+from .handlers import MolIO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
@@ -14,7 +15,8 @@ _default_handlers = [
     [XtcIO, 'xtc', '.xtc'],
     [PdbIO, 'pdb', '.pdb'],
     [EdrIO, 'edr', '.edr'],
-    [XyzIO, 'xyz', '.xyz']
+    [XyzIO, 'xyz', '.xyz'],
+    [MolIO, 'mol', '.mol']
 ]
 
 _handler_map = {}
@@ -94,6 +96,5 @@ def datafile(filename, format=None):
             matches = difflib.get_close_matches(format, _handler_map.keys())
             raise ValueError("Unknown Handler for format %s, close matches: %s"
                              % (format, str(matches)))
-        
         return handler
 

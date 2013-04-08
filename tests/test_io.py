@@ -77,3 +77,7 @@ def test_read_xyz():
     assert all(mol1.type_array == mol2.type_array)
     
     
+def test_read_mol():
+    df = datafile('tests/data/benzene.mol')
+    mol1 = df.read('molecule')
+    
