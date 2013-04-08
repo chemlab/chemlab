@@ -2,9 +2,12 @@
 
 '''
 import numpy as np
-from chemlab.utils import CellLinkedList
+from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.libs.ckdtree import cKDTree
+from chemlab.utils import distances_within
 
+def test_distances():
+    
 
 def test_cell_list():
     test_points = np.array([[0.1, 0.0, 0.0], [0.9, 0.0, 0.0]])
