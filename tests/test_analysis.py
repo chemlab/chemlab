@@ -2,6 +2,7 @@
 
 '''
 from __future__ import division
+import numpy as np
 from chemlab.core.spacegroup.crystal import crystal
 from chemlab.molsim.analysis import radial_distribution_function
 from chemlab.data import moldb
@@ -26,14 +27,16 @@ def test_rdf():
     i = 0
     for r_array in coords:
         rdf = radial_distribution_function(r_array,
-                                           r_array, nbins/2, cutoff=size*0.99,
+                                           r_array, nbins*2, cutoff=size*0.99,
                                            periodic = system.box_vectors)
         rdfs.append(rdf[1])
         print "frame ", i
         i += 1
     
-    
-    plot(rdf[0], rdf[1], 'blue')
+    rdf_avg = np.sum(rdfs, axis=0)/len(rdfs)
+    print len(rdf[0])
+    print len(rdf_avg)
+    plot(rdf[0], rdf_avg, 'blue')
     plot(gro_rdf[0], gro_rdf[1], color='red')
     
     show()

@@ -2,8 +2,7 @@
 import numpy as np
 import time
 from scipy.spatial import distance
-from chemlab.utils import CellLinkedList
-from chemlab.utils.celllinkedlist import distance_array
+from chemlab.utils.celllinkedlist import distance_array, CellLinkedList
 
 def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, periodic=None, normalize=True):
     """Calculate the radial distribution function of *coords_a* against
@@ -55,12 +54,11 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
 
     hist, bin_edges = np.histogram(distances, bins)
     dr  = bin_edges[1] - bin_edges[0]
-    print bins
-    print bin_edges
     
     # Normalize this by a sphere shell
     for i, r in enumerate(bin_edges[1:]):
         hist[i] /= ((4.0/3.0 * np.pi * (r+dr)**3) - (4.0/3.0 * np.pi * (r)**3))
+        
     
     if normalize:
          hist = hist/(local_rho*n_a)

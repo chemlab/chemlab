@@ -5,6 +5,7 @@ cimport cython
 
 cdef extern from "math.h":
     double sqrt(double)
+    double rint(double)
 
 cdef int EMPTY = -1
 
@@ -259,6 +260,6 @@ cdef double minimum_image_distance(double[:] a,double[:] b, double[:] periodic):
     
     for i in range(3):
         d[i] = b[i] - a[i]
-        d[i] = d[i] - periodic[i] * int(d[i]/periodic[i])
+        d[i] = d[i] - periodic[i] * rint(d[i]/periodic[i])
     
     return sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])
