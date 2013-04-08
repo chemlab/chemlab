@@ -77,7 +77,7 @@ def main(args, output=None):
         for e in ens:
             plotargs = {}
             plotargs['points'] = df.read('quantity', e)
-            plotargs['filename'] = df.filename
+            plotargs['filename'] = df.fd.name
             plotargs['quantity'] = e
             
             toplot.append(plotargs)
