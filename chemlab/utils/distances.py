@@ -1,4 +1,10 @@
 # Utilities for distance searching
+import numpy as np
+from scipy.spatial.distance import cdist, squareform
+
+from ..libs.ckdtree import cKDTree
+from .cdist import distance_array
+from .celllinkedlist import CellLinkedList
 
 def distances_within(coords_a, coords_b, cutoff,
                      periodic=False, method="simple"):
@@ -20,18 +26,27 @@ def distances_within(coords_a, coords_b, cutoff,
        If False, don't consider periodic images. Otherwise
        periodic is an array containing the periodicity in the
        3 dimensions.
-    method: "simple" | "kdtree" | "cell-lists"
+    method: "simple" | "cell-lists"
        The method to use. *simple* is a brute-force 
        distance search, *kdtree* uses scipy ``ckdtree`` module
        (periodic not available) and *cell-lists* uses the cell
        linked list method.
     """
     if method=="simple":
-        raise NotImplementedError()
-    elif method=="kdtree":
-        raise NotImplementedError()
+        if periodic:
+            return distance_array(coords_a, coords_b, cutoff, periodic.astype(np.double))
+        else:
+            dist = squareform(cdist(coords_a, coords_b))
+            print cdist(coords_a, coords_b)
+            return dist[dist < cutoff]
+            
     elif method=="cell-lists":
-        raise NotImplementedError()
+        a = CellLinkedList(coords_a, cutoff, periodic)
+        b = CellLinkedList(coords_b, cutoff, periodic)
+        dist = a.query_distances_other(b, cutoff)
+        return dist
+            
+            
     else:
         raise Exception("Method {} not available.".format(method))
 

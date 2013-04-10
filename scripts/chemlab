@@ -9,14 +9,13 @@ import time
 def infoprint(msg, color=None):
     cprint('INFO: ', color='yellow', end='')    
     cprint(msg, color=color, end='')
+    sys.stdout.flush()
     
 def view(args):
     from chemlab.io import datafile
     from chemlab.graphics import display_system, display_trajectory
     from chemlab.core import subsystem_from_molecules
     import numpy as np
-    
-
 
     base, ext = os.path.splitext(args.filename)
     
