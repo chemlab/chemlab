@@ -120,9 +120,18 @@ cdef class CellLinkedList:
                 for k in xrange(dc+1):
 
                     # Scan over the neighbour cells
-                    for ni in xrange(i-1, i+2):
-                        for nj in xrange(j-1, j+2):
-                            for nk in xrange(k-1, k+2):
+                    if self.do_periodic:
+                        i_s = i
+                        j_s = j
+                        k_s = k
+                    else:
+                        i_s = i - 1
+                        j_s = j - 1
+                        k_s = k - 1
+                        
+                    for ni in xrange(i_s, i+2):
+                        for nj in xrange(j_s, j+2):
+                            for nk in xrange(k_s, k+2):
 
                                 if self.do_periodic:
                                     # Periodic boundary shift

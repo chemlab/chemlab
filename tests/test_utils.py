@@ -28,10 +28,10 @@ def test_distances_periodic():
     coords = np.array([[0.0, 0.0, 0.0],
                        [0.0, 0.9, 0.0],
                        [0.0, 0.2, 0.0]])
-    coords = np.random.random((10000, 3))
+    coords = np.random.random((1000, 3))
     periodic = np.array([1.0, 1.0, 1.0])
     
-    cutoff = 0.02
+    cutoff = 0.5
     
     # Consistency checks
     print "Simple"

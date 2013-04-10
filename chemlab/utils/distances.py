@@ -41,6 +41,10 @@ def distances_within(coords_a, coords_b, cutoff,
             return dist[dist < cutoff]
             
     elif method=="cell-lists":
+        if periodic is not False:
+            if np.any(cutoff > periodic/2):
+                raise Exception("Not working with such a big cutoff.")
+            
         a = CellLinkedList(coords_a, cutoff, periodic)
         b = CellLinkedList(coords_b, cutoff, periodic)
         dist = a.query_distances_other(b, cutoff)
