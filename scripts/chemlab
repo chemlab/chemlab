@@ -61,9 +61,7 @@ def view(args):
             
         if args.smooth:
             infoprint('Smoothing frames ... ')
-            from scipy.ndimage.filters import convolve
             t0 = time.time()
-
             for i, f in enumerate(frames):
                 nf = np.zeros_like(f)
                 toaverage = range(max(0, i - 2), min(i+4, len(frames)))
@@ -74,7 +72,6 @@ def view(args):
 
                 nf /= navg
                 frames[i] = nf
-
             cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
         display_trajectory(sys, times,  frames)
