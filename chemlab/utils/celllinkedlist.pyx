@@ -83,6 +83,7 @@ cdef class CellLinkedList:
         
         print "Rc", (points[5]/rc).astype(int)
         print "Rc", (points[8]/rc).astype(int)
+        
         for i in xrange(self.n_points):
             # Cell index to which the atom belongs
             ind = (self.points[i]/rc).astype(int) 
@@ -116,9 +117,9 @@ cdef class CellLinkedList:
         dc = self.divisions[2]
 
         # We have to iterate over all cells
-        for i in xrange(da):
-            for j in xrange(db):
-                for k in xrange(dc):
+        for i in xrange(da+1):
+            for j in xrange(db+1):
+                for k in xrange(dc+1):
 
                     # Scan over the neighbour cells
                     for ni in xrange(i-1, i+1):
@@ -148,12 +149,12 @@ cdef class CellLinkedList:
                                     else:
                                         shift[2] = 0
                                 else:
-                                    if ni < 0 or ni >= other.divisions[0]:
+                                    if ni < 0 or ni > other.divisions[0]:
                                         # No things out of bounds
                                         continue
-                                    if nj < 0 or nj >= other.divisions[1]:
+                                    if nj < 0 or nj > other.divisions[1]:
                                         continue
-                                    if nk < 0 or nk >= other.divisions[2]:
+                                    if nk < 0 or nk > other.divisions[2]:
                                         continue
                                 
                                 # Scan atom i in the central cell
@@ -172,7 +173,7 @@ cdef class CellLinkedList:
                                     while (j_point != EMPTY):
                                         print i_point, j_point
                                         # Avoid double counting
-                                        if i_point < j_point:
+                                        if True or (i_point < j_point):
 
                                             ri = self.points[i_point]
                                             rj = other.points[j_point]
