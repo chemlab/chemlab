@@ -81,9 +81,6 @@ cdef class CellLinkedList:
                                     self.divisions[2]+1), dtype='i4')
         self.cell_heads[:] = EMPTY
         
-        print "Rc", (points[5]/rc).astype(int)
-        print "Rc", (points[8]/rc).astype(int)
-        
         for i in xrange(self.n_points):
             # Cell index to which the atom belongs
             ind = (self.points[i]/rc).astype(int) 
@@ -122,9 +119,9 @@ cdef class CellLinkedList:
                 for k in xrange(dc+1):
 
                     # Scan over the neighbour cells
-                    for ni in xrange(i-1, i+1):
-                        for nj in xrange(j-1, j+1):
-                            for nk in xrange(k-1, k+1):
+                    for ni in xrange(i-1, i+2):
+                        for nj in xrange(j-1, j+2):
+                            for nk in xrange(k-1, k+2):
 
                                 if self.do_periodic:
                                     # Periodic boundary shift
@@ -159,7 +156,7 @@ cdef class CellLinkedList:
                                 
                                 # Scan atom i in the central cell
                                 i_point = cell_heads[i, j, k]
-
+                                
                                 while (i_point != EMPTY):
                                     # Scan point in the neighbour cell
                                     if self.do_periodic:
@@ -171,9 +168,9 @@ cdef class CellLinkedList:
                                     
                                     # This is taken from the other
                                     while (j_point != EMPTY):
-                                        print i_point, j_point
+
                                         # Avoid double counting
-                                        if True or (i_point < j_point):
+                                        if (i_point < j_point):
 
                                             ri = self.points[i_point]
                                             rj = other.points[j_point]

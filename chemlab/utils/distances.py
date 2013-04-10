@@ -37,7 +37,6 @@ def distances_within(coords_a, coords_b, cutoff,
             return distance_array(coords_a, coords_b, cutoff, periodic.astype(np.double))
         else:
             dist = squareform(cdist(coords_a, coords_b))
-            print cdist(coords_a, coords_b)
             return dist[dist < cutoff]
             
     elif method=="cell-lists":

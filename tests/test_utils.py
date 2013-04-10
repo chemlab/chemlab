@@ -8,20 +8,10 @@ from chemlab.utils import distances_within
 import time
 
 def test_distances():
-    coords = np.array([[ 0.47862783,  0.91050104 , 0.37565696], 
-                       [ 0.478536  ,  0.21433066 , 0.05656854], 
-                       [ 0.27636328,  0.14721663 , 0.80266125], 
-                       [ 0.49174243,  0.45646866 , 0.14006564], 
-                       [ 0.80192215,  0.85141589 , 0.92175078], 
-                       [ 0.9644853 ,  0.6332241  , 0.2114707 ], 
-                       [ 0.19803133,  0.5468024  , 0.88794867], 
-                       [ 0.3494425 ,  0.43210967 , 0.94125059], 
-                       [ 0.99764426,  0.64943748 , 0.38990311], 
-                       [ 0.04809691,  0.20231086 , 0.54656047]])
+    coords = np.random.random((10000, 3))
     
-    coords = np.around(coords, 2)
-    cutoff = 0.2
-    print coords
+    cutoff = 0.02
+    #print coords
     # Consistency checks
     print "Simple"
     t = time.time()
@@ -32,8 +22,6 @@ def test_distances():
     dist_clist = distances_within(coords, coords, cutoff, method="cell-lists")
     print -t + time.time()
     
-    print dist_simple
-    print dist_clist
     assert np.allclose(sorted(dist_simple), sorted(dist_clist))
     
 def test_cell_list():
