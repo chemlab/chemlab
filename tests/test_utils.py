@@ -24,6 +24,34 @@ def test_distances():
     
     assert np.allclose(sorted(dist_simple), sorted(dist_clist))
     
+def test_distances_periodic():
+    coords = np.array([[0.0, 0.0, 0.0],
+                       [0.0, 0.9, 0.0],
+                       [0.0, 0.2, 0.0]])
+    coords = np.random.random((10000, 3))
+    periodic = np.array([1.0, 1.0, 1.0])
+    
+    cutoff = 0.02
+    
+    # Consistency checks
+    print "Simple"
+    t = time.time()
+    dist_simple = distances_within(coords, coords, cutoff, method="simple",
+                                   periodic=periodic)
+    print -t + time.time()
+
+    print "Cell-lists"
+    t = time.time()
+    dist_clist = distances_within(coords, coords, cutoff,
+                                  method="cell-lists", periodic=periodic)
+    print -t + time.time()
+    
+    #print dist_simple
+    #print dist_clist
+
+    assert np.allclose(sorted(dist_simple), sorted(dist_clist))
+    
+    
 def test_cell_list():
     test_points = np.array([[0.1, 0.0, 0.0], [0.9, 0.0, 0.0]])
     #test_points = np.random.random((10, 3)) * 10

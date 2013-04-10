@@ -34,10 +34,10 @@ cdef class CellLinkedList:
     cdef int do_periodic
     
     def __init__(CellLinkedList self, points, spacing, periodic=False):
-        if not periodic:
-            self.do_periodic = False
-        else:
+        if periodic is not False:
             self.do_periodic = True
+        else:
+            self.do_periodic = False
         
         self.points = points.astype(np.double)
         
@@ -85,7 +85,8 @@ cdef class CellLinkedList:
             # Cell index to which the atom belongs
             ind = (self.points[i]/rc).astype(int) 
             
-            #ind = ind % (self.divisions[0], self.divisions[1], self.divisions[2])
+            if self.do_periodic:
+                ind = ind % (self.divisions[0], self.divisions[1], self.divisions[2])
             
             # Copy the previous head to the linked_list
             self.point_linked_list[i] = self.cell_heads[tuple(ind)]

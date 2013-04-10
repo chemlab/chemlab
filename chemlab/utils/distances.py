@@ -33,8 +33,9 @@ def distances_within(coords_a, coords_b, cutoff,
        linked list method.
     """
     if method=="simple":
-        if periodic:
-            return distance_array(coords_a, coords_b, cutoff, periodic.astype(np.double))
+        if periodic is not False:
+            return distance_array(coords_a, coords_b, cutoff=cutoff,
+                                  period=periodic.astype(np.double))
         else:
             dist = squareform(cdist(coords_a, coords_b))
             return dist[dist < cutoff]
