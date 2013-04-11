@@ -59,6 +59,21 @@ def view(args):
                 
             cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
+        if args.smooth:
+            infoprint('Smoothing frames ... ')
+            t0 = time.time()
+            for i, f in enumerate(frames):
+                nf = np.zeros_like(f)
+                toaverage = range(max(0, i - 2), min(i+4, len(frames)))
+                navg = 0
+                for j in toaverage:
+                    navg += 1
+                    nf += frames[j]
+
+                nf /= navg
+                frames[i] = nf
+            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+            
         display_trajectory(sys, times,  frames)
 
 def plot(args):
@@ -75,7 +90,10 @@ gromacs.setup_commands(subparsers)
 view_parser = subparsers.add_parser('view')
 view_parser.add_argument('filename', type=str)
 view_parser.add_argument('--traj', action='store', type=str)
-view_parser.add_argument('--nowater', action='store_true')
+view_parser.add_argument('--nowater', action='store_true',
+                         help='Do not display water molecules')
+view_parser.add_argument('--smooth', action='store_true',
+                         help='Apply a very crude smoothing filter')
 
 view_parser.set_defaults(func=view)
 

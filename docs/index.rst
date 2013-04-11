@@ -95,6 +95,7 @@ Reference Documentation
    api/chemlab.core
    api/chemlab.io
    api/chemlab.graphics
+   api/chemlab.utils
 
 License
 -------

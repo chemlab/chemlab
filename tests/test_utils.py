@@ -8,9 +8,9 @@ from chemlab.utils import distances_within
 import time
 
 def test_distances():
-    coords = np.random.random((10000, 3))
+    coords = np.random.random((5000, 3)) * 2
     
-    cutoff = 0.02
+    cutoff = 0.03
     #print coords
     # Consistency checks
     print "Simple"
