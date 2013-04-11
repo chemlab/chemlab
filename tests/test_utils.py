@@ -4,7 +4,7 @@
 import numpy as np
 from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.libs.ckdtree import cKDTree
-from chemlab.utils import distances_within
+from chemlab.utils import distance_matrix
 import time
 
 def test_distances():
@@ -17,6 +17,7 @@ def test_distances():
     t = time.time()
     dist_simple = distances_within(coords, coords, cutoff, method="simple")
     print -t + time.time()
+    
     print "Cell-lists"
     t = time.time()
     dist_clist = distances_within(coords, coords, cutoff, method="cell-lists")
@@ -28,7 +29,7 @@ def test_distances_periodic():
     coords = np.array([[0.0, 0.0, 0.0],
                        [0.0, 0.9, 0.0],
                        [0.0, 0.2, 0.0]])
-    coords = np.random.random((1000, 3))
+    coords = np.random.random((100, 3))
     periodic = np.array([1.0, 1.0, 1.0])
     
     cutoff = 0.5
@@ -36,20 +37,20 @@ def test_distances_periodic():
     # Consistency checks
     print "Simple"
     t = time.time()
-    dist_simple = distances_within(coords, coords, cutoff, method="simple",
+    dist_simple = distance_matrix(coords, coords, cutoff, method="simple",
                                    periodic=periodic)
     print -t + time.time()
 
     print "Cell-lists"
     t = time.time()
-    dist_clist = distances_within(coords, coords, cutoff,
+    dist_clist = distance_matrix(coords, coords, cutoff,
                                   method="cell-lists", periodic=periodic)
     print -t + time.time()
     
-    #print dist_simple
-    #print dist_clist
+    print dist_simple
+    print dist_clist.todense()
 
-    assert np.allclose(sorted(dist_simple), sorted(dist_clist))
+    assert np.allclose(dist_simple, dist_clist.todense())
     
     
 def test_cell_list():
@@ -64,11 +65,4 @@ def test_cell_list():
     pairs = cells.query_pairs(dr)
     print len(pairs)
 
-    #ck = cKDTree(test_points)
-    #pairs = ck.query_pairs(dr)    
-    #print len(pairs)
-    
-    #print sorted(pairs
-    
-    # Let's try to visualize that with point and lines'
 

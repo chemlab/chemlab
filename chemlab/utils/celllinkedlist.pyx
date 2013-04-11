@@ -3,6 +3,8 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
+from scipy.sparse import dok_matrix
+
 from cdist cimport minimum_image_distance, sqrt
 
 cdef int EMPTY = -1
@@ -93,7 +95,6 @@ cdef class CellLinkedList:
     @cython.boundscheck(False)
     def query_distances_other(self, CellLinkedList other, double dr):
         # Other must have the same number of cells...
-        distances = []
         
         cdef int i, j, k, ii
         cdef int ni, nj, nk
@@ -113,7 +114,9 @@ cdef class CellLinkedList:
         da = self.divisions[0]
         db = self.divisions[1]
         dc = self.divisions[2]
-
+        
+        ret = dok_matrix((self.n_points, other.n_points), dtype=np.double)
+        
         # We have to iterate over all cells
         for i in xrange(da+1):
             for j in xrange(db+1):
@@ -192,9 +195,9 @@ cdef class CellLinkedList:
                                                 dist = sqrt(rij[0]*rij[0] + rij[1]*rij[1] + rij[2]*rij[2])
 
                                             if (dist*dist < dr**2):
-                                                distances.append(dist)
+                                                ret[i_point,j_point] = dist
 
                                         j_point = other_linked_list[j_point]
                                     i_point = self_linked_list[i_point]
         
-        return distances
+        return ret
