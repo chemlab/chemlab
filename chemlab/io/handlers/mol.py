@@ -42,6 +42,6 @@ def parse_mol_string(string):
         coords.append([float(x), float(y), float(z)])
         types.append(typ)
     
-    return Molecule.from_arrays(r_array = np.array(coords),
+    return Molecule.from_arrays(r_array = np.array(coords)/10, # To nm
                                 type_array = np.array(types))
         
