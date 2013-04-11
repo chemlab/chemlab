@@ -9,6 +9,7 @@ from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
 from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
+import time
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
 
@@ -128,6 +129,7 @@ def test_cylinder_renderer():
     
 def test_bond_renderer():
     from chemlab.graphics.colors import default_atom_map
+    #from chemlab.data.cirdb import CirDB
     
     v = QtViewer()
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
@@ -139,7 +141,13 @@ def test_bond_renderer():
     # Test other algorithm to find bond
     r_array = mol.r_array
     
-
+    # t0 = time.time()
+    # mol = CirDB().get("water", "molecule")
+    # print time.time() - t0
+    
+    # bonds = mol.bonds
+    # r_array = mol.r_array
+    
     starts = r_array[bonds[:,0]]
     ends = r_array[bonds[:,1]]
     middle = (starts + ends)/2 
@@ -167,8 +175,7 @@ def test_bond_renderer():
 
     radii_map = {"O": 0.01, "H": 0.01}
         
-    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors",
-                        radii_map=radii_map)
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
     cr = v.add_renderer(CylinderRenderer, bounds_a, radii, colors_a)
     cr = v.add_renderer(CylinderRenderer, bounds_b, radii, colors_b)
     

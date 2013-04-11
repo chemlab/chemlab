@@ -31,17 +31,31 @@ def parse_mol_string(string):
     # lines 0-2 are header/comments
 
     # line 3 is counting
-    natoms = int(lines[3].split()[0])
-    nbonds = int(lines[3].split()[1])
+    natoms = int(lines[3][0:3])
+    nbonds = int(lines[3][3:6])
     
     coords = []
     types = []
+    bonds = []
+    bond_types = []
+    
     for i in range(natoms):
         at_fields = lines[i + 4].split()
         x, y, z, typ = at_fields[:4]
         coords.append([float(x), float(y), float(z)])
         types.append(typ)
     
-    return Molecule.from_arrays(r_array = np.array(coords)/10, # To nm
-                                type_array = np.array(types))
-        
+    offset = natoms + 4
+    for i in range(nbonds):
+        s = lines[offset + i][0:3]
+        e = lines[offset + i][3:6]
+        t = lines[offset + i][6:9]
+        bonds.append((int(s),int(e)))
+        bond_types.append(int(t))
+    
+    mol = Molecule.from_arrays(r_array = np.array(coords)/10, # To nm
+                               type_array = np.array(types))
+    mol.bonds =  np.array(bonds) - 1 # TODO Ugly ugly ugly
+    
+    return mol
+    
