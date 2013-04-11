@@ -183,7 +183,7 @@ cdef class CellLinkedList:
                                     while (j_point != EMPTY):
 
                                         # Avoid double counting
-                                        if (i_point < j_point):
+                                        if (i_point <= j_point):
                                             ri = self.points[i_point]
                                             rj = other.points[j_point]
 

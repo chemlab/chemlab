@@ -25,22 +25,13 @@ def distance_array(arr_a, arr_b, double[:] period, double cutoff):
     distmat = np.zeros((na, nb), np.double)
     cdef double[:,:] d_mat = distmat
     
-    cdef vector[double] distances_v
-    
     for i in range(na):
         for j in range(nb):
             if i < j:
                 dist = minimum_image_distance(bufa[i], bufa[j], period)
-                if dist < cutoff:
-                    #distances_v.push_back(dist)
+                if dist <= cutoff:
                     d_mat[i,j] = dist
     
-    #size = distances_v.size()
-    
-    #distances = np.empty(size)
-    #distbuf = distances
-    #for i in range(size):
-    #    distbuf[i] = distances_v[i]
     return distmat
         
 
