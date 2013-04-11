@@ -1,6 +1,8 @@
 import numpy as np
 from .molecule import Atom, Molecule
 from ..data import units, masses
+from ..utils import overlapping_points
+
 from collections import namedtuple
 
 
@@ -666,7 +668,7 @@ def _selection_to_index(selection):
     return index
     
     
-def merge_systems(sysa, sysb, bounding=0.0):
+def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by overlapping *sysa* and *sysb*. Overlapping
     molecules are removed by cutting the molecules of *sysa* that are
     found inside the space defined by :py:attr:`sysb.box_vectors
@@ -684,23 +686,36 @@ def merge_systems(sysa, sysb, bounding=0.0):
     
     '''
     # Delete overlaps.
-    minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
-    maxx, maxy, maxz = np.max(sysb.r_array[:, 0]), np.max(sysb.r_array[:,1]), np.max(sysb.r_array[:,2])
+    if sysa.box_vectors is not None:
+        periodicity = sysa.box_vectors.diagonal()
+    else:
+        periodicity = None
+    
+    p = overlapping_points(sysb.r_array, sysa.r_array,
+                           cutoff=bounding, periodic=periodicity)
+    
+    
+    # minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
+    # maxx, maxy, maxz = np.max(sysb.r_array[:, 0]), np.max(sysb.r_array[:,1]), np.max(sysb.r_array[:,2])
 
-    maxx += bounding
-    maxy += bounding
-    maxz += bounding
+    # maxx += bounding
+    # maxy += bounding
+    # maxz += bounding
     
-    minx -= bounding
-    miny -= bounding
-    minz -= bounding
+    # minx -= bounding
+    # miny -= bounding
+    # minz -= bounding
     
-    xmask = (minx < sysa.r_array[:,0]) & (sysa.r_array[:,0] < maxx) 
-    ymask = (miny < sysa.r_array[:,1]) & (sysa.r_array[:,1] < maxy) 
-    zmask = (minz < sysa.r_array[:,2]) & (sysa.r_array[:,2] < maxz) 
+    # xmask = (minx < sysa.r_array[:,0]) & (sysa.r_array[:,0] < maxx) 
+    # ymask = (miny < sysa.r_array[:,1]) & (sysa.r_array[:,1] < maxy) 
+    # zmask = (minz < sysa.r_array[:,2]) & (sysa.r_array[:,2] < maxz) 
+    
+    # sel = np.logical_not(xmask & ymask & zmask)
+    sel = np.ones(len(sysa.r_array), dtype=np.bool)
+    sel[p] = False
     
     # Rebuild sysa without water molecules
-    sysa = subsystem_from_atoms(sysa, np.logical_not(xmask & ymask & zmask))
+    sysa = subsystem_from_atoms(sysa, sel)
     
     sysres = System.empty(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     

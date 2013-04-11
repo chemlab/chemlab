@@ -86,6 +86,32 @@ def test_system():
     assert sub.n_mol == 1
     
 
+def test_merge_system():
+    # take a protein
+    from chemlab.io import datafile
+    from chemlab.data import moldb
+    from chemlab.graphics import display_system
+    from chemlab.core import merge_systems
+    
+    prot = datafile("tests/data/3ZJE.pdb").read("system")
+    
+    # Take a box of water
+    NWAT = 50000
+    bsize = 20.0
+    pos = np.random.random((NWAT, 3)) * bsize
+    wat = moldb.water.copy()
+    
+    s = System.empty(NWAT, NWAT*3, boxsize=bsize)
+    for i in range(NWAT):
+        wat.move_to(pos[i])
+        s.add(wat)
+    
+    prot.r_array += 10
+    s = merge_systems(s, prot, 0.5)
+
+    display_system(s)
+    
+    
 def test_crystal():
     '''Building a crystal by using spacegroup module'''
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
