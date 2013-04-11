@@ -53,7 +53,7 @@ class AtomRenderer(AbstractRenderer):
         natoms = len(r_array)
         
         for i in range(natoms):
-            radii.append(vdw_dict[type_array[i]])
+            radii.append(radii_map[type_array[i]])
             colorlist.append(color_scheme.get(type_array[i],
                                         color_scheme['Xx']))
         

@@ -127,36 +127,51 @@ def test_cylinder_renderer():
     v.run()
     
 def test_bond_renderer():
+    from chemlab.graphics.colors import default_atom_map
+    
     v = QtViewer()
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
     
-    from chemlab.io import datafile
-    #mol = datafile('tests/data/sulphoxide.xyz').read('molecule')
-    mol = datafile('tests/data/3ZJE.pdb').read('molecule')
-    
-    from chemlab.libs.ckdtree import cKDTree
+    bonds = np.array([[0, 1],[0, 2]])
     
     # Test other algorithm to find bond
     r_array = mol.r_array
-    # Make a grid of 0.3 spacing
     
-    kd = cKDTree(r_array)
-    pairs = kd.query_pairs(0.20)
 
-    bounds = []
-    for a, b in pairs:
-        bounds.append((r_array[a], r_array[b]))
-
-
-    bounds = np.array(bounds)
-    radii = [0.015] * len(bounds)
-    colors = [orange] * len(bounds)
+    starts = r_array[bonds[:,0]]
+    ends = r_array[bonds[:,1]]
+    middle = (starts + ends)/2 
     
-    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
-    cr = v.add_renderer(CylinderRenderer, bounds, radii, colors)
+    bounds_a = np.empty((len(bonds), 2, 3))
+    bounds_a[:, 0, :] = starts
+    bounds_a[:, 1, :] = middle
+    
+    bounds_b = np.empty((len(bonds), 2, 3))    
+    bounds_b[:, 0, :] = middle
+    bounds_b[:, 1, :] = ends
+    
+    radii = [0.015] * len(bounds_a)
 
+    colors_a = []
+    colors_b = []
+    
+    for i, j in bonds:
+        colors_a.append(
+            default_atom_map.get(mol.type_array[i],
+                             default_atom_map['Xx']))
+        colors_b.append(
+            default_atom_map.get(mol.type_array[j],
+                             default_atom_map['Xx']))
+
+    radii_map = {"O": 0.01, "H": 0.01}
+        
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors",
+                        radii_map=radii_map)
+    cr = v.add_renderer(CylinderRenderer, bounds_a, radii, colors_a)
+    cr = v.add_renderer(CylinderRenderer, bounds_b, radii, colors_b)
+    
     v.run()
     
     

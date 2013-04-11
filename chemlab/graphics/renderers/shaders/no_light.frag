@@ -14,6 +14,6 @@ void main()
   specular = 0.2*pow(NdotHV, 122.0); /* Shininess */
   diffuse = gl_Color;
   color =  diffuse * NdotL + specular;
-
+  
   gl_FragColor = gl_Color;
 }
