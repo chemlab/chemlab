@@ -8,22 +8,24 @@ from chemlab.utils import distance_matrix
 import time
 
 def test_distances():
-    coords = np.random.random((5000, 3)) * 2
+    coords = np.random.random((100, 3)) * 2
     
-    cutoff = 0.03
+    cutoff = 0.4
     #print coords
     # Consistency checks
     print "Simple"
     t = time.time()
-    dist_simple = distances_within(coords, coords, cutoff, method="simple")
+    dist_simple = distance_matrix(coords, coords, cutoff, method="simple")
     print -t + time.time()
     
     print "Cell-lists"
     t = time.time()
-    dist_clist = distances_within(coords, coords, cutoff, method="cell-lists")
+    dist_clist = distance_matrix(coords, coords, cutoff, method="cell-lists")
     print -t + time.time()
     
-    assert np.allclose(sorted(dist_simple), sorted(dist_clist))
+    #print dist_simple
+    #print dist_clist.todense()
+    assert np.allclose(dist_simple, dist_clist.todense())
     
 def test_distances_periodic():
     coords = np.array([[0.0, 0.0, 0.0],

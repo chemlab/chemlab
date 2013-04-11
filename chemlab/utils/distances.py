@@ -88,8 +88,11 @@ def distance_matrix(coords_a, coords_b, cutoff,
             return distance_array(coords_a, coords_b, cutoff=cutoff,
                                   period=periodic.astype(np.double))
         else:
-            dist = squareform(cdist(coords_a, coords_b))
-            return dist[dist < cutoff]
+            dist = cdist(coords_a, coords_b)
+            dist[dist > cutoff] = 0
+            dist = np.triu(dist)
+            
+            return dist
             
     elif method=="cell-lists":
         if periodic is not False:
