@@ -669,10 +669,11 @@ def _selection_to_index(selection):
     
     
 def merge_systems(sysa, sysb, bounding=0.2):
-    '''Generate a system by overlapping *sysa* and *sysb*. Overlapping
-    molecules are removed by cutting the molecules of *sysa* that are
-    found inside the space defined by :py:attr:`sysb.box_vectors
-    <chemlab.core.System.box_vectors>`.
+    '''Generate a system by merging *sysa* and *sysb*.
+
+    Overlapping molecules are removed by cutting the molecules of
+    *sysa* that have atoms near the atoms of *sysb*. The cutoff distance
+    is defined by the *bounding* parameter.
 
     **Parameters**
     
@@ -683,7 +684,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
     bounding: float
        Extra space used when cutting molecules in *sysa* to make space
        for *sysb*.
-    
+
     '''
     # Delete overlaps.
     if sysa.box_vectors is not None:
