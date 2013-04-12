@@ -32,27 +32,8 @@ def distances_within(coords_a, coords_b, cutoff,
        (periodic not available) and *cell-lists* uses the cell
        linked list method.
     """
-    if method=="simple":
-        if periodic is not False:
-            return distance_array(coords_a, coords_b, cutoff=cutoff,
-                                  period=periodic.astype(np.double))
-        else:
-            dist = squareform(cdist(coords_a, coords_b))
-            return dist[dist < cutoff]
-            
-    elif method=="cell-lists":
-        if periodic is not False:
-            if np.any(cutoff > periodic/2):
-                raise Exception("Not working with such a big cutoff.")
-            
-        a = CellLinkedList(coords_a, cutoff, periodic)
-        b = CellLinkedList(coords_b, cutoff, periodic)
-        dist = a.query_distances_other(b, cutoff)
-        return dist
-            
-            
-    else:
-        raise Exception("Method {} not available.".format(method))
+    mat = distance_matrix(coords_a, coords_b, cutoff, periodic, method)
+    return mat[mat.nonzero()]
 
 def distance_matrix(coords_a, coords_b, cutoff,
                     periodic=False, method="simple"):
@@ -63,7 +44,8 @@ def distance_matrix(coords_a, coords_b, cutoff,
     for distance searches. It return a np.ndarray containing the distances.
     
     Returns an upper triangular matrix with all the computed distances
-    (to avoid double-counting).
+    (to avoid double-counting). When using the "cell-lists" method it
+    returns a scipy.sparse.dok_matrix.
     
     **Parameters**
 
