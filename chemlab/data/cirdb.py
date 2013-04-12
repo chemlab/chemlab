@@ -1,12 +1,11 @@
 '''CIR database
 
 '''
+from .base import EntryNotFound
 from ..libs import cirpy
 from StringIO import StringIO
 from ..io.handlers import MolIO
 
-class EntryNotFound(Exception):
-    pass
 
 class CirDB(object):
     def get(self, identifier, feature):
