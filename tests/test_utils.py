@@ -6,12 +6,15 @@ from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.libs.ckdtree import cKDTree
 from chemlab.utils import distance_matrix
 import time
+from nose_parameterized import parameterized
 
-def test_distances():
-    coords = np.random.random((5, 3)) * 2
-    coords_b = np.random.random((5, 3)) * 2
-    cutoff = 0.5
-    #print coords
+from numpy.random import random as nprandom
+
+@parameterized([
+    (nprandom((5, 3)) * 2, nprandom((5, 3)) * 2, 0.5), 
+    (nprandom((4,3)) - 0.5, nprandom((4,3)) - 0.5, 0.5) # negative nums
+])
+def test_distances(coords, coords_b, cutoff):
     # Consistency checks
     print "Simple"
     t = time.time()

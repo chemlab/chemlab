@@ -49,17 +49,17 @@ cdef class CellLinkedList:
         # First of all determine the divisions
         if self.do_periodic:
             a, b, c = periodic[0], periodic[1], periodic[2]
+            
         else:
-            # For now assume that the values are all positive
-            a = points[:, 0].max()
-            b = points[:, 1].max()
-            c = points[:, 2].max()
+            assert np.all(self.points >= 0.0), "All points should be >= 0.0"
+            a = self.points[:, 0].max() 
+            b = self.points[:, 1].max()
+            c = self.points[:, 2].max()
 
         self.divisions[0] = int(a/spacing) or 1
         self.divisions[1] = int(b/spacing) or 1
         self.divisions[2] = int(c/spacing) or 1
 
-        
         self.n_cells = self.divisions[0]*self.divisions[1]*self.divisions[2]
         
         # True spacing required to make the boxes like squares

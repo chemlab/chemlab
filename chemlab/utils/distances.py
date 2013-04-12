@@ -81,8 +81,15 @@ def distance_matrix(coords_a, coords_b, cutoff,
             if np.any(cutoff > periodic/2):
                 raise Exception("Not working with such a big cutoff.")
             
-        a = CellLinkedList(coords_a, cutoff, periodic)
-        b = CellLinkedList(coords_b, cutoff, periodic)
+        # We need all positive elements
+        mina = coords_a[:, 0].min(), coords_a[:, 1].min(), coords_a[:, 2].min()
+        minb = coords_b[:, 0].min(), coords_b[:, 1].min(), coords_b[:, 2].min()
+        # Find the lowest        
+        origin = np.minimum(mina, minb)
+        
+        print coords_a - origin
+        a = CellLinkedList(coords_a - origin, cutoff, periodic)
+        b = CellLinkedList(coords_b - origin, cutoff, periodic)
         dist = a.query_distances_other(b, cutoff)
         return dist
             
