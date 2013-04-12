@@ -177,7 +177,8 @@ class System(object):
     
     '''
     
-    molecule_inherited={'mol_export': AttrData(name='export', type=object)}
+    molecule_inherited={'mol_export': AttrData(name='export', type=object),
+                        '_mol_bonds': AttrData(name='bonds', type=object)}
     
     atom_inherited={'r_array': AttrData(name='r_array', type=np.float),
                     'm_array': AttrData(name='m_array', type=np.float),
@@ -307,6 +308,9 @@ class System(object):
         if 'mol_export' not in kwargs:
             kwargs['mol_export'] = np.array([{} for i in range(n_mol)])
             
+        if '_mol_bonds' not in kwargs:
+            kwargs['_mol_bonds'] = np.zeros(n_mol, dtype=object)
+
 
         for arr_name, field in cls.atom_inherited.items():
             setattr(inst, arr_name, np.array(kwargs[arr_name]))

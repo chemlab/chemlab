@@ -202,10 +202,10 @@ class Molecule(object):
                       'm_array': ('mass', np.float64),
                       'atom_export_array': ('export', object)}
     
-    fields = ('export',)
+    fields = ('export', 'bonds')
     derived = ('formula',)
     
-    def __init__(self, atoms, export=None):
+    def __init__(self, atoms, export=None, bonds=None):
         self.n_atoms = len(atoms)
         
         for arr_name, (field_name, dtyp) in Molecule.atom_inherited.iteritems():
@@ -219,7 +219,13 @@ class Molecule(object):
             self.export = export
         else:
             self.export = {}
-            
+        
+        if bonds is None:
+            self.bonds = np.array([], dtype=object)
+        else:
+            self.bonds = np.array(bonds, dtype=object)
+        
+        
     def move_to(self, r):
         '''Translate the molecule to a new position *r*.
         '''
@@ -264,6 +270,9 @@ class Molecule(object):
         # Special Case, default value
         if kwargs.get('export', None) is None:
             kwargs['export'] = {}
+            
+        if kwargs.get('bonds', None) is None:
+            kwargs['bonds'] = np.array([], dtype=object)
                 
         for field in Molecule.fields:
             setattr(inst, field, kwargs[field])
