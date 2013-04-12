@@ -36,16 +36,33 @@ def test_point_renderer():
     tr = v.add_renderer(PointRenderer, vertices, colors)
     v.run()
 
+def test_point_fog():
+    '''To see if we're able to render a triangle'''
+
+    NPOINTS = 10000
+    vertices = (np.random.random((NPOINTS, 3))-0.5)*3
+    #vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
+    blue = [[0, 255, 0, 125]]
+    
+    colors = blue * NPOINTS
+    
+    v = QtViewer()
+
+    tr = v.add_renderer(PointRenderer, vertices, colors)
+    v.run()
+
     
 def test_sphere_renderer():
     '''To see if we can render a sphere'''
+
     centers = [[0.0, 0.0, 0.0]]
     radii = [[1.0]]
-    colors = [[0, 255, 255, 255]]
+    colors = [[0, 255, 255, 125]]
     
     v = QtViewer()
     sr = v.add_renderer(SphereRenderer, centers, radii, colors)
     
+
     cr = np.array(centers)
     def update(cr=cr):
         cr[0][0] += 0.01
@@ -61,8 +78,8 @@ def test_sphere_imp_renderer():
     '''To see if we can render a sphere'''
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = [orange, blue, forest_green]
-
+    colors = np.array([orange, blue, forest_green])
+    
     v = QtViewer()
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     

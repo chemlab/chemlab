@@ -5,15 +5,17 @@ uniform vec3 camera;
                    
 void main()
 {
-  float NdotL, NdotHV;
-  vec4 color, diffuse;
-  float specular;
+  // Fog computation
+  float density = 8.0;
   
-  NdotL = dot(normalize(lightDir), normalize(normal));
-  NdotHV = max(dot(normalize(normal), normalize(halfvector)), 0.0);
-  specular = 0.2*pow(NdotHV, 122.0); /* Shininess */
-  diffuse = gl_Color;
-  color =  diffuse * NdotL + specular;
+  const float LOG2 = 1.442695;
   
-  gl_FragColor = gl_Color;
+  float z = (gl_FragCoord.z/gl_FragCoord.w)/40;
+  float fog_factor = exp2(-density*density*z*z*LOG2);
+
+  // Black fog color
+  vec4 fog_color = vec4(1,1,1,0);
+  
+  
+  gl_FragColor = mix(fog_color, gl_Color, fog_factor);
 }

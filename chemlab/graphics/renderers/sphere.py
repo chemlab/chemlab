@@ -86,10 +86,10 @@ class SphereRenderer(AbstractRenderer):
         '''Update the sphere positions.
         '''
         sphs_verts = self.sphs_verts_radii.copy()
-        sphs_verts += r_array.reshape(self.n_spheres, 1, 3)
+        sphs_verts += positions.reshape(self.n_spheres, 1, 3)
 
         self.tr.update_vertices(sphs_verts)
-        self.poslist = r_array
+        self.poslist = positions
         
     def update_colors(self, colorlist):
         
