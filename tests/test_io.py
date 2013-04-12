@@ -82,3 +82,7 @@ def test_read_mol():
     df = datafile('tests/data/benzene.mol')
     mol1 = df.read('molecule')
     
+def test_read_xtc():
+    df = datafile('tests/data/trajout.xtc')
+    t, coords = df.read('trajectory')
+    box = df.read('boxes')

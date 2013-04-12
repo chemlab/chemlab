@@ -51,7 +51,7 @@ class XtcIO(IOHandler):
     
        
     '''
-    can_read = ['trajectory']
+    can_read = ['trajectory', 'boxes']
     can_write = []
     
     def read(self, feature):
@@ -62,9 +62,14 @@ class XtcIO(IOHandler):
             times = []
             xtcreader = XTCReader(self.fd.name)
             frames = []
+            self._boxes = []
 
             for frame in xtcreader:
                 frames.append(frame.coords)
                 times.append(frame.time)
+                self._boxes.append(frame.box)
+                
             return times, frames
             
+        if feature == 'boxes':
+            return self._boxes

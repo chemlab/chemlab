@@ -39,4 +39,4 @@ def test_rdf():
     plot(rdf[0], rdf_avg, 'blue')
     plot(gro_rdf[0], gro_rdf[1], color='red')
     
-    #show()
+    show()

@@ -3,7 +3,7 @@ import numpy as np
 import time
 from scipy.spatial import distance
 from chemlab.utils.celllinkedlist import CellLinkedList
-from chemlab.utils.cdist import distance_array
+from chemlab.utils import distances_within
 
 def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, periodic=None, normalize=True):
     """Calculate the radial distribution function of *coords_a* against
@@ -35,8 +35,8 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
     # distances = cl.query_distances_other(cl2, cutoff)
 
     period = periodic[0, 0], periodic[1,1], periodic[2,2]
-    distances = distance_array(coords_a, coords_b,
-                               np.array(period, dtype=np.double), cutoff)    
+    distances = distances_within(coords_a, coords_b, cutoff,
+                               np.array(period, dtype=np.double))    
     n_a = len(coords_a)
     n_b = len(distances)/float(n_a)
 
