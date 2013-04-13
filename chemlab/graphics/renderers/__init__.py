@@ -9,3 +9,4 @@ from .triangles import TriangleRenderer
 from .box import BoxRenderer
 from .line import LineRenderer
 from .cylinder import CylinderRenderer
+from .bond import BondRenderer
