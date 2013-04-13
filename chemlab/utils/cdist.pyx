@@ -27,8 +27,8 @@ def distance_array(arr_a, arr_b, double[:] period, double cutoff):
     
     for i in range(na):
         for j in range(nb):
-            if i < j:
-                dist = minimum_image_distance(bufa[i], bufa[j], period)
+            if i <= j:
+                dist = minimum_image_distance(bufa[i], bufb[j], period)
                 if dist <= cutoff:
                     d_mat[i,j] = dist
     

@@ -36,7 +36,7 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
 
     period = periodic[0, 0], periodic[1,1], periodic[2,2]
     distances = distances_within(coords_a, coords_b, cutoff,
-                               np.array(period, dtype=np.double))    
+                                 np.array(period, dtype=np.double))
     n_a = len(coords_a)
     n_b = len(distances)/float(n_a)
 
