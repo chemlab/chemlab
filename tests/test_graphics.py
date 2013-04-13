@@ -107,7 +107,7 @@ def test_atom_renderer():
 def test_box_renderer():
     vectors = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
     v = QtViewer()
-    ar = v.add_renderer(BoxRenderer, vectors)
+    ar = v.add_renderer(BoxRenderer, vectors, origin=np.array([-0.5, -0.5, -0.5]))
     v.run()
 
 def test_line_renderer():
