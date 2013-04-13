@@ -5,7 +5,7 @@ from chemlab.graphics.colors import orange, blue, forest_green
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer,
-                                        CylinderRenderer)
+                                        CylinderRenderer, BondRenderer)
 from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
@@ -145,56 +145,25 @@ def test_cylinder_renderer():
     v.run()
     
 def test_bond_renderer():
-    from chemlab.graphics.colors import default_atom_map
-    #from chemlab.data.cirdb import CirDB
+
+    from chemlab.data.cirdb import CirDB
+    from collections import defaultdict
     
     v = QtViewer()
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
     
-    bonds = np.array([[0, 1],[0, 2]])
+    mol.bonds = np.array([[0, 1],[0, 2]])
     
-    # Test other algorithm to find bond
-    r_array = mol.r_array
-    
-    # t0 = time.time()
-    # mol = CirDB().get("water", "molecule")
-    # print time.time() - t0
-    
-    # bonds = mol.bonds
-    # r_array = mol.r_array
-    
-    starts = r_array[bonds[:,0]]
-    ends = r_array[bonds[:,1]]
-    middle = (starts + ends)/2 
-    
-    bounds_a = np.empty((len(bonds), 2, 3))
-    bounds_a[:, 0, :] = starts
-    bounds_a[:, 1, :] = middle
-    
-    bounds_b = np.empty((len(bonds), 2, 3))    
-    bounds_b[:, 0, :] = middle
-    bounds_b[:, 1, :] = ends
-    
-    radii = [0.015] * len(bounds_a)
 
-    colors_a = []
-    colors_b = []
     
-    for i, j in bonds:
-        colors_a.append(
-            default_atom_map.get(mol.type_array[i],
-                             default_atom_map['Xx']))
-        colors_b.append(
-            default_atom_map.get(mol.type_array[j],
-                             default_atom_map['Xx']))
-
-    radii_map = {"O": 0.01, "H": 0.01}
-        
-    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
-    cr = v.add_renderer(CylinderRenderer, bounds_a, radii, colors_a)
-    cr = v.add_renderer(CylinderRenderer, bounds_b, radii, colors_b)
+    mol = CirDB().get("moronic acid", "molecule")
+    #radii_map = {"O": 0.03, "H": 0.03}
+    radii_map = defaultdict(lambda: 0.03)
+    
+    br = v.add_renderer(BondRenderer, mol.bonds, mol.r_array, mol.type_array)        
+    ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors", radii_map = radii_map)
     
     v.run()
     
