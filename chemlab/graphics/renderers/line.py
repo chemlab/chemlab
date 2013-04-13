@@ -23,13 +23,14 @@ class LineRenderer(ShaderBaseRenderer):
         The corresponding color of each extrema of each line.
     
     '''
-    def __init__(self, widget, startends, colors):
+    def __init__(self, widget, startends, colors, width=1.5):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                 "default_persp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                 "no_light.frag")
         super(LineRenderer, self).__init__(widget, vert, frag)
 
+        self.width = width
         self.viewer = widget
         self.n_lines = len(startends)
         
@@ -40,6 +41,9 @@ class LineRenderer(ShaderBaseRenderer):
         self._vbo_c = VertexBuffer(colors, GL_DYNAMIC_DRAW)
         
     def draw_vertices(self):
+        glLineWidth(self.width)
+        glEnable(GL_LINE_SMOOTH)
+        
         glEnableClientState(GL_VERTEX_ARRAY)
         self._vbo_v.bind_vertexes(3, GL_FLOAT)
         
@@ -54,6 +58,8 @@ class LineRenderer(ShaderBaseRenderer):
         self._vbo_v.unbind()
         self._vbo_c.unbind()
         
+        glLineWidth(1)
+        glDisable(GL_LINE_SMOOTH)        
     def update_positions(self, vertices):
         """Update the line positions
         """

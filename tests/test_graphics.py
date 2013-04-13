@@ -150,19 +150,20 @@ def test_bond_renderer():
     from collections import defaultdict
     
     v = QtViewer()
+    v.widget.background_color = black
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
     
     mol.bonds = np.array([[0, 1],[0, 2]])
     
-
     
     mol = CirDB().get("moronic acid", "molecule")
     #radii_map = {"O": 0.03, "H": 0.03}
     radii_map = defaultdict(lambda: 0.03)
     
-    br = v.add_renderer(BondRenderer, mol.bonds, mol.r_array, mol.type_array)        
+    br = v.add_renderer(BondRenderer, mol.bonds, mol.r_array,
+                        mol.type_array, style='lines')
     ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors", radii_map = radii_map)
     
     v.run()

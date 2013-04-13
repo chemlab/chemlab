@@ -163,7 +163,7 @@ dark_slate_gray = ( 47,  79,  79, 255)
 black = (  0,   0,   0, 255)
 
 default_atom_map = {
-"C": light_gray,
+"C": gray,
 "O": red,
 "H": white,
 
