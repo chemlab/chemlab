@@ -5,7 +5,7 @@ from scipy.spatial import distance
 from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.utils import distances_within
 
-def rdf(coords_a, coords_b, binsize=0.02,
+def rdf(coords_a, coords_b, binsize=0.002,
         cutoff=1.5, periodic=None, normalize=True):
     """Calculate the radial distribution function of *coords_a* against
     *coords_b*.
@@ -50,15 +50,18 @@ def rdf(coords_a, coords_b, binsize=0.02,
 
         # Normalize by density
         hist = hist * normfac
-    
-    return bin_edges[:-1], hist
+
+    # Cutting up to rmax value
+        
+    width = cutoff/binsize + 1
+    return bin_edges[0:width], hist[0:width]
 
 def rdf_multi(frames_a, frames_b, sel_a, sel_b,
               periodic, binsize=0.002):
 
     # I can take unnormalized stuff and normalize at the end
     nframes = len(frames_a)
-    rmax = periodic[0][0,0]/2.0
+    rmax = (periodic[0][0,0]/2.0) * 0.99
     nbins = int(rmax / binsize)
     hist = np.zeros(nbins + 1)
     
