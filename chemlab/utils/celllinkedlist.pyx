@@ -181,21 +181,18 @@ cdef class CellLinkedList:
                                     
                                     # This is taken from the other
                                     while (j_point != EMPTY):
+                                        ri = self.points[i_point]
+                                        rj = other.points[j_point]
 
-                                        # Avoid double counting
-                                        if (i_point <= j_point):
-                                            ri = self.points[i_point]
-                                            rj = other.points[j_point]
+                                        if self.do_periodic:
+                                            dist = minimum_image_distance(ri, rj, self.periodic)
+                                        else:
+                                            for ii in range(3):
+                                                rij[ii] = ri[ii] - rj[ii]
+                                            dist = sqrt(rij[0]*rij[0] + rij[1]*rij[1] + rij[2]*rij[2])
 
-                                            if self.do_periodic:
-                                                dist = minimum_image_distance(ri, rj, self.periodic)
-                                            else:
-                                                for ii in range(3):
-                                                    rij[ii] = ri[ii] - rj[ii]
-                                                dist = sqrt(rij[0]*rij[0] + rij[1]*rij[1] + rij[2]*rij[2])
-
-                                            if (dist*dist < dr**2):
-                                                ret[i_point,j_point] = dist
+                                        if (dist*dist < dr**2):
+                                            ret[i_point,j_point] = dist
 
                                         j_point = other_linked_list[j_point]
                                     i_point = self_linked_list[i_point]

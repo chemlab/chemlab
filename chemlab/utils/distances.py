@@ -43,9 +43,8 @@ def distance_matrix(coords_a, coords_b, cutoff,
     This function is a wrapper around different routines and data structures
     for distance searches. It return a np.ndarray containing the distances.
     
-    Returns an upper triangular matrix with all the computed distances
-    (to avoid double-counting). When using the "cell-lists" method it
-    returns a scipy.sparse.dok_matrix.
+    Returns a matrix with all the computed distances. When using the
+    "cell-lists" method it returns a scipy.sparse.dok_matrix.
     
     **Parameters**
 
