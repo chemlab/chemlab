@@ -5,7 +5,8 @@ from scipy.spatial import distance
 from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.utils import distances_within
 
-def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, periodic=None, normalize=True):
+def rdf(coords_a, coords_b, binsize=0.02,
+        cutoff=1.5, periodic=None, normalize=True):
     """Calculate the radial distribution function of *coords_a* against
     *coords_b*.
 
@@ -23,38 +24,72 @@ def radial_distribution_function(coords_a, coords_b, nbins=1000, cutoff=1.5, per
     
     """
     
-    # Make the linked list
-    # cl = CellLinkedList(coords_a,
-    #                     periodic=periodic,
-    #                     spacing = cutoff)
-    
-    # cl2 = CellLinkedList(coords_b,
-    #                     periodic=periodic,
-    #                     spacing = cutoff)
-
-    # distances = cl.query_distances_other(cl2, cutoff)
-
     period = periodic[0, 0], periodic[1,1], periodic[2,2]
     distances = distances_within(coords_a, coords_b, cutoff,
                                  np.array(period, dtype=np.double))
-    n_a = len(coords_a)
-    n_b = len(distances)/float(n_a)
-
-    rmin = 0.0
-    bins = np.linspace(rmin, cutoff, nbins)
-    vmax = (4.0/3.0) * np.pi * cutoff ** 3
-    local_rho = n_b / vmax
-
-    hist, bin_edges = np.histogram(distances, bins)
-    dr  = bin_edges[1] - bin_edges[0]
     
-    # Normalize this by a sphere shell
-    for i, r in enumerate(bin_edges[1:]):
-        hist[i] /= ((4.0/3.0 * np.pi * (r+dr)**3) - (4.0/3.0 * np.pi * (r)**3))
+    n_a = len(coords_a)
+    n_b = len(coords_b)
+
+    volume = periodic[0, 0] * periodic[1, 1] * periodic[2, 2]
+
+    int_distances = np.rint(distances/binsize).astype(int)
+    hist = np.bincount(int_distances)
+    
+    bin_edges = np.arange(len(hist)+1) * binsize
         
     
     if normalize:
-         hist = hist/(local_rho*n_a)
+        dr  = binsize
+        normfac = volume/(n_a*n_b)
+
+        # Normalize this by a sphere shell
+        for i, r in enumerate(bin_edges[1:]):
+            hist[i] /= ((4.0/3.0 * np.pi * (r + 0.5*dr)**3)
+                        - (4.0/3.0 * np.pi * (r- 0.5*dr)**3))
+
+        # Normalize by density
+        hist = hist * normfac
     
     return bin_edges[:-1], hist
 
+def rdf_multi(frames_a, frames_b, sel_a, sel_b,
+              periodic, binsize=0.002):
+
+    # I can take unnormalized stuff and normalize at the end
+    nframes = len(frames_a)
+    rmax = periodic[0][0,0]/2.0
+    nbins = int(rmax / binsize)
+    hist = np.zeros(nbins + 1)
+    
+    volume = 0.0
+    for i in range(nframes):
+        print "Frame", i
+        bins, hist_f = rdf(frames_a[i][sel_a], frames_b[i][sel_b],
+                           periodic=periodic[i], cutoff=rmax,
+                           normalize=False, binsize=binsize)
+        p = periodic[i]
+        volume += p[0,0] * p[1,1] * p[2,2]
+        
+        hist += hist_f
+        
+    volume /= nframes
+    hist /= nframes
+
+    # Normalize everything
+    n_a = len(sel_a.nonzero()[0])
+    n_b = len(sel_b.nonzero()[0])
+    dr  = binsize
+    
+    bin_edges = np.arange(nbins + 1) * binsize
+    normfac = volume/(n_a*n_b)
+
+    # Normalize this by a sphere shell
+    for i, r in enumerate(bin_edges[1:]):
+        hist[i] /= ((4.0/3.0 * np.pi * (r + 0.5*dr)**3)
+                    - (4.0/3.0 * np.pi * (r- 0.5*dr)**3))
+
+    # Normalize by density
+    hist = hist * normfac
+    
+    return bin_edges, hist

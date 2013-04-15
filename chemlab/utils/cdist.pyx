@@ -7,7 +7,7 @@ cimport numpy as np
 cimport cython
 from scipy.sparse import dok_matrix
 
-from libc.math cimport sqrt
+from libc.math cimport sqrt, floor
 from libcpp.vector cimport vector
 
 @cython.boundscheck(False)
@@ -27,10 +27,9 @@ def distance_array(arr_a, arr_b, double[:] period, double cutoff):
     
     for i in range(na):
         for j in range(nb):
-            if i <= j:
-                dist = minimum_image_distance(bufa[i], bufb[j], period)
-                if dist <= cutoff:
-                    d_mat[i,j] = dist
+            dist = minimum_image_distance(bufa[i], bufb[j], period)
+            if dist <= cutoff:
+                d_mat[i,j] = dist
     
     return distmat
         
@@ -39,9 +38,13 @@ def distance_array(arr_a, arr_b, double[:] period, double cutoff):
 @cython.boundscheck(False)
 cdef inline double minimum_image_distance(double[:] a,double[:] b, double[:] periodic):
     cdef double d[3]
+    cdef double a_can, b_can 
     
     for i in range(3):
-        d[i] = b[i] - a[i]
+        a_can = a[i] - floor(a[i]/periodic[i]) * periodic[i]
+        b_can = b[i] - floor(b[i]/periodic[i]) * periodic[i]
+        
+        d[i] = b_can - a_can
         d[i] = d[i] - periodic[i] * rint(d[i]/periodic[i])
     
     return sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2])

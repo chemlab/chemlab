@@ -72,8 +72,6 @@ def distance_matrix(coords_a, coords_b, cutoff,
         else:
             dist = cdist(coords_a, coords_b)
             dist[dist > cutoff] = 0
-            dist = np.triu(dist)
-            
             return dist
             
     elif method=="cell-lists":
