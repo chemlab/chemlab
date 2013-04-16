@@ -8,58 +8,35 @@
 # Let's launch the program and determine what happens
 from chemlab.io import datafile
 from pylab import *
+from chemlab.molsim.analysis import rdf
 
 import difflib
 import sys, re
 import numpy as np
 
 def setup_commands(subparsers):
-    parser = subparsers.add_parser("gromacs")
+    groparser = subparsers.add_parser("gromacs")
     
-    parser.add_argument('filenames', metavar='filenames', type=str, nargs='+')
-    parser.add_argument('-e', metavar='energies', type=str, nargs='+',
+    subparsers2 = groparser.add_subparsers()
+    eparser = subparsers2.add_parser("energy")
+    
+    eparser.add_argument('filenames', metavar='filenames', type=str, nargs='+')
+    eparser.add_argument('-e', metavar='energies', type=str, nargs='+',
                         help='Properties to display in the energy viewer.')
     
 
-    parser.add_argument('-o', help='Do not display GUI and save the plot')
+    eparser.add_argument('-o', help='Do not display GUI and save the plot')
     
-    parser.set_defaults(func=lambda args: main(args, args.o))
-    
+    eparser.set_defaults(func=lambda args: energy(args, args.o))
 
-def read_xvg(filename):
-    return parse_xvg(open(filename).read())
+    rdfparser = subparsers2.add_parser("rdf")
+    rdfparser.add_argument('selection', metavar='selection', type=str)
+    rdfparser.add_argument('filename', metavar='filename', type=str)
+    rdfparser.add_argument('trajectory', metavar='trajectory', type=str)
+    rdfparser.add_argument('-t', metavar='t', type=str) 
+    rdfparser.set_defaults(func=rdffunc)
     
-def parse_xvg(text):
-    
-    def parse_statement(line):
-        return 
-    
-    quantities = []
-    curline = 0
-    
-    lines = text.splitlines()
-    for line in lines:
-        curline += 1
-        if line[0] not in ['#', '@']:
-            break
-
-        if 'yaxis' in line:
-            m = re.search("\"(.*)\"", line)
-            units = m.group(1).split(', ')
-        elif re.match('@ s\d+\s+legend', line):
-            m = re.search("\"(.*)\"", line)
-            quantities.append(m.group(1))
-    
-    from StringIO import StringIO
-    datatxt = '\n'.join(lines[curline:])
-    fn = StringIO(datatxt)
-    
-    fields = np.loadtxt(fn, unpack=True)
-    
-    return fields
-    
-    
-def main(args, output=None):
+def energy(args, output=None):
     ens = args.e
     fns = args.filenames
     
@@ -94,6 +71,41 @@ def main(args, output=None):
     grid()
     figlegend(plots, legends, 'upper right')
     show()
+
+def get_rdf(arguments):
+    return rdf(arguments[0], arguments[1], periodic=arguments[2])
+
+def rdffunc(args):
+
+    import multiprocessing
+    type_a, type_b = args.selection.split('-')
+    syst = datafile(args.filename).read("system")
+    sel_a = syst.type_array == type_a
+    sel_b = syst.type_array == type_b
+    
+    df = datafile(args.trajectory)
+    t, coords = df.read("trajectory")
+    boxes = df.read("boxes")
+    
+    p = multiprocessing.Pool()
+    
+    times = [int(tim) for tim in args.t.split(',')]
+    ind = np.searchsorted(t, times)
+    arguments = ((coords[i][sel_a], coords[i][sel_b], boxes[i]) for i in ind) 
+    
+    rds = p.map(get_rdf, arguments)
+    
+    for rd in rds:
+        plot(rd[0], rd[1])
+    
+    ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    
+    xlabel('Time(ps)')
+    ylabel(args.selection)
+
+    grid()
+    show()
+    
     
 # from PySide.QtUiTools import QUiLoader
 # from PySide.QtCore import QFile
