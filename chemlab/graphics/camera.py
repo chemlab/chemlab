@@ -66,11 +66,11 @@ class Camera:
        Near and far clipping planes. For more info refer to:
        http://www.lighthouse3d.com/tutorials/view-frustum-culling/
     
-    .. py:attribute:: scale
+    .. py:attribute:: fov
        
        :type: float
     
-       Scale factor used to generate the projection matrix.
+       field of view in degrees used to generate the projection matrix.
     
     .. py:attribute:: aspectratio
 
@@ -88,7 +88,7 @@ class Camera:
         self.pivot = np.array([0.0, 0.0, 0.0])
         
         # Perspective parameters
-        self.scale = 1.0
+        self.fov = 45.0
         self.aspectratio = 1.0
         self.z_near = 0.2
         self.z_far = 50.0
@@ -180,10 +180,20 @@ class Camera:
             self.position += self.c*inc*scalefac
 
     def _get_projection_matrix(self):
-        # Matrix to convert from homogeneous coordinates to 
-        # 2d coordinates args = (scale, znear, zfar, aspect_ratio)
-        return simple_clip_matrix(self.scale, self.z_near,
-                                  self.z_far, self.aspectratio)
+        # Convert from homogeneous 3d coordinates to 
+        # 2D coordinates
+        
+        fov = self.fov*np.pi/180.0
+        
+        top = np.tan(fov * 0.5)*self.z_near
+        bottom = -top
+        
+        left = self.aspectratio * bottom
+        right = self.aspectratio * top
+        
+        return clip_matrix(left, right, bottom, top,
+                           self.z_near, self.z_far, perspective=True)
+        
         
     projection = property(_get_projection_matrix)
     
