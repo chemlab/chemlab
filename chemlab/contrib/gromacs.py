@@ -87,13 +87,11 @@ def rdffunc(args):
     t, coords = df.read("trajectory")
     boxes = df.read("boxes")
     
-    p = multiprocessing.Pool()
-    
     times = [int(tim) for tim in args.t.split(',')]
     ind = np.searchsorted(t, times)
     arguments = ((coords[i][sel_a], coords[i][sel_b], boxes[i]) for i in ind) 
     
-    rds = p.map(get_rdf, arguments)
+    rds = map(get_rdf, arguments)
     
     for rd in rds:
         plot(rd[0], rd[1])
