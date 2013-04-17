@@ -4,8 +4,6 @@ from .bond import BondRenderer
 
 from ...data import cdb
 
-
-
 class BallAndStickRenderer(AbstractRenderer):
     def __init__(self, widget, r_array, type_array, bonds):
         super(BallAndStickRenderer, self).__init__(widget)

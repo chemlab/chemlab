@@ -11,3 +11,4 @@ from .line import LineRenderer
 from .cylinder import CylinderRenderer
 from .bond import BondRenderer
 from .ballandstick import BallAndStickRenderer
+from .wireframe import WireframeRenderer

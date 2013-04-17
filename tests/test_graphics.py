@@ -5,7 +5,8 @@ from chemlab.graphics.colors import orange, blue, forest_green
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer,
-                                        CylinderRenderer, BondRenderer, BallAndStickRenderer)
+                                        CylinderRenderer, BondRenderer, BallAndStickRenderer,
+                                        WireframeRenderer)
 from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
@@ -187,6 +188,26 @@ def test_ball_and_stick_renderer():
     
     # Try without bonds
     ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
+    
+    v.run()
+
+def test_wireframe_renderer():
+    from collections import defaultdict
+    from chemlab.data.cirdb import CirDB
+    
+    v = QtViewer()
+    v.widget.background_color = black
+    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+                    Atom("H", [-0.402, 0.249, 0.0]),
+                    Atom("H", [-0.532, 0.198, 0.10])])
+    
+    mol.bonds = np.array([[0, 1],[0, 2]])
+    
+    mol = CirDB().get("moronic acid", "molecule")
+    ar = v.add_renderer(WireframeRenderer, mol.r_array, mol.type_array, mol.bonds)
+    
+    # Try without bonds
+    ar2 = v.add_renderer(WireframeRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
     
     v.run()
 
