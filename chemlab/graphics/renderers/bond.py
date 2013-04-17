@@ -9,17 +9,8 @@ class BondRenderer(AbstractRenderer):
                  style="cylinders"):
         super(BondRenderer, self).__init__(widget)
         
-        starts = r_array[bonds[:,0]]
-        ends = r_array[bonds[:,1]]
-        middle = (starts + ends)/2 
-    
-        bounds_a = np.empty((len(bonds), 2, 3))
-        bounds_a[:, 0, :] = starts
-        bounds_a[:, 1, :] = middle
-    
-        bounds_b = np.empty((len(bonds), 2, 3))    
-        bounds_b[:, 0, :] = middle
-        bounds_b[:, 1, :] = ends
+        self.bonds = bonds
+        bounds_a, bounds_b = self._compute_bounds(r_array, bonds)
     
         radii = [radius] * len(bounds_a)
 
@@ -44,7 +35,26 @@ class BondRenderer(AbstractRenderer):
                                     np.tile(colors_b, 2))
         else:
             raise Exception("Available backends: cylinders, lines")
-
+    def _compute_bounds(self, r_array, bonds):
+        starts = r_array[bonds[:,0]]
+        ends = r_array[bonds[:,1]]
+        middle = (starts + ends)/2 
+    
+        bounds_a = np.empty((len(bonds), 2, 3))
+        bounds_a[:, 0, :] = starts
+        bounds_a[:, 1, :] = middle
+    
+        bounds_b = np.empty((len(bonds), 2, 3))    
+        bounds_b[:, 0, :] = middle
+        bounds_b[:, 1, :] = ends
+        
+        return bounds_a, bounds_b
+        
     def draw(self):
         self.cr1.draw()
         self.cr2.draw()
+
+    def update_positions(self, r_array):
+        bounds_a, bounds_b = self._compute_bounds(r_array, self.bonds)
+        self.cr1.update_bounds(bounds_a)
+        self.cr2.update_bounds(bounds_b)
