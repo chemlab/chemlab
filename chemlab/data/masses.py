@@ -89,5 +89,10 @@ typetomass = {
 "Pa" 	: 231.0359,
 "U" 	: 238.0289,
 }
+import os
+from .local import LocalDB
+curdir = os.path.dirname(__file__) + '/localdb'
+db = LocalDB(curdir)
 
-typetomass = InsensitiveDict(typetomass)
+typetomass = db.get("massdict", "data")
+#typetomass = InsensitiveDict(typetomass)

@@ -2,7 +2,10 @@ from ...core import Atom, Molecule, System
 from .base import IOHandler
 from itertools import groupby
 import numpy as np
+from ...data import cdb
 
+symbols = cdb.get("symbols", "data")
+u_symbols = [s.upper() for s in symbols]
 
 class PdbIO(IOHandler):
     '''Starting implementation of a PDB file parser.
@@ -63,7 +66,11 @@ class PdbIO(IOHandler):
         # Standard residues just contain the following atoms
         # C, N, H, S and the first is the type
         
+        # Normalized type        
         type = name[0:2].lstrip()
+        i = u_symbols.index(type.upper())
+        type = symbols[i]
+        
         self.atom_res.append(resname)
         # Angstrom to nanometer
         self.atoms.append(Atom(type, [x/10.0, y/10.0, z/10.0]))
