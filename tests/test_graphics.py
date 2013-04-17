@@ -159,7 +159,7 @@ def test_bond_renderer():
     mol.bonds = np.array([[0, 1],[0, 2]])
     
     
-    mol = CirDB().get("moronic acid", "molecule")
+    mol = CirDB().get("molecule", "moronic acid")
     #radii_map = {"O": 0.03, "H": 0.03}
     radii_map = defaultdict(lambda: 0.03)
     
@@ -183,7 +183,7 @@ def test_ball_and_stick_renderer():
     
     mol.bonds = np.array([[0, 1],[0, 2]])
     
-    mol = CirDB().get("moronic acid", "molecule")
+    mol = CirDB().get("molecule", "moronic acid")
     ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
     
     # Try without bonds
@@ -203,7 +203,7 @@ def test_wireframe_renderer():
     
     mol.bonds = np.array([[0, 1],[0, 2]])
     
-    mol = CirDB().get("moronic acid", "molecule")
+    mol = CirDB().get("molecule", "moronic acid")
     ar = v.add_renderer(WireframeRenderer, mol.r_array, mol.type_array, mol.bonds)
     
     # Try without bonds

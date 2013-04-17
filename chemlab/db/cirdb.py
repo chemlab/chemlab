@@ -1,16 +1,16 @@
 '''CIR database
 
 '''
-from .base import EntryNotFound
+from .base import EntryNotFound, AbstractDB
 from ..libs import cirpy
 from StringIO import StringIO
 from ..io.handlers import MolIO
 
 
-class CirDB(object):
-    def get(self, identifier, feature):
+class CirDB(AbstractDB):
+    def get(self, feature, key):
         if feature == "molecule":
-            result = cirpy.resolve(identifier, "sdf", get3d=True)
+            result = cirpy.resolve(key, "sdf", get3d=True)
             if result:
                 fd = StringIO(result)
                 return MolIO(fd).read("molecule")

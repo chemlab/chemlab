@@ -4,7 +4,7 @@ from itertools import groupby
 import numpy as np
 from ...db import cdb
 
-symbols = cdb.get("symbols", "data")
+symbols = cdb.get("data", "symbols")
 u_symbols = [s.upper() for s in symbols]
 
 class PdbIO(IOHandler):
