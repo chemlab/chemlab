@@ -3,8 +3,8 @@ from collections import Counter
 import numpy as np
 from copy import copy
 
-from ..data import symbols
-from ..data import masses
+from ..db import symbols
+from ..db import masses
 
 
 class Atom(object):

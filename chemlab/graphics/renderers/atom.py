@@ -1,6 +1,6 @@
 import numpy as np
 from .. import colors
-from ...data.vdw import vdw_dict
+from ...db.vdw import vdw_dict
 from .base import AbstractRenderer
 from .sphere import SphereRenderer
 from .sphere_imp import SphereImpostorRenderer
@@ -33,7 +33,7 @@ class AtomRenderer(AbstractRenderer):
     
     radii_map: dict, should contain the 'Xx' key,value pair.
        A dictionary mapping atom types to radii. The default is the
-       mapping contained in `chemlab.data.vdw.vdw_dict`
+       mapping contained in `chemlab.db.vdw.vdw_dict`
     
     """
 

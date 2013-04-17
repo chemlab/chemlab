@@ -6,7 +6,7 @@ from .gro_map import gro_to_cl
 
 from ...core.system import System
 from ...core.molecule import Atom
-from ...data.symbols import symbol_list
+from ...db.symbols import symbol_list
 
 
 symbol_list = [s.lower() for s in symbol_list]

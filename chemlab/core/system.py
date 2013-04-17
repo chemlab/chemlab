@@ -1,6 +1,6 @@
 import numpy as np
 from .molecule import Atom, Molecule
-from ..data import units, masses
+from ..db import units, masses
 from ..utils import overlapping_points
 
 from collections import namedtuple

@@ -89,7 +89,7 @@ def test_system():
 def test_merge_system():
     # take a protein
     from chemlab.io import datafile
-    from chemlab.data import moldb
+    from chemlab.db import moldb
     from chemlab.graphics import display_system
     from chemlab.core import merge_systems
     

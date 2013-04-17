@@ -101,7 +101,7 @@ def test_forces():
     v.schedule(update_pos)
     v.run()
 
-from chemlab.data import lj
+from chemlab.db import lj
 
 def test_energy():
     '''This is made as a test to verify is the potential produced is

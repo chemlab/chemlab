@@ -2,7 +2,7 @@ from ...core import Atom, Molecule, System
 from .base import IOHandler
 from itertools import groupby
 import numpy as np
-from ...data import cdb
+from ...db import cdb
 
 symbols = cdb.get("symbols", "data")
 u_symbols = [s.upper() for s in symbols]

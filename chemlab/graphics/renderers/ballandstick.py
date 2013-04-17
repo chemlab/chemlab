@@ -2,7 +2,7 @@ from .base import AbstractRenderer
 from .atom import AtomRenderer
 from .bond import BondRenderer
 
-from ...data import cdb
+from ...db import cdb
 
 class BallAndStickRenderer(AbstractRenderer):
     def __init__(self, widget, r_array, type_array, bonds):

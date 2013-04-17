@@ -147,7 +147,7 @@ def test_cylinder_renderer():
     
 def test_bond_renderer():
 
-    from chemlab.data.cirdb import CirDB
+    from chemlab.db.cirdb import CirDB
     from collections import defaultdict
     
     v = QtViewer()
@@ -173,7 +173,7 @@ def test_bond_renderer():
 
 def test_ball_and_stick_renderer():
     from collections import defaultdict
-    from chemlab.data.cirdb import CirDB
+    from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
     v.widget.background_color = black
@@ -193,7 +193,7 @@ def test_ball_and_stick_renderer():
 
 def test_wireframe_renderer():
     from collections import defaultdict
-    from chemlab.data.cirdb import CirDB
+    from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
     v.widget.background_color = black

@@ -5,7 +5,7 @@ from __future__ import division
 import numpy as np
 from chemlab.core.spacegroup.crystal import crystal
 from chemlab.molsim.analysis import rdf, rdf_multi
-from chemlab.data import moldb
+from chemlab.db import moldb
 from chemlab.io import datafile
 from chemlab.graphics import display_system
 

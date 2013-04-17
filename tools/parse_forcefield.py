@@ -49,7 +49,7 @@ def parse(FILE):
             else:
                 print fields
                 
-from chemlab.data import masses
+from chemlab.db import masses
 opls_to_type = {}
 # Parse atp file
 def parse_atp(file):

@@ -4,7 +4,7 @@ from chemlab import MonatomicSystem
 from chemlab.graphics import display_system
 from chemlab.molsim.integrators import evolve_generator
 from chemlab.molsim import cenergy
-from chemlab.data.masses import typetomass
+from chemlab.db.masses import typetomass
 import pylab as pl
 import pyglet; pyglet.options['vsync'] = False
 

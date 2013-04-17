@@ -1,4 +1,4 @@
-from chemlab.data import masses
+from chemlab.db import masses
 from chemlab.molsim import cforces2 as cforces
 
 def euler(r0, v0, a0, dt):

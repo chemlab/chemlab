@@ -1,5 +1,5 @@
-from chemlab.data.cirdb import CirDB
-from chemlab.data.local import LocalDB
+from chemlab.db.cirdb import CirDB
+from chemlab.db.local import LocalDB
 from chemlab.graphics import display_molecule
 
 def test_cir():
