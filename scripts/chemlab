@@ -46,7 +46,7 @@ def view(args):
         t0 = time.time()
         
         df = datafile(args.traj)
-        times, frames = df.read('trajectory')
+        times, frames = df.read('trajectory', skip=args.skip or None)
         
         cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
@@ -94,6 +94,8 @@ view_parser.add_argument('--nowater', action='store_true',
                          help='Do not display water molecules')
 view_parser.add_argument('--smooth', action='store_true',
                          help='Apply a very crude smoothing filter')
+view_parser.add_argument('--skip', action='store', type=int,
+                         help='Take only the ith frames')
 
 view_parser.set_defaults(func=view)
 
