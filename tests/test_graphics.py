@@ -185,6 +185,9 @@ def test_ball_and_stick_renderer():
     mol = CirDB().get("moronic acid", "molecule")
     ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
     
+    # Try without bonds
+    ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
+    
     v.run()
 
 
