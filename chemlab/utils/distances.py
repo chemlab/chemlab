@@ -84,7 +84,6 @@ def distance_matrix(coords_a, coords_b, cutoff,
         # Find the lowest        
         origin = np.minimum(mina, minb)
         
-        print coords_a - origin
         a = CellLinkedList(coords_a - origin, cutoff, periodic)
         b = CellLinkedList(coords_b - origin, cutoff, periodic)
         dist = a.query_distances_other(b, cutoff)

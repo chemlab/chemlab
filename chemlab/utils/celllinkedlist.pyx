@@ -124,9 +124,9 @@ cdef class CellLinkedList:
 
                     # Scan over the neighbour cells
                     if self.do_periodic:
-                        i_s = i
-                        j_s = j
-                        k_s = k
+                        i_s = i - 1
+                        j_s = j - 1
+                        k_s = k - 1
                     else:
                         i_s = i - 1
                         j_s = j - 1
@@ -178,6 +178,7 @@ cdef class CellLinkedList:
                                                                    (nk+dc)%dc]
                                     else:
                                         j_point = other_cell_heads[ni, nj, nk]
+
                                     
                                     # This is taken from the other
                                     while (j_point != EMPTY):
@@ -190,7 +191,6 @@ cdef class CellLinkedList:
                                             for ii in range(3):
                                                 rij[ii] = ri[ii] - rj[ii]
                                             dist = sqrt(rij[0]*rij[0] + rij[1]*rij[1] + rij[2]*rij[2])
-
                                         if (dist*dist < dr**2):
                                             ret[i_point,j_point] = dist
 

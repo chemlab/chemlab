@@ -36,6 +36,8 @@ def display_system(sys):
     '''Display the system *sys* with the default viewer.
 
     '''
+    
+    
     v = QtViewer()
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
@@ -64,6 +66,7 @@ def display_trajectory(sys, times, coords_list):
         Atomic coordinates at each frame.
     
     '''
+    
     v = QtTrajectoryViewer()
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')

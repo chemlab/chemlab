@@ -34,10 +34,10 @@ def test_distances_periodic():
     coords = np.array([[0.0, 0.0, 0.0],
                        [0.0, 0.9, 0.0],
                        [0.0, 0.2, 0.0]])
-    coords = np.random.random((100, 3))
+    coords = np.random.random((1000, 3))
     periodic = np.array([1.0, 1.0, 1.0])
     
-    cutoff = 0.5
+    cutoff = 0.1
     
     # Consistency checks
     print "Simple"
@@ -52,9 +52,18 @@ def test_distances_periodic():
                                   method="cell-lists", periodic=periodic)
     print -t + time.time()
     
-    print dist_simple
-    print dist_clist.todense()
+    #print dist_simple
+    #print dist_clist
 
+    # errors = (dist_simple != dist_clist.todense()).nonzero()
+    # iderr = (errors[0][0, 0], errors[1][0,0])
+
+    # print iderr
+    # print coords[iderr[0]], coords[iderr[1]]
+    # print dist_simple[iderr]
+    # print dist_clist[iderr]
+    
+    
     assert np.allclose(dist_simple, dist_clist.todense())
     
     
