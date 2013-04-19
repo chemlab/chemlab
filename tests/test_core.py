@@ -3,10 +3,10 @@
 """
 from chemlab import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
-from chemlab.core import crystal
+from chemlab.core import crystal, random_lattice_box
 import numpy as np
 import unittest
-
+from chemlab.graphics import display_system
 def test_molecule():
     """Test initialization of the Molecule and Atom classes."""
     # Default units for coordinates are Angstroms
@@ -149,13 +149,14 @@ def test_bonds():
 
 def test_random():
     '''Testing random made box'''
+    from chemlab.db import cdb
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
-    wat = True
+    wat = cdb.get("molecule", 'gromacs.spce')
     
-    random_lattice_box([na, cl, wat], [16, 16, 130], [10, 10, 10], spacing=0.2)
-    
-    random_box([na, cl, wat], [16, 16, 130], [10, 10, 10], rmin=0.2)
+    s = random_lattice_box([na, cl, wat], [160, 160, 160], [4, 4, 4])
+    display_system(s)
+    #random_box([na, cl, wat], [16, 16, 130], [10, 10, 10], rmin=0.2)
     
     
     

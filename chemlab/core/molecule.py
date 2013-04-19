@@ -214,7 +214,6 @@ class Molecule(object):
     def __init__(self, atoms, export=None, bonds=None):
         self.n_atoms = len(atoms)
 
-
         for attr in self.attributes:
             setattr(self, attr.name,
                     np.array([getattr(a, attr.fieldname) for a in atoms], dtype=attr.dtype))

@@ -79,7 +79,7 @@ bI00
 (dp33
 S'grotype'
 p34
-S'CL'
+S'BR'
 p35
 satp36
 bsS'm_array'
@@ -96,7 +96,7 @@ Rp40
 tp41
 g17
 I00
-S'ffffff\xc6?'
+S'\x06\x81\x95C\x8bl\xc7?'
 p42
 tp43
 bsS'n_atoms'
@@ -107,7 +107,7 @@ p45
 (dp46
 S'groname'
 p47
-S'CL-'
+S'BR-'
 p48
 ssS'type_array'
 p49
@@ -124,7 +124,7 @@ tp53
 g29
 I00
 (lp54
-S'Cl'
+S'Br'
 p55
 atp56
 bsS'bonds'
