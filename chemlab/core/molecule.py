@@ -6,6 +6,7 @@ from copy import copy
 from ..db import symbols
 from ..db import masses
 
+from .attributes import ArrayAttr
 
 class Atom(object):
     '''
@@ -202,15 +203,21 @@ class Molecule(object):
                       'm_array': ('mass', np.float64),
                       'atom_export_array': ('export', object)}
     
+    attributes = [ArrayAttr('r_array', 'r', np.float),
+                  ArrayAttr('type_array', 'type', object),
+                  ArrayAttr('m_array', 'mass', np.float),
+                  ArrayAttr('atom_export_array', 'export', object)]
+    
     fields = ('export', 'bonds')
     derived = ('formula',)
     
     def __init__(self, atoms, export=None, bonds=None):
         self.n_atoms = len(atoms)
-        
-        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.iteritems():
-            setattr(self, arr_name,
-                    np.array([getattr(a, field_name) for a in atoms], dtype=dtyp))
+
+
+        for attr in self.attributes:
+            setattr(self, attr.name,
+                    np.array([getattr(a, attr.fieldname) for a in atoms], dtype=attr.dtype))
             # Example:
             # self.r_array = np.array([a.r for a in atoms], dtype=np.float64)
         

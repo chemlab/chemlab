@@ -435,6 +435,17 @@ class System(object):
         
         return Molecule.from_arrays(**kwargs)
         
+    def get_bond_array(self):
+        bdlist = self._mol_bonds
+        cumulatives = []
+        
+        for i, bd in enumerate(bdlist):
+            if not(bd.shape[0] == 0):
+                # The indices should be offset
+                cumulatives.extend(bd + self.mol_indices[i])
+        
+        return np.array(cumulatives, dtype=np.int)
+        
     def get_atom(self, index):
         return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],
                                 type=self.type_array[index], mass=self.m_array)

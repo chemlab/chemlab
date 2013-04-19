@@ -130,7 +130,22 @@ def test_sort():
     
     tsys.sort()
     assert np.all(tsys.type_array[:tsys.n_mol/2] == 'Cl')
+
+def test_bonds():
+    from chemlab.io import datafile
+    bz = datafile("tests/data/benzene.mol").read('molecule')
+    na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     
+    s2 = System.empty(2, 2)
+    s2.add(na)
+    s2.add(na)
+    s2.get_bond_array()
+    
+    s = System.empty(2, 2*bz.n_atoms)
+    s.add(bz)
+    s.add(bz)
+    
+    print s.get_bond_array()
 
 def test_random():
     '''Testing random made box'''
