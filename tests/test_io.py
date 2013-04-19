@@ -93,3 +93,11 @@ def test_read_cml():
     mol = df.read("molecule")
     
     display_molecule(mol)
+
+def test_write_cml():
+    df = datafile('tests/data/mol.cml')
+    mol = df.read("molecule")
+    
+    df = datafile('/tmp/sadf.cml', 'w')
+    df.write('molecule', mol)
+    
