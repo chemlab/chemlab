@@ -86,3 +86,10 @@ def test_read_xtc():
     df = datafile('tests/data/trajout.xtc')
     t, coords = df.read('trajectory')
     box = df.read('boxes')
+
+def test_read_cml():
+    from chemlab.graphics import display_molecule
+    df = datafile('tests/data/mol.cml')
+    mol = df.read("molecule")
+    
+    display_molecule(mol)

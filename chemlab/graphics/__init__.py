@@ -1,7 +1,7 @@
 from .qtviewer import QtViewer
 from .qchemlabwidget import QChemlabWidget
 from .qttrajectory import QtTrajectoryViewer, format_time
-from .renderers import AtomRenderer, BoxRenderer
+from .renderers import AtomRenderer, BoxRenderer, BallAndStickRenderer
 from .uis import TextUI
 
 import numpy as np
@@ -20,13 +20,21 @@ def _system_auto_scale(sys, camera, offset=0.0):
     camera.position[2] = np.sqrt(sqdist) + offset
     
 
-def display_molecule(mol):
+def display_molecule(mol, style='ball-and-stick'):
     '''Display the molecule *mol* with the default viewer.
 
     '''
     v = QtViewer()
-    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
-                        backend='impostors')
+    if style == 'ball-and-stick':
+        bs = v.add_renderer(BallAndStickRenderer,
+                            mol.r_array,
+                            mol.type_array,
+                            mol.bonds)
+    elif style == 'vdw':
+        sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
+                            backend='impostors')
+    else:
+        raise Exception("Rendering style unknown")
     
     _system_auto_scale(mol, v.widget.camera, 1.0)
     v.run()

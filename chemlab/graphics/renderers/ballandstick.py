@@ -7,7 +7,7 @@ from ...db import cdb
 class BallAndStickRenderer(AbstractRenderer):
     def __init__(self, widget, r_array, type_array, bonds):
         super(BallAndStickRenderer, self).__init__(widget)
-        vdw_dict = cdb.get("vdwdict", "data")        
+        vdw_dict = cdb.get("data", 'vdwdict')        
         
         scale = 0.3
         for k in vdw_dict:

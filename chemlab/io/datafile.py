@@ -8,6 +8,7 @@ from .handlers import EdrIO
 from .handlers import XyzIO
 from .handlers import XtcIO
 from .handlers import MolIO
+from .handlers import CmlIO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
@@ -16,7 +17,8 @@ _default_handlers = [
     [PdbIO, 'pdb', '.pdb'],
     [EdrIO, 'edr', '.edr'],
     [XyzIO, 'xyz', '.xyz'],
-    [MolIO, 'mol', '.mol']
+    [MolIO, 'mol', '.mol'],
+    [CmlIO, 'cml', '.cml']
 ]
 
 _handler_map = {}
