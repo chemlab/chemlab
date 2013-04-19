@@ -1,5 +1,6 @@
 import numpy as np
 from .molecule import Atom, Molecule
+from .attributes import RArrayAttr, AtomicArrayAttr, MoleculeArrayAttr
 from ..db import units, masses
 from ..utils import overlapping_points
 
@@ -176,14 +177,22 @@ class System(object):
        Contains the number of atoms present in each molecule
     
     '''
-    
-    molecule_inherited={'mol_export': AttrData(name='export', type=object),
-                        '_mol_bonds': AttrData(name='bonds', type=object)}
-    
-    atom_inherited={'r_array': AttrData(name='r_array', type=np.float),
-                    'm_array': AttrData(name='m_array', type=np.float),
-                    'type_array': AttrData(name='type_array', type=np.object),
-                    'atom_export_array': AttrData(name='atom_export_array', type=np.object)}
+    attributes = [
+        AtomicArrayAttr('type_array', 'type_array', np.object),
+        
+        RArrayAttr(),
+        
+        AtomicArrayAttr('m_array', 'm_array',  np.float,
+            default=lambda s: np.array([masses.typetomass[t] for t in s.type_array])),
+        
+        AtomicArrayAttr('atom_export_array', 'export', np.object,
+            default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),
+        
+        MoleculeArrayAttr('mol_export', 'export', np.object,
+            default=lambda s: np.array([{} for i in range(s.n_mol)], dtype=np.object)),
+        
+        MoleculeArrayAttr('_mol_bonds', 'bonds', np.object),
+    ]
     
     def __init__(self, molecules, boxsize=None, box_vectors=None):
         n_mol = len(molecules)
@@ -217,7 +226,11 @@ class System(object):
     def _setup_empty(self, n_mol, n_atoms, boxsize, box_vectors):
         self.n_mol = n_mol
         self.n_atoms = n_atoms
-        
+
+        # Special arrays
+        self.mol_indices = np.zeros((n_mol,), dtype=np.int)
+        self.mol_n_atoms = np.zeros((n_mol,), dtype=np.int)
+
         self._mol_counter = 0
         self._at_counter = 0
 
@@ -230,27 +243,13 @@ class System(object):
         else:
             self.box_vectors = box_vectors
         
-        # Initialize molecule arrays
-        
-        # Special arrays
-        self.mol_indices = np.zeros((n_mol,), dtype=np.int)
-        self.mol_n_atoms = np.zeros((n_mol,), dtype=np.int)
-        
         cls = type(self)
-        # Initializing derived array attributes
-        for arr_name, field in cls.molecule_inherited.iteritems():
-            setattr(self, arr_name, np.zeros((n_mol,), dtype=field.type))
-
-        # Initialize derived atom arrays
-        for arr_name, field in cls.atom_inherited.iteritems():
-            # Special case
-            if arr_name == 'r_array':
-                val = np.zeros((n_atoms,3), dtype=field.type)
-            else:
-                val = np.zeros((n_atoms,), dtype=field.type)
-            
-            setattr(self, arr_name, val)
-
+        
+        # Initializing array attributes -- delegated to the ArrayAttr
+        # classes
+        for attr in cls.attributes:
+            attr.on_empty(self)
+        
     @classmethod
     def from_arrays(cls, **kwargs):
         '''Initialize a System from its constituent arrays. It is the
@@ -286,37 +285,20 @@ class System(object):
         '''
         inst = cls.__new__(System)
         
-        required = ['type_array', 'r_array', 'mol_indices']
-        for r in required:
-            if r not in kwargs:
-                raise Exception('%s is a required argument.'%r)
-            
-        if kwargs['r_array'].shape[1] != 3:
-            raise Exception('r_array should be of shape (N, 3), now it is %s'
-                            %str(kwargs['r_array'].shape))
+        if 'mol_indices' not in kwargs:
+            raise Exception('mol_indices is a required argument.')
+        
+        if 'type_array' not in kwargs:
+            raise Exception('mol_indices is a required argument.')
         
         n_atoms = len(kwargs['type_array'])
         n_mol = len(kwargs['mol_indices'])
         
-        if 'm_array' not in kwargs:
-            kwargs['m_array'] = np.array([masses.typetomass[t]
-                                          for t in kwargs['type_array']])
+        inst.n_mol = n_mol
+        inst.n_atoms = n_atoms
         
-        if 'atom_export_array' not in kwargs:
-            kwargs['atom_export_array'] = np.array([{} for i in range(n_atoms)])
-            
-        if 'mol_export' not in kwargs:
-            kwargs['mol_export'] = np.array([{} for i in range(n_mol)])
-            
-        if '_mol_bonds' not in kwargs:
-            kwargs['_mol_bonds'] = np.zeros(n_mol, dtype=object)
-
-
-        for arr_name, field in cls.atom_inherited.items():
-            setattr(inst, arr_name, np.array(kwargs[arr_name]))
-        
-        for arr_name, field_name in cls.molecule_inherited.items():
-            setattr(inst, arr_name, np.array(kwargs[arr_name]))
+        for attr in cls.attributes:
+            attr.from_array(inst, kwargs.get(attr.name, None))
         
         # Special guys here
         inst.mol_indices = np.array(kwargs['mol_indices'])
@@ -332,20 +314,7 @@ class System(object):
                                          [0, inst.boxsize, 0],
                                          [0, 0, inst.boxsize]])
         
-        inst.n_mol = n_mol
-        inst.n_atoms = n_atoms
-        
         return inst
-        
-    @classmethod
-    def molecule_map(cls):
-        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
-            yield arr_name, field_name
-    
-    @classmethod
-    def atom_map(cls):
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            yield arr_name, field_name
 
     def add(self, mol):
         '''Add the molecule *mol* to a System initialized through
@@ -368,30 +337,17 @@ class System(object):
             self.mol_indices[mc] = m_idx
             self.mol_n_atoms[mc] = mol.n_atoms
         
-        # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
-            attr = getattr(self, arr_name)
-            attr[mc] = getattr(mol, field_name)
-        
-        # Setting atom-wise attributes
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            attr = getattr(self, arr_name)
-            attr[ac:ac+mol.n_atoms] = getattr(mol, field_name).copy()
+        for attr in type(self).attributes:
+            attr.on_add_molecule(self, mol)
         
         self._mol_counter += 1
         self._at_counter += mol.n_atoms
-        return
     
     def remove_molecules(self, indices):
         
-        # Molecule arrays
-        for arr in System.molecule_inherited.keys():
-            setattr(self,arr, np.delete(getattr(self, arr), indices, axis=0))
-            
-        # Atomic arrays
-        at_indices = self.mol_to_atom_indices(indices)
-        for arr in System.atom_inherited.keys():
-            setattr(self, arr, np.delete(getattr(self, arr), at_indices, axis=0))
+        # Shift the arrays
+        for attr in self.attributes:
+            attr.on_remove_molecules(self, indices)
         
         # Now the hard part, change mol_indices and mol_n_atoms
         self.mol_n_atoms = np.delete(self.mol_n_atoms, indices)
@@ -436,32 +392,23 @@ class System(object):
                               key=lambda x: x[1])
         sorted_index = np.array(zip(*sorted_index)[0])
 
+        self.reorder_molecules(sorted_index)
+        
+    def reorder_molecules(self, new_order):
         old_indices = self.mol_indices.copy()
         old_n_atoms = self.mol_n_atoms.copy()
 
-        # We have to shuffle everything regarding atoms
-        
-        old_atom_arrays = {} # Storing old-ordered coordinates etc...
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            attr = getattr(self, arr_name)
-            old_atom_arrays[arr_name] = attr.copy()
-        
+        # Reorder the special arrays first
         offset = 0
-        for k,(o_i,o_n) in enumerate(zip(old_indices[sorted_index],
-                                         old_n_atoms[sorted_index])):
-
-            for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-                attr = getattr(self, arr_name)
-                attr[offset: offset+o_n] = old_atom_arrays[arr_name][o_i: o_i+o_n]
-
+        for k,(o_i,o_n) in enumerate(zip(old_indices[new_order],
+                                         old_n_atoms[new_order])):
             self.mol_indices[k] = offset
             self.mol_n_atoms[k] = o_n
             offset += o_n
 
-        # Setting molecule-wise attributes
-        for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
-            attr = getattr(self, arr_name)
-            attr[:] = attr[sorted_index]
+        # Reorder the attributes
+        for attr in self.attributes:
+            attr.on_reorder_molecules(self, new_order)
 
     def get_derived_molecule_array(self, attribute):
         arr = []
@@ -483,11 +430,8 @@ class System(object):
         
         kwargs = {}
 
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            kwargs[arr_name] = getattr(self, arr_name)[start_index:end_index]
-
-        for sys_field, (mol_field, dtyp) in Molecule.atom_inherited.items():
-            kwargs[mol_field] = getattr(self, sys_field)[index]
+        for attr in self.attributes:
+            kwargs[attr.fieldname] = attr.on_get_molecule_entry(self, index)
         
         return Molecule.from_arrays(**kwargs)
         
@@ -513,49 +457,6 @@ class System(object):
         start_index = self.mol_indices[i]
         end_index = start_index + self.mol_n_atoms[i]
         return start_index, end_index
-        
-        
-        
-def lattice(mol, size=1, density=1.0):
-    '''Generate an FCC lattice with *body* as points of the
-    lattice. *size* is the number of primitive cells per dimension
-    (eg *size=2* is a 2x2x2 lattice, for a total of 8 primitive
-    cells) and density is the required *density* required to
-    calculate volume and unit cell vectors.
-
-    '''
-    nmol = 4*size**3
-    nat = nmol * mol.n_atoms
-    
-    sys = System.empty(nmol, nat)
-
-    cell = np.array([[0.0, 0.0, 0.0], [0.5, 0.5, 0.0],
-                     [0.5, 0.0, 0.5], [0.0, 0.5, 0.5]])
-
-    grams =  units.convert(mol.mass*len(cell)*size**3, 'amu', 'g')
-
-    vol = grams/density
-    vol = units.convert(vol, 'cm^3', 'nm^3')
-    dim = vol**(1.0/3.0)
-    celldim = dim/size
-    sys.boxsize = celldim*size
-
-    cells = [size, size, size]
-    for x in range(cells[0]):
-        for y in range(cells[1]):
-            for z in range(cells[2]):
-                for cord in cell:
-                    dx = (cord + np.array([float(x), float(y), float(z)]))*celldim
-                    mol.r_array += dx
-                    mol.r_array -= sys.boxsize / 2.0
-                    sys.add(mol)
-                    mol.r_array += sys.boxsize / 2.0
-                    mol.r_array -= dx
-                    
-    #sys.rarray -= sys.boxsize/2.0
-    return sys
-
-
 
 # Functions to operate on systems
 def subsystem_from_molecules(orig, selection):
@@ -598,27 +499,20 @@ def subsystem_from_molecules(orig, selection):
     nmol = len(index)
     natom = np.sum(orig.mol_n_atoms[index])
     ret = System.empty(nmol, natom)
+
+    # Setting attributes
+    for attr in orig.attributes:
+        val = attr.selection(orig, index)
+        attr.from_array(ret, val) # assign ready-made array
     
+    
+    # Setting special arrays
     offset = 0
-    
     for k,(o_i,o_n) in enumerate(zip(orig.mol_indices[index],
                                      orig.mol_n_atoms[index])):
-
-        for arr_name, (field_name, dtyp) in System.atom_inherited.iteritems():
-            o_attr = getattr(orig, arr_name)
-            attr = getattr(ret, arr_name)
-            
-            attr[offset: offset+o_n] = o_attr[o_i: o_i+o_n]
-
         ret.mol_indices[k] = offset
         ret.mol_n_atoms[k] = o_n
         offset += o_n
-
-    # Setting molecule-wise attributes
-    for arr_name, (field_name, dtyp) in System.molecule_inherited.iteritems():
-        o_attr = getattr(orig, arr_name)
-        attr = getattr(ret, arr_name)
-        attr[:] = o_attr[index]
 
     ret.box_vectors = orig.box_vectors
     
@@ -700,21 +594,6 @@ def merge_systems(sysa, sysb, bounding=0.2):
                            cutoff=bounding, periodic=periodicity)
     
     
-    # minx, miny, minz = np.min(sysb.r_array[:, 0]), np.min(sysb.r_array[:, 1]), np.min(sysb.r_array[:, 2])
-    # maxx, maxy, maxz = np.max(sysb.r_array[:, 0]), np.max(sysb.r_array[:,1]), np.max(sysb.r_array[:,2])
-
-    # maxx += bounding
-    # maxy += bounding
-    # maxz += bounding
-    
-    # minx -= bounding
-    # miny -= bounding
-    # minz -= bounding
-    
-    # xmask = (minx < sysa.r_array[:,0]) & (sysa.r_array[:,0] < maxx) 
-    # ymask = (miny < sysa.r_array[:,1]) & (sysa.r_array[:,1] < maxy) 
-    # zmask = (minz < sysa.r_array[:,2]) & (sysa.r_array[:,2] < maxz) 
-    
     # sel = np.logical_not(xmask & ymask & zmask)
     sel = np.ones(len(sysa.r_array), dtype=np.bool)
     sel[p] = False
@@ -724,22 +603,16 @@ def merge_systems(sysa, sysb, bounding=0.2):
     
     sysres = System.empty(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     
-    # each atom attribute
-    for attr_name in System.atom_inherited.keys():
-        val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
-        setattr(sysres, attr_name, val)
-    
-    # each molecule attribute
-    for attr_name in System.molecule_inherited.keys():
-        val = np.concatenate([getattr(sysa, attr_name), getattr(sysb, attr_name)])
-        setattr(sysres, attr_name, val)
+    # Assign the attributes
+    for attr in type(sysa).attributes:
+        attr.assign(sysres,
+                    np.concatenate([attr.get(sysa), attr.get(sysb)]))
     
     # edit the mol_indices and n_mol
     offset = sysa.mol_indices[-1] + sysa.mol_n_atoms[-1]
     sysres.mol_indices[0:sysa.n_mol] = sysa.mol_indices.copy()
     sysres.mol_indices[sysa.n_mol:] = sysb.mol_indices.copy() + offset
     sysres.mol_n_atoms = np.concatenate([sysa.mol_n_atoms, sysb.mol_n_atoms])
-
     
     sysres.box_vectors = sysa.box_vectors
     

@@ -120,6 +120,18 @@ def test_crystal():
     # Fract position of Na and Cl, space group 255
     tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[13,13,13])
 
+
+def test_sort():
+    na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
+    cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
+    
+    # Fract position of Na and Cl, space group 255
+    tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[3,3,3])    
+    
+    tsys.sort()
+    assert np.all(tsys.type_array[:tsys.n_mol/2] == 'Cl')
+    
+
 def test_random():
     '''Testing random made box'''
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
