@@ -239,7 +239,7 @@ class System(object):
         
         # Setup boxsize
         if boxsize:
-            self.boxsize = boxsize
+            self._boxsize = boxsize
         else:
             self.box_vectors = box_vectors
         
@@ -307,12 +307,19 @@ class System(object):
         inst.mol_n_atoms = shifted_indices - inst.mol_indices
         
         inst.boxsize = kwargs.get('boxsize', None)
-        inst.box_vectors = np.array(kwargs.get('box_vectors', None))
+        box_vectors = kwargs.get('box_vectors', None)
+
+        if box_vectors:
+            inst.box_vectors = np.array(box_vectors)
+        else:
+            inst.box_vectors = None
         
         if inst.boxsize:
             inst.box_vectors = np.array([[inst.boxsize, 0, 0],
                                          [0, inst.boxsize, 0],
                                          [0, 0, inst.boxsize]])
+        else:
+            inst.boxsize = None
         
         return inst
 

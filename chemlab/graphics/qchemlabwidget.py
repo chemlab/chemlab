@@ -93,9 +93,21 @@ class QChemlabWidget(QGLWidget):
 
     '''
     
-    def __init__(self, parent=None):
-        super(QChemlabWidget, self).__init__(parent)
-    
+    def __init__(self, *args, **kwargs):
+        super(QChemlabWidget, self).__init__(*args, **kwargs)
+        
+        # Renderers are responsible for actually drawing stuff
+        self.renderers = []
+        
+        # Ui elements represent user interactions
+        self.uis = []
+        
+        self.light_dir = np.array([0.0, 0.0, 1.0])
+        self.background_color = colors.white
+        
+        self.camera = Camera()
+        self.camera.aspectratio = float(self.width()) / self.height()
+        
     def sizeHint(self):
         return QtCore.QSize(800, 600)
         
@@ -103,22 +115,9 @@ class QChemlabWidget(QGLWidget):
         return QtCore.QSize(600, 600)
         
     def initializeGL(self):
-        # Renderers are responsible for actually drawing stuff
-        self.renderers = []
-        
-        # Ui elements represent user interactions
-        self.uis = []
-        
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)        
         glEnable(GL_MULTISAMPLE)
-        
-        self.camera = Camera()
-        self.camera.aspectration = float(self.width()) / self.height()
-        
-        self.light_dir = np.array([0.0, 0.0, 1.0])
-        self.background_color = colors.white
-        
         
     def paintGL(self):
         '''GL function called each time a frame is drawn'''

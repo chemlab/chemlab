@@ -71,31 +71,6 @@ class CylinderRenderer(AbstractRenderer):
         t0 = time.time()
         vertices, normals = fast_cylinder_translate(self._reference_verts, self._reference_norms,
                                                     self.bounds, self.radii, self.lengths)
-        print time.time() - t0
-        # # Rotate the cylinder
-        # vertices = []
-        # normals = []
-        
-        # for i, (s,e) in enumerate(self.bounds):
-        #     # Scale the radii and the length
-        #     vrt = self._reference_verts.copy()
-        #     vrt[:, 0:2] *= self.radii[i]
-        #     vrt[:, 2] *= self.lengths[i]
-            
-        #     # Generate rotation matrix
-
-        #     # Special case, if the axis is the z-axis
-        #     ang = angle_between_vectors([0.0, 0.0, 1.0], e - s)
-        #     axis = normalized(vector_product([0.0, 0.0, 1.0], e - s))
-            
-        #     if ang==0 or np.allclose(axis, [0.0, 0.0, 0.0]):
-        #         rot = np.eye(3)
-        #     else:
-        #         rot = rotation_matrix(ang, axis)[:3, :3].T
-            
-            
-        #     vertices.extend(np.dot(vrt, rot.T) + e)
-        #     normals.extend(np.dot(self._reference_norms, rot.T))
         
         colors = np.repeat(self.colors, self._reference_n, axis=0)
         return vertices, normals, colors

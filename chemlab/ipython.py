@@ -1,0 +1,100 @@
+"""Ipython integration
+
+"""
+from __future__ import absolute_import
+from io import BytesIO
+from chemlab.graphics.renderers import AtomRenderer, BoxRenderer, BallAndStickRenderer
+from chemlab.graphics.qtviewer import QtViewer
+from chemlab.graphics import _system_auto_scale
+from chemlab.core import Molecule, System
+from OpenGL.GL import *
+
+from IPython.display import Image
+
+import PIL
+
+
+def load_ipython_extension(ipython):
+    # The `ipython` argument is the currently active `InteractiveShell`
+    # instance, which can be used in any way. This allows you to register
+    # new magics, plugins or aliases, for example.
+    png_formatter = ipython.display_formatter.formatters['image/png']
+    png_formatter.for_type(Molecule, mol_to_png)
+    png_formatter.for_type(System, sys_to_png)
+
+
+def unload_ipython_extension(ipython):
+    # If you want your extension to be unloadable, put that logic here.
+    return
+
+def showmol(mol, style='ball-and-stick',
+            width=300, height=300):
+    v = QtViewer()
+    w = v.widget
+    w.initializeGL()
+    
+    w.resize(width, height)
+    w.resizeGL(width, height)
+    
+    if style == 'ball-and-stick':
+        bs = v.add_renderer(BallAndStickRenderer,
+                            mol.r_array,
+                            mol.type_array,
+                            mol.bonds)
+    elif style == 'vdw':
+        sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
+                            backend='impostors')
+
+    _system_auto_scale(mol, w.camera, 0.5)
+    
+    w.paintGL()
+    # Make sure to finish everything
+    
+    data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+    # Make pil image to save as png
+    image = PIL.Image.fromstring('RGB', (width, height), data)
+    b = BytesIO()
+    image.save(b, format='png')
+    data = b.getvalue()
+    
+    # Save as png
+    return Image(data=data)
+
+def mol_to_png(mol):
+    return showmol(mol)._repr_png_()
+
+def showsys(sys, width=400, height=400):
+    v = QtViewer()
+    w = v.widget
+    w.initializeGL()
+
+    
+    w.resize(width, height)
+    w.resizeGL(width, height)
+
+    sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
+                        backend='impostors')
+    
+    if sys.box_vectors is not None:
+        v.add_renderer(BoxRenderer, sys.box_vectors)
+    
+    _system_auto_scale(sys, w.camera, 6.0)
+    
+    w.camera.orbit_y(3.14/4)    
+    w.camera.orbit_x(3.14/4)
+
+    w.paintGL()
+    # Make sure to finish everything
+    
+    data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+    # Make pil image to save as png
+    image = PIL.Image.fromstring('RGB', (width, height), data)
+    b = BytesIO()
+    image.save(b, format='png')
+    data = b.getvalue()
+    
+    # Save as png
+    return Image(data=data)
+
+def sys_to_png(syst):
+    return showsys(syst)._repr_png_()

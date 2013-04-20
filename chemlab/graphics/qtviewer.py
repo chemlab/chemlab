@@ -1,6 +1,7 @@
 import numpy as np
 import time
 
+import sys
 from PySide.QtGui import QMainWindow, QApplication
 from PySide.QtCore import QTimer, Qt
 from PySide import QtCore, QtGui
@@ -8,8 +9,12 @@ from PySide.QtOpenGL import *
 
 from .qchemlabwidget import QChemlabWidget
 
-
-app = QApplication([])
+app_created = False
+app = QtCore.QCoreApplication.instance()
+if app is None:
+    app = QtGui.QApplication(sys.argv)
+    app_created = True
+    app.references = set()
 
 class FpsDraw(object):
     def __init__(self, parent):
@@ -61,16 +66,22 @@ class QtViewer(QMainWindow):
     
     def __init__(self):
         QMainWindow.__init__(self)
-        widget = QChemlabWidget(self)
+
+        # Pre-initializing an OpenGL context can let us use opengl
+        # functions without having to show the window first...
+        context = QGLContext(QGLFormat())
+        widget = QChemlabWidget(context)
+        context.makeCurrent()
+        
         self.setCentralWidget(widget)
         self.resize(1000, 800)
         self.widget = widget
-        self.show()
         
     def run(self):
         '''Display the QtViewer
 
         '''
+        self.show()
         app.exec_()
         
     def schedule(self, callback, timeout=100):
