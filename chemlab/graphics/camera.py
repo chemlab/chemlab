@@ -261,3 +261,43 @@ class Camera:
         
         return res[0:3]/res[3]
 
+    def autozoom(self, points):
+        '''Fit the current view to the correct zoom level to display
+        all *points*
+
+        '''
+        extraoff = 0.01
+        
+        # Project points on the plane defined by camera up and right
+        # vector. This is achieved by using dot product on camera a
+        # and b vectors
+        abc = np.array([self.a, self.b, self.c])
+
+        old_geom_center = points.sum(axis=0)/len(points)
+        # Translate points
+        points = points.copy() + self.position
+        
+        # Translate position to geometric_center along directions
+        # a and b
+        geom_center = points.sum(axis=0)/len(points)
+        self.position += self.a * np.dot(geom_center, self.a)
+        self.position += self.b * np.dot(geom_center, self.b)
+
+        # Translate pivot to the geometric center
+        self.pivot = old_geom_center
+        
+        # Get the bounding sphere radius by searching for the most
+        # distant point
+        bound_radius = np.sqrt(((points-geom_center) * (points-geom_center)).sum(axis=1).max())
+
+        # Calculate the distance in order to have the most distant
+        # point in our field of view (top/bottom)
+        fov_topbottom = self.fov*np.pi/180.0
+        
+        dist = (bound_radius + self.z_near)/np.tan(fov_topbottom * 0.5)
+        
+        # Set the c-component of the position at the calculated distance
+        # 1) translate the position on the pivot
+        self.position = self.pivot.copy() 
+        # 2) add the distance plus a little extra room
+        self.position -= self.c * (dist*(1 + extraoff))

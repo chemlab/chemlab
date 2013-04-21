@@ -267,4 +267,17 @@ def test_traj_viewer():
         tv.widget.repaint()
     
     tv.run()
+
+def test_camera_autozoom():
+    v = QtViewer()
+    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+                    Atom("H", [-0.402, 0.249, 0.0]),
+                    Atom("H", [-0.532, 0.198, 0.10])])
+    from chemlab.io import datafile
+    s = datafile('tests/data/3ZJE.pdb').read('system')
     
+    # To add some interaction to it
+    ar = v.add_renderer(AtomRenderer, s.r_array, s.type_array, "impostors")
+    v.widget.camera.autozoom(s.r_array)
+    
+    v.run()

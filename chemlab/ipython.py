@@ -9,9 +9,8 @@ from chemlab.graphics import _system_auto_scale
 from chemlab.core import Molecule, System
 from OpenGL.GL import *
 
-from IPython.display import Image
-
-import PIL
+from IPython.display import Image as ipy_Image
+from PIL import Image as pil_Image
 
 
 def load_ipython_extension(ipython):
@@ -45,20 +44,20 @@ def showmol(mol, style='ball-and-stick',
         sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
                             backend='impostors')
 
-    _system_auto_scale(mol, w.camera, 0.5)
+    w.camera.autozoom(mol.r_array)
     
     w.paintGL()
     # Make sure to finish everything
     
     data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
     # Make pil image to save as png
-    image = PIL.Image.fromstring('RGB', (width, height), data)
+    image = pil_Image.fromstring('RGB', (width, height), data)
     b = BytesIO()
     image.save(b, format='png')
     data = b.getvalue()
     
     # Save as png
-    return Image(data=data)
+    return ipy_Image(data=data)
 
 def mol_to_png(mol):
     return showmol(mol)._repr_png_()
@@ -78,7 +77,7 @@ def showsys(sys, width=400, height=400):
     if sys.box_vectors is not None:
         v.add_renderer(BoxRenderer, sys.box_vectors)
     
-    _system_auto_scale(sys, w.camera, 6.0)
+    w.camera.autozoom(sys.r_array)
     
     w.camera.orbit_y(3.14/4)    
     w.camera.orbit_x(3.14/4)
@@ -88,13 +87,13 @@ def showsys(sys, width=400, height=400):
     
     data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
     # Make pil image to save as png
-    image = PIL.Image.fromstring('RGB', (width, height), data)
+    image = pil_Image.fromstring('RGB', (width, height), data)
     b = BytesIO()
     image.save(b, format='png')
     data = b.getvalue()
     
     # Save as png
-    return Image(data=data)
+    return ipy_Image(data=data)
 
 def sys_to_png(syst):
     return showsys(syst)._repr_png_()

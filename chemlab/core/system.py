@@ -309,7 +309,7 @@ class System(object):
         inst.boxsize = kwargs.get('boxsize', None)
         box_vectors = kwargs.get('box_vectors', None)
 
-        if box_vectors:
+        if box_vectors is not None:
             inst.box_vectors = np.array(box_vectors)
         else:
             inst.box_vectors = None
