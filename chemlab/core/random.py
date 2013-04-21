@@ -3,7 +3,7 @@ import numpy as np
 from .system import System
 
 def meshgrid2(*arrs):
-    arrs = tuple(reversed(arrs))  #edit
+    arrs = tuple(arrs)  #edit
     lens = map(len, arrs)
     dim = len(arrs)
 
@@ -47,11 +47,15 @@ def random_lattice_box(mol_list, mol_number, size,
     n_atoms = sum(nmol*mol.n_atoms for mol, nmol in zip(mol_list, mol_number))
     
     # Assert that we have enough space
-    assert len(positions) >= n_atoms, "Can't fit {} molecules in {} spaces".format(n_atoms,
+    assert len(positions) >= n_mol, "Can't fit {} molecules in {} spaces".format(n_mol,
                                                                                    len(positions))
+    box_vectors = np.zeros((3, 3))
+    box_vectors[0,0] = size[0]
+    box_vectors[1,1] = size[1]
+    box_vectors[2,2] = size[2]
     
     # Initialize a system
-    s = System.empty(n_mol, n_atoms)
+    s = System.empty(n_mol, n_atoms, box_vectors=box_vectors)
 
     mol_list = [m.copy() for m in mol_list]
     # Add the molecules
