@@ -56,6 +56,10 @@ def showmol(mol, style='ball-and-stick',
     image.save(b, format='png')
     data = b.getvalue()
     
+    # Cleanup
+    del v
+    del w
+    
     # Save as png
     return ipy_Image(data=data)
 
@@ -84,14 +88,17 @@ def showsys(sys, width=400, height=400):
 
     w.paintGL()
     # Make sure to finish everything
-    
     data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+
     # Make pil image to save as png
     image = pil_Image.fromstring('RGB', (width, height), data)
     b = BytesIO()
     image.save(b, format='png')
     data = b.getvalue()
     
+    # Cleanup
+    del v
+    del w
     # Save as png
     return ipy_Image(data=data)
 
