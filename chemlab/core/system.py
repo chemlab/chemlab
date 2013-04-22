@@ -185,7 +185,7 @@ class System(object):
         AtomicArrayAttr('m_array', 'm_array',  np.float,
             default=lambda s: np.array([masses.typetomass[t] for t in s.type_array])),
         
-        AtomicArrayAttr('atom_export_array', 'export', np.object,
+        AtomicArrayAttr('atom_export_array', 'atom_export_array', np.object,
             default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),
         
         MoleculeArrayAttr('mol_export', 'export', np.object,
@@ -404,6 +404,10 @@ class System(object):
     def reorder_molecules(self, new_order):
         old_indices = self.mol_indices.copy()
         old_n_atoms = self.mol_n_atoms.copy()
+        
+        # Reorder the attributes
+        for attr in self.attributes:
+            attr.on_reorder_molecules(self, new_order)
 
         # Reorder the special arrays first
         offset = 0
@@ -413,9 +417,6 @@ class System(object):
             self.mol_n_atoms[k] = o_n
             offset += o_n
 
-        # Reorder the attributes
-        for attr in self.attributes:
-            attr.on_reorder_molecules(self, new_order)
 
     def get_derived_molecule_array(self, attribute):
         arr = []
