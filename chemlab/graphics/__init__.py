@@ -36,7 +36,8 @@ def display_molecule(mol, style='ball-and-stick'):
     else:
         raise Exception("Rendering style unknown")
     
-    _system_auto_scale(mol, v.widget.camera, 1.0)
+    v.widget.camera.autozoom(mol.r_array)
+    #_system_auto_scale(mol, v.widget.camera, 1.0)
     v.run()
 
 
@@ -50,7 +51,8 @@ def display_system(sys):
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
     
-    _system_auto_scale(sys, v.widget.camera, 4.0)
+    #_system_auto_scale(sys, v.widget.camera, 4.0)
+    v.widget.camera.autozoom(sys.r_array)
     
     if sys.box_vectors is not None:
         v.add_renderer(BoxRenderer, sys.box_vectors)
@@ -79,7 +81,8 @@ def display_trajectory(sys, times, coords_list):
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
     br = v.add_renderer(BoxRenderer, sys.box_vectors)
-    _system_auto_scale(sys, v.widget.camera, 4.0)
+    #_system_auto_scale(sys, v.widget.camera, 4.0)
+    v.widget.camera.autozoom(sys.r_array)
     
     v.set_ticks(len(coords_list))
     @v.update_function
