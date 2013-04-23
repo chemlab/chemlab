@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from io import BytesIO
 from chemlab.graphics.renderers import AtomRenderer, BoxRenderer, BallAndStickRenderer
 from chemlab.graphics.qtviewer import QtViewer
-from chemlab.graphics import _system_auto_scale
 from chemlab.core import Molecule, System
 from OpenGL.GL import *
 
