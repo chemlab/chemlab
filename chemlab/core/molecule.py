@@ -328,7 +328,7 @@ class Molecule(object):
         
         # Fields
         for field in Molecule.fields:
-            kwargs[field.name] = copy(attr.get(self))
+            kwargs[field.name] = copy(field.get(self))
 
         return Molecule.from_arrays(**kwargs)
         

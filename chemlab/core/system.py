@@ -54,13 +54,8 @@ class System(object):
        to the System, subsequent changes to the Molecule are not
        reflected in the System.
     
-    boxsize: float, optional
-       The size of one side of a cubic box containing the system. Periodic boxes
-       are common in molecular dynamics.
-    
     box_vectors: np.ndarray((3,3), dtype=float), optional
-       You can specify the periodic box of another shape by giving 3 box vectors
-       instead.
+       You can specify a periodic box of another shape by giving 3 box vectors.
 
     The System class has attributes derived both from the Molecule and
     the Atom class.
@@ -131,16 +126,6 @@ class System(object):
                          [0.0, 4.0, 0.0],  # Vector b
                          [0.0, 0.0, 5.0]]) # Vector c
 
-    
-    
-    .. py:attribute:: boxsize, optional
-    
-       :type: float or None
-    
-       Defines the size of the periodic box. Boxes defined with
-       boxsize are cubic. Changes in *boxsize* are reflected in
-       box.
-    
     .. py:attribute:: n_mol
        
        :type: int
@@ -194,18 +179,18 @@ class System(object):
         MoleculeArrayAttr('_mol_bonds', 'bonds', np.object),
     ]
     
-    def __init__(self, molecules, boxsize=None, box_vectors=None):
+    def __init__(self, molecules, box_vectors=None):
         n_mol = len(molecules)
         n_atoms = sum(m.n_atoms for m in molecules)
     
         # Initialize an empty system and fill it with molecules
-        self._setup_empty(n_mol, n_atoms, boxsize, box_vectors)
+        self._setup_empty(n_mol, n_atoms, box_vectors)
         
         for mol in molecules:
             self.add(mol)
         
     @classmethod
-    def empty(cls, n_mol, n_atoms, boxsize=None, box_vectors=None):
+    def empty(cls, n_mol, n_atoms, box_vectors=None):
         '''Initialize an empty System containing *n_mol* Molecules and
         *n_atoms* Atoms. The molecules can be added by using the
         method :py:meth:`~chemlab.core.System.add`.
@@ -220,10 +205,10 @@ class System(object):
 
         '''
         inst = cls.__new__(System)
-        inst._setup_empty(n_mol, n_atoms, boxsize, box_vectors)
+        inst._setup_empty(n_mol, n_atoms, box_vectors)
         return inst
 
-    def _setup_empty(self, n_mol, n_atoms, boxsize, box_vectors):
+    def _setup_empty(self, n_mol, n_atoms, box_vectors):
         self.n_mol = n_mol
         self.n_atoms = n_atoms
 
@@ -237,11 +222,7 @@ class System(object):
         self.molecules = MoleculeGenerator(self)
         self.atoms = AtomGenerator(self)
         
-        # Setup boxsize
-        if boxsize:
-            self.boxsize = boxsize
-        else:
-            self.box_vectors = box_vectors
+        self.box_vectors = box_vectors
         
         cls = type(self)
         
@@ -306,20 +287,16 @@ class System(object):
         shifted_indices = np.append(inst.mol_indices[1:], n_atoms)
         inst.mol_n_atoms = shifted_indices - inst.mol_indices
         
-        inst.boxsize = kwargs.get('boxsize', None)
+        if 'boxsize' in kwargs:
+            raise Exception('boxsize is deprecated')
+        
+        
         box_vectors = kwargs.get('box_vectors', None)
 
         if box_vectors is not None:
             inst.box_vectors = np.array(box_vectors)
         else:
             inst.box_vectors = None
-        
-        if inst.boxsize:
-            inst.box_vectors = np.array([[inst.boxsize, 0, 0],
-                                         [0, inst.boxsize, 0],
-                                         [0, 0, inst.boxsize]])
-        else:
-            inst.boxsize = None
         
         return inst
 
@@ -457,20 +434,6 @@ class System(object):
     def get_atom(self, index):
         return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],
                                 type=self.type_array[index], mass=self.m_array)
-        
-    @property
-    def boxsize(self):
-        return self._boxsize
-    
-    @boxsize.setter
-    def boxsize(self, value):
-        if value == None:
-            self._boxsize = None
-        else:
-            self._boxsize = value
-            self.box_vectors = np.array([[value, 0, 0],
-                                         [0, value, 0],
-                                         [0, 0, value]])
         
     def _get_start_end_index(self, i):
         start_index = self.mol_indices[i]

@@ -21,7 +21,7 @@ def test_write_pdb():
                       Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
                       export={'groname': 'SOL'})
 
-    sys = System.empty(200, 3*200, boxsize = 2.0)
+    sys = System.empty(200, 3*200, box_vectors = np.eye(3) * 2.0)
     for i in range(200):
         sys.add(water.copy())
     
@@ -39,7 +39,7 @@ def test_write_gromacs():
                       Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
                       export={'groname': 'SOL'})
 
-    sys = System.empty(200, 3*200, boxsize = 2.0)
+    sys = System.empty(200, 3*200, box_vectors = np.eye(3)*2.0)
     for i in range(200):
         sys.add(water.copy())
     

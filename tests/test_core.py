@@ -37,14 +37,14 @@ def _print_sysinfo(s):
     print 'Test Indexing of system.molecule'
     print s.molecules[0]
     print s.molecules[:], s.molecules[:-5]
-
+    
     print s.atoms[0]
     print s.atoms[:]
     
 def test_system():
     wat = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
                     Atom("H", [-4.02, 2.49, 0.0]),
-                    Atom("H", [-5.32, 1.98, 1.0])])
+                    Atom("H", [-5.32, 1.98, 1.0])], export={'hello': 1.0})
 
     wat.r_array *= 0.1
     # Initialization from empty
@@ -101,7 +101,7 @@ def test_merge_system():
     pos = np.random.random((NWAT, 3)) * bsize
     wat = moldb.water.copy()
     
-    s = System.empty(NWAT, NWAT*3, boxsize=bsize)
+    s = System.empty(NWAT, NWAT*3, box_vectors=np.eye(3)*bsize)
     for i in range(NWAT):
         wat.move_to(pos[i])
         s.add(wat)
