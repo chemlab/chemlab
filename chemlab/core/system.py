@@ -239,7 +239,7 @@ class System(object):
         
         # Setup boxsize
         if boxsize:
-            self._boxsize = boxsize
+            self.boxsize = boxsize
         else:
             self.box_vectors = box_vectors
         
