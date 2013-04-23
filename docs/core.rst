@@ -270,3 +270,19 @@ If you use chemlab in conjunction with GROMACS, you may use the
 :py:meth:`chemlab.core.System.sort` to sort the molecules according to 
 their molecular formulas before exporting. The topology file expect to 
 have a file with the same molecule type ordererd.
+
+
+Extending the base types
+------------------------
+
+.. warning:: This part of chemlab is still in draft. This part serves
+             as a specification document.
+
+Differents applications of chemistry may require additional data
+attached to each atom, molecule or system. For example you may need
+the velocity of the system, atomic charges or number of
+electrons. Chemlab should be able to provide a way to simply attach
+this data while retaining full compatibility with all the commodities.
+
+
+
