@@ -282,7 +282,26 @@ Differents applications of chemistry may require additional data
 attached to each atom, molecule or system. For example you may need
 the velocity of the system, atomic charges or number of
 electrons. Chemlab should be able to provide a way to simply attach
-this data while retaining full compatibility with all the commodities.
+this data and correctly perform selection/sorting functionality with
+arbitrary data.
 
+You can define a new set of data structures capable of handling velocities
+per-atom::
 
+    class MyAtom(Atom):
+        fields = Atom.fields + [Attribute("v")]
 
+    class MyMolecule(Molecule):
+        attributes = Molecule.attributes + [ArrayAttribute("v_array")]
+
+    class MySystem(System):
+        attributes = System.attributes + [ArrayAttribute("v_array")]
+
+You can convert an existing chemlab Atom by using one of the following::
+
+    at = MyAtom.adapt(at, v=[])
+    mol = MyMolecule.adapt(mol, v_array=[...])
+    sys = MySystem.adapt(sys, v_array=[...])
+
+Probably chemlab should provide also a way to perform the shuffling in a
+system-independent way.
