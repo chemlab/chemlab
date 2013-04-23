@@ -1,6 +1,6 @@
 import numpy as np
 from .molecule import Atom, Molecule
-from .attributes import RArrayAttr, AtomicArrayAttr, MoleculeArrayAttr
+from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr
 from ..db import units, masses
 from ..utils import overlapping_points
 
@@ -180,7 +180,7 @@ class System(object):
     attributes = [
         AtomicArrayAttr('type_array', 'type_array', np.object),
         
-        RArrayAttr(),
+        NDArrayAttr('r_array', 'r_array', np.float, 3),
         
         AtomicArrayAttr('m_array', 'm_array',  np.float,
             default=lambda s: np.array([masses.typetomass[t] for t in s.type_array])),

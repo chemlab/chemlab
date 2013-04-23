@@ -7,6 +7,7 @@ from ..db import symbols
 from ..db import masses
 
 from .attributes import ArrayAttr
+from .fields import AtomicField, FieldRequired
 
 class Atom(object):
     '''
@@ -72,7 +73,10 @@ class Atom(object):
     
     '''
 
-    fields = ("type", "r", 'export', "mass")
+    fields = [AtomicField("type", default=False),
+              AtomicField("r", default=lambda at: np.zeros(3,dtype=np.float)),
+              AtomicField('export', default=lambda at: {}),
+              AtomicField('mass', default=lambda at: masses.typetomass[at.type])]
     
     def __init__(self, type, r, export=None):
         self.type = type
@@ -102,18 +106,26 @@ class Atom(object):
         '''
         self = cls.__new__(cls)
         
-        if not (set(Atom.fields) <= set(kwargs)):
-            raise Exception('Not all fields are passed to make an Atom %s missing' %
-                              (set(Atom.fields) - set(kwargs)))
-        for f in Atom.fields:
-            setattr(self,f, kwargs[f])
+        print [f.name for f in cls.fields]
+        for f in cls.fields:
+            val = kwargs.get(f.name, None)
+            if val == None:
+                if f.default == False:
+                    raise FieldRequired('{} field is required'.format(f.name))
+                else:
+                    f.set(self, f.default(self))
+            else:
+                f.set(self, val)
         
         return self
             
     def copy(self):
         '''Return a copy of the original Atom.
         '''
-        return Atom(self.type, np.copy(self.r), self.id, export=self.export.copy())
+
+        cls = type(self)
+        kwargs = dict((f.name, copy(f.get(self))) for f in cls.fields)
+        return cls.from_fields(**kwargs)
 
     def __repr__(self):
         return "atom({})".format(self.type)

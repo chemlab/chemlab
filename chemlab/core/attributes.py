@@ -125,10 +125,11 @@ class MoleculeArrayAttr(ArrayAttr):
         o_attr = getattr(sys, self.name)
         return o_attr[selection]
         
-class RArrayAttr(AtomicArrayAttr):
+class NDArrayAttr(AtomicArrayAttr):
     
-    def __init__(self):
-        super(RArrayAttr, self).__init__('r_array', 'r_array', np.float)
+    def __init__(self, name, fieldname, dtype, ndim, default=None):
+        super(NDArrayAttr, self).__init__(name, fieldname, dtype, default)
+        self.ndim = ndim
 
     def empty(self, sys, size):
-        return np.zeros((size, 3), dtype=np.float)
+        return np.zeros((size, self.ndim), dtype=np.float)

@@ -159,7 +159,24 @@ def test_random():
     #random_box([na, cl, wat], [16, 16, 130], [10, 10, 10], rmin=0.2)
     
     
+def test_extending():
+    from chemlab.core.attributes import NDArrayAttr, ArrayAttr
+    from chemlab.core.fields import AtomicField
     
+    class MySystem(System):
+        attributes = System.attributes + [NDArrayAttr('v_array', 'v_array', np.float, 3)]
     
+    class MyMolecule(Molecule):
+        attributes = Molecule.attributes + [ArrayAttr('v_array', 'v', np.float)]
+        
+    class MyAtom(Atom):
+        fields = Atom.fields + [AtomicField('v', default=lambda at: np.zeros(3, np.float))]
     
+    na = MyMolecule([MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])])
+    cl = MyMolecule([MyAtom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
+    s = MySystem([na, cl])
+
+    na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
+    print na_atom.copy()
     
+    print s.v_array
