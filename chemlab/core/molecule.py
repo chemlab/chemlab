@@ -6,7 +6,7 @@ from copy import copy
 from ..db import symbols
 from ..db import masses
 
-from .attributes import ArrayAttr
+from .attributes import MArrayAttr, MField
 from .fields import AtomicField, FieldRequired
 
 class Atom(object):
@@ -132,6 +132,7 @@ class Atom(object):
 
 
 
+
 class Molecule(object):
     '''`Molecule` is a data container for a set of `N` *Atoms*.
     
@@ -210,22 +211,21 @@ class Molecule(object):
        
     '''
     # Association between the Molecule array attribute and the atom one
-    atom_inherited = {'r_array': ('r', np.float64),
-                      'type_array': ('type', object),
-                      'm_array': ('mass', np.float64),
-                      'atom_export_array': ('export', object)}
+    attributes = [MArrayAttr('type_array', 'type', object, default=False),
+                  MArrayAttr('r_array', 'r', np.float, default=lambda mol: np.zeros((mol.n_atoms, 3), np.float)),
+                  MArrayAttr('m_array', 'mass', np.float, default=lambda mol: np.array([masses.typetomass[t] for t in mol.type_array])),
+                  MArrayAttr('atom_export_array', 'export', object, default=lambda mol: np.array([{} for i in range(mol.n_atoms)])),
+                  ]
     
-    attributes = [ArrayAttr('r_array', 'r', np.float),
-                  ArrayAttr('type_array', 'type', object),
-                  ArrayAttr('m_array', 'mass', np.float),
-                  ArrayAttr('atom_export_array', 'export', object)]
+    fields = [MField('export', object, default=lambda mol: {}),
+              MField('bonds', object, default=lambda mol: np.array([], dtype=object))]
     
-    fields = ('export', 'bonds')
     derived = ('formula',)
     
     def __init__(self, atoms, export=None, bonds=None):
         self.n_atoms = len(atoms)
 
+        
         for attr in self.attributes:
             setattr(self, attr.name,
                     np.array([getattr(a, attr.fieldname) for a in atoms], dtype=attr.dtype))
@@ -270,32 +270,34 @@ class Molecule(object):
         
         '''
         # Test for required fields:
-        if not (set(('r_array', 'type_array')) <= set(kwargs.keys())):
-            raise Exception('r_array and type_array are required arguments.')
+        if 'type_array' not in kwargs:
+            raise Exception('type_array is a required argument')
         
         inst = cls.__new__(Molecule)
+        inst.n_atoms = len(kwargs['type_array'])
         
-        # Special cases -- default values
-        if kwargs.get('m_array', None) == None:
-            kwargs['m_array'] = np.array([masses.typetomass[t] for t in kwargs['type_array']])            
-        if kwargs.get('atom_export_array', None) == None:
-            kwargs['atom_export_array'] = np.array([{} for t in kwargs['type_array']])     
+        for attr in cls.attributes:
+            # Get the value from the passed arguments
+            val = kwargs.get(attr.name, None)
             
-        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.items():
-            setattr(inst, arr_name, kwargs[arr_name])
+            if val == None:
+                # If the value is None set the attribute to its
+                # default value
+                attr.set(inst, attr.default(inst))
+            else:
+                # Set the attribute to the passed value
+                attr.set(inst, val)
         
-                
-        # Special Case, default value
-        if kwargs.get('export', None) is None:
-            kwargs['export'] = {}
-            
-        if kwargs.get('bonds', None) is None:
-            kwargs['bonds'] = np.array([], dtype=object)
-                
         for field in Molecule.fields:
-            setattr(inst, field, kwargs[field])
-
-        inst.n_atoms = len(inst.r_array)
+            val = kwargs.get(field.name, None)
+            if val == None:
+                # If the value is None set the field to its
+                # default value
+                field.set(inst, field.default(inst))
+            else:
+                # Set the attribute to the passed value
+                field.set(inst, val)
+        
         return inst
         
     @property
@@ -320,18 +322,19 @@ class Molecule(object):
         '''
         kwargs = {}
         
-        # Arrays
-        for arr_name, (field_name, dtyp) in Molecule.atom_inherited.items():
-            kwargs[arr_name] = getattr(self, arr_name).copy()
+        # Attributes
+        for attr in Molecule.attributes:
+            kwargs[attr.name] = copy(attr.get(self))
         
         # Fields
         for field in Molecule.fields:
-            kwargs[field] = copy(getattr(self, field))
+            kwargs[field.name] = copy(attr.get(self))
 
         return Molecule.from_arrays(**kwargs)
         
     def _det_formula(self):
         return make_formula(self.type_array)
+
     formula = property(_det_formula)
 
 def make_formula(elements):

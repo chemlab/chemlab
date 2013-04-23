@@ -133,3 +133,29 @@ class NDArrayAttr(AtomicArrayAttr):
 
     def empty(self, sys, size):
         return np.zeros((size, self.ndim), dtype=np.float)
+
+
+class MArrayAttr(object):
+    def __init__(self, name, fieldname, dtype, default=None):
+        self.name = name
+        self.dtype = dtype
+        self.default = default
+        self.fieldname = fieldname
+        
+    def get(self, at):
+        return getattr(at, self.name)
+        
+    def set(self, at, value):
+        setattr(at, self.name, value)
+
+class MField(object):
+    def __init__(self, name, dtype, default=None):
+        self.name = name
+        self.dtype = dtype
+        self.default = default
+        
+    def get(self, at):
+        return getattr(at, self.name)
+        
+    def set(self, at, value):
+        setattr(at, self.name, value)
