@@ -40,9 +40,6 @@ class AtomGenerator(object):
         if isinstance(key, int):
             return self.system.get_atom(key)
     
-AttrData = namedtuple('AttrData', ['name', 'type'])
-
-
 class System(object):
     '''A data structure containing information of a set of *N* Molecules
     and *NA* Atoms.
@@ -208,6 +205,21 @@ class System(object):
         inst._setup_empty(n_mol, n_atoms, box_vectors)
         return inst
 
+    def astype(self, cls):
+        mycls = type(self)
+        #Used to convert stuff to another type
+        kwargs = {}
+        # Copy attributes
+        for attr in mycls.attributes:
+            kwargs[attr.name] = attr.get(self)
+        
+        # Copy special fields
+        kwargs['mol_indices'] = self.mol_indices
+        kwargs['mol_n_atoms'] = self.mol_n_atoms
+        kwargs['box_vectors'] = self.box_vectors
+        
+        return cls.from_arrays(**kwargs)
+        
     def _setup_empty(self, n_mol, n_atoms, box_vectors):
         self.n_mol = n_mol
         self.n_atoms = n_atoms
@@ -264,7 +276,7 @@ class System(object):
                                    mol_indices=mol_indices)
 
         '''
-        inst = cls.__new__(System)
+        inst = cls.__new__(cls)
         
         if 'mol_indices' not in kwargs:
             raise Exception('mol_indices is a required argument.')

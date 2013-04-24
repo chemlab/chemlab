@@ -106,7 +106,6 @@ class Atom(object):
         '''
         self = cls.__new__(cls)
         
-        print [f.name for f in cls.fields]
         for f in cls.fields:
             val = kwargs.get(f.name, None)
             if val == None:
@@ -118,7 +117,12 @@ class Atom(object):
                 f.set(self, val)
         
         return self
-            
+
+    def astype(self, cls):
+        orig_cls = type(self)
+        kwargs = dict((f.name, copy(f.get(self))) for f in orig_cls.fields)
+        return cls.from_fields(**kwargs)
+        
     def copy(self):
         '''Return a copy of the original Atom.
         '''
@@ -273,7 +277,7 @@ class Molecule(object):
         if 'type_array' not in kwargs:
             raise Exception('type_array is a required argument')
         
-        inst = cls.__new__(Molecule)
+        inst = cls.__new__(cls)
         inst.n_atoms = len(kwargs['type_array'])
         
         for attr in cls.attributes:
@@ -288,7 +292,7 @@ class Molecule(object):
                 # Set the attribute to the passed value
                 attr.set(inst, val)
         
-        for field in Molecule.fields:
+        for field in cls.fields:
             val = kwargs.get(field.name, None)
             if val == None:
                 # If the value is None set the field to its
@@ -299,6 +303,22 @@ class Molecule(object):
                 field.set(inst, val)
         
         return inst
+
+    def astype(self, cls):
+        orig_cls = type(self)
+        kwargs = {}
+        
+        
+        # Attributes
+        for attr in orig_cls.attributes:
+            kwargs[attr.name] = attr.get(self)
+        
+        # Fields
+        for field in orig_cls.fields:
+            kwargs[field.name] = field.get(self)
+
+        return cls.from_arrays(**kwargs)
+        
         
     @property
     def mass(self):
@@ -320,17 +340,19 @@ class Molecule(object):
         '''Return a copy of the molecule instance
 
         '''
+        cls = type(self)
+        
         kwargs = {}
         
         # Attributes
-        for attr in Molecule.attributes:
+        for attr in cls.attributes:
             kwargs[attr.name] = copy(attr.get(self))
         
         # Fields
-        for field in Molecule.fields:
+        for field in cls.fields:
             kwargs[field.name] = copy(field.get(self))
 
-        return Molecule.from_arrays(**kwargs)
+        return cls.from_arrays(**kwargs)
         
     def _det_formula(self):
         return make_formula(self.type_array)

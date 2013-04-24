@@ -160,14 +160,14 @@ def test_random():
     
     
 def test_extending():
-    from chemlab.core.attributes import NDArrayAttr, ArrayAttr
+    from chemlab.core.attributes import NDArrayAttr, MArrayAttr
     from chemlab.core.fields import AtomicField
     
     class MySystem(System):
         attributes = System.attributes + [NDArrayAttr('v_array', 'v_array', np.float, 3)]
     
     class MyMolecule(Molecule):
-        attributes = Molecule.attributes + [ArrayAttr('v_array', 'v', np.float)]
+        attributes = Molecule.attributes + [MArrayAttr('v_array', 'v', np.float)]
         
     class MyAtom(Atom):
         fields = Atom.fields + [AtomicField('v', default=lambda at: np.zeros(3, np.float))]
@@ -180,3 +180,16 @@ def test_extending():
     print na_atom.copy()
     
     print s.v_array
+    
+    # Try to adapt
+    orig_s = s.astype(System)
+    s = orig_s.astype(MySystem) # We lost the v information by converting back and forth
+    
+    print orig_s, s
+    print s.v_array
+
+    # Adapt for molecule and atoms
+    print type(na.astype(Molecule))
+    
+    na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
+    print type(na_atom.astype(Atom))
