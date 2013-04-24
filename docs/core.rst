@@ -275,33 +275,52 @@ have a file with the same molecule type ordererd.
 Extending the base types
 ------------------------
 
-.. warning:: This part of chemlab is still in draft. This part serves
-             as a specification document.
+.. warning:: This part of chemlab is still in draft. This first, very
+             brief implementation serves as a specification document.
+             As we collect more feedback and feature requests there
+             will be an expansion and a refinement of the extension
+             functionalities.
 
 Differents applications of chemistry may require additional data
 attached to each atom, molecule or system. For example you may need
 the velocity of the system, atomic charges or number of
 electrons. Chemlab should be able to provide a way to simply attach
-this data and correctly perform selection/sorting functionality with
-arbitrary data.
+this data while retaining the selection and sorting functionalities.
 
-You can define a new set of data structures capable of handling velocities
-per-atom::
+The management of the atomic and molecular properties within a System
+is done through specific handlers. Those handlers are called
+*attributes* and *fields*. In the following example we may see how
+it's possible to add a new field "v" to the Atom class, and
+transmitting this field as a "v_array" in the Molecule and System
+class. In those cases they basically take as their argument the
+attribute/field name, the type, and a function that return the default
+value for the field/attribute::
 
+    from chemlab.core.attributes import MArrayAttr, NDArrayAttr
+    from chemlab.core.fields import AtomicField
+    
     class MyAtom(Atom):
-        fields = Atom.fields + [Attribute("v")]
+        fields = Atom.fields + [AtomicField("v", 
+                                            default=lambda at: np.zeros(3, np.float))]
 
     class MyMolecule(Molecule):
-        attributes = Molecule.attributes + [ArrayAttribute("v_array")]
+        attributes = Molecule.attributes + [MArrayAttr("v_array", "v", np.float, 
+                                                        default=lambda mol: np.zeros((mol.n_atoms, 3), np.float))]
 
     class MySystem(System):
-        attributes = System.attributes + [ArrayAttribute("v_array")]
+        attributes = System.attributes + [NDArrayAttr("v_array", "v_array", np.float, 3)]
+	
+Those class are ready to use. You may want to create new instances
+with the Atom.from_fields, Molecule.from_arrays and
+System.from_arrays.
 
-You can convert an existing chemlab Atom by using one of the following::
+Once you've done your field-specific job with
+MyAtom/MyMolecule/MySystem you can convert back to a chemlab default class
+class by using the astype methods::
 
-    at = MyAtom.adapt(at, v=[])
-    mol = MyMolecule.adapt(mol, v_array=[...])
-    sys = MySystem.adapt(sys, v_array=[...])
+    at = myat.astype(Atom)
+    mol = mymol.astype(Molecule)
+    sys = mysys.astype(System)
 
-Probably chemlab should provide also a way to perform the shuffling in a
-system-independent way.
+.. todo:: attributes doesn't sound like a right name for its purpose,
+          it will be better to use something like "arrays" or "derived_arrays".
