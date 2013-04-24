@@ -193,3 +193,8 @@ def test_extending():
     
     na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
     print type(na_atom.astype(Atom))
+
+def test_serialization():
+    cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
+    jsonstr =  cl.tojson()
+    print Molecule.from_json(jsonstr)

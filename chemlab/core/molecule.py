@@ -8,6 +8,7 @@ from ..db import masses
 
 from .attributes import MArrayAttr, MField
 from .fields import AtomicField, FieldRequired
+from .serialization import data_to_json, json_to_data
 
 class Atom(object):
     '''
@@ -332,7 +333,32 @@ class Molecule(object):
     def geometric_center(self):
         return self.r_array.sum(axis=0)/len(self.r_array)
         
-    
+
+    def tojson(self):
+        """Return a json string representing the Molecule. This is
+        useful for serialization.
+
+        """
+        return data_to_json(self.todict())
+
+    @classmethod
+    def from_json(cls, string):
+        return cls.from_arrays(**json_to_data(string))
+        
+    def todict(self):
+        cls = type(self)
+        kwargs = {}
+        # Attributes
+        for attr in cls.attributes:
+            kwargs[attr.name] = copy(attr.get(self))
+
+        # Fields
+        for field in cls.fields:
+            kwargs[field.name] = copy(field.get(self))
+
+        return kwargs
+        
+        
     def __repr__(self):
         return "molecule({})".format(self._det_formula())
     
@@ -342,16 +368,11 @@ class Molecule(object):
         '''
         cls = type(self)
         
-        kwargs = {}
+        kwargs = self.todict()
         
-        # Attributes
-        for attr in cls.attributes:
-            kwargs[attr.name] = copy(attr.get(self))
-        
-        # Fields
-        for field in cls.fields:
-            kwargs[field.name] = copy(field.get(self))
-
+        for k, val in kwargs.iteritems():
+            kwargs[k] = copy(val)
+            
         return cls.from_arrays(**kwargs)
         
     def _det_formula(self):
