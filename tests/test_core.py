@@ -75,7 +75,8 @@ def test_system():
     s2 = System.from_arrays(r_array=r_array, type_array=type_array,
                        mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
     
-    
+
+    print 'bonds', s2._mol_bonds
     sub2 = subsystem_from_molecules(s2, np.array([0, 2]))
     assert sub2.n_mol == 2
     
@@ -197,4 +198,14 @@ def test_extending():
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
     jsonstr =  cl.tojson()
-    print Molecule.from_json(jsonstr)
+    assert Molecule.from_json(jsonstr).tojson() == jsonstr
+
+    na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
+    cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
+    
+    # Fract position of Na and Cl, space group 255
+    tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[3,3,3])
+    jsonstr = tsys.tojson()
+    
+    assert System.from_json(jsonstr).tojson() == jsonstr
+    

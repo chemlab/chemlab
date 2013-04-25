@@ -25,7 +25,10 @@ class ArrayAttr(object):
 
     def get(self, sys):
         return getattr(sys, self.name)
-    
+
+    def concatenate(self, sys, othersys):
+        return np.concatenate([self.get(sys), self.get(othersys)])
+        
     def empty(self, sys, size):
         raise NotImplementedError()
 
@@ -124,6 +127,32 @@ class MoleculeArrayAttr(ArrayAttr):
     def selection(self, sys, selection):
         o_attr = getattr(sys, self.name)
         return o_attr[selection]
+
+class MoleculeListAttr(MoleculeArrayAttr):
+    def empty(self, sys, size):
+        return [[] for i in range(size)]
+    
+    def on_reorder_molecules(self, sys, new_order):
+        attr = getattr(sys, self.name)
+        attr[:] = [attr[i] for i in new_order]
+
+    def selection(self, sys, selection):
+        o_attr = getattr(sys, self.name)
+        return [o_attr[i] for i in selection]
+
+    def from_array(self, sys, arr):
+        if arr == None:
+            if self.default is not None:
+                setattr(sys, self.name, self.default(sys))
+            elif self.default is False:
+                raise Exception("array {} is required".format(self.name))
+            else:
+                self.on_empty(sys)
+        else:
+            setattr(sys, self.name, arr)
+
+    def concatenate(self, sys, othersys):
+        return self.get(sys) + self.get(othersys)
         
 class NDArrayAttr(AtomicArrayAttr):
     

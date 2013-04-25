@@ -1,6 +1,8 @@
 import numpy as np
 from .molecule import Atom, Molecule
-from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr
+from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr
+from .serialization import json_to_data, data_to_json
+
 from ..db import units, masses
 from ..utils import overlapping_points
 
@@ -173,7 +175,8 @@ class System(object):
         MoleculeArrayAttr('mol_export', 'export', np.object,
             default=lambda s: np.array([{} for i in range(s.n_mol)], dtype=np.object)),
         
-        MoleculeArrayAttr('_mol_bonds', 'bonds', np.object),
+        MoleculeListAttr('_mol_bonds', 'bonds', np.object,
+                         default=lambda s: [[] for i in range(s.n_mol)]),
     ]
     
     def __init__(self, molecules, box_vectors=None):
@@ -204,8 +207,16 @@ class System(object):
         inst = cls.__new__(System)
         inst._setup_empty(n_mol, n_atoms, box_vectors)
         return inst
-
-    def astype(self, cls):
+        
+    @classmethod
+    def from_json(cls, string):
+        kwargs = json_to_data(string)
+        return cls.from_arrays(**kwargs)
+        
+    def tojson(self):
+        return data_to_json(self.todict())
+        
+    def todict(self):
         mycls = type(self)
         #Used to convert stuff to another type
         kwargs = {}
@@ -218,7 +229,10 @@ class System(object):
         kwargs['mol_n_atoms'] = self.mol_n_atoms
         kwargs['box_vectors'] = self.box_vectors
         
-        return cls.from_arrays(**kwargs)
+        return kwargs
+        
+    def astype(self, cls):
+        return cls.from_arrays(**self.todict())
         
     def _setup_empty(self, n_mol, n_atoms, box_vectors):
         self.n_mol = n_mol
@@ -600,7 +614,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
     # Assign the attributes
     for attr in type(sysa).attributes:
         attr.assign(sysres,
-                    np.concatenate([attr.get(sysa), attr.get(sysb)]))
+                    attr.concatenate(sysa, sysb))
     
     # edit the mol_indices and n_mol
     offset = sysa.mol_indices[-1] + sysa.mol_n_atoms[-1]
