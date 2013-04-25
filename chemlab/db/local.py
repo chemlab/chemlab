@@ -1,6 +1,5 @@
 '''Local directory database
 '''
-import cPickle
 import numpy as np
 import os
 from .base import EntryNotFound
@@ -11,14 +10,16 @@ class LocalDB(object):
         
     def get(self, feature, key, *args, **kwargs):
         if feature == "molecule":
+            from ..core import Molecule
             try:
                 fd = open(os.path.join(self.directory, 
-                                       "molecule", key))
+                                       "molecule", key+'.json'))
                 
             except IOError:
-                raise EntryNotFound()
+                raise EntryNotFound(key + ' Not found')
                 
-            return cPickle.load(fd)
+            return Molecule.from_json(fd.read())
+            
         if feature == 'data':
             fd = open(os.path.join(self.directory,
                                    "data", "element.txt"))
