@@ -6,7 +6,9 @@ from .gro_map import gro_to_cl
 
 from ...core.system import System
 from ...core.molecule import Atom
-from ...db.symbols import symbol_list
+from ...db import ChemlabDB
+
+symbol_list = ChemlabDB().get('data', 'symbols')
 
 
 symbol_list = [s.lower() for s in symbol_list]

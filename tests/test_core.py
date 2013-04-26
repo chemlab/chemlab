@@ -90,9 +90,11 @@ def test_system():
 def test_merge_system():
     # take a protein
     from chemlab.io import datafile
-    from chemlab.db import moldb
     from chemlab.graphics import display_system
     from chemlab.core import merge_systems
+    from chemlab.db import ChemlabDB
+    
+    water = ChemlabDB().get("molecule", "example.water")
     
     prot = datafile("tests/data/3ZJE.pdb").read("system")
     
@@ -100,7 +102,7 @@ def test_merge_system():
     NWAT = 50000
     bsize = 20.0
     pos = np.random.random((NWAT, 3)) * bsize
-    wat = moldb.water.copy()
+    wat = water.copy()
     
     s = System.empty(NWAT, NWAT*3, box_vectors=np.eye(3)*bsize)
     for i in range(NWAT):
