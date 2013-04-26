@@ -86,7 +86,7 @@ To generate such a box we will:
                 s.add(water_tmp)
      
     # Adjust boxsize for periodic boundary conditions
-    s.boxsize = 8 * spacing
+    s.box_vectors = np.eye(3) * (8 * spacing)
                 
     # Visualize to verify that the system was setup correctly
     display_system(s)

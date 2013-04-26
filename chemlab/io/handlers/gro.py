@@ -135,7 +135,6 @@ def parse_gro_lines(lines):
                                  mol_formula=mol_formula,
                                  box_vectors=box_vectors)
     
-    #sys.r_array -= boxsize/2.0
     
     return sys
                 
@@ -163,13 +162,13 @@ def write_gro(sys, fd):
                 raise Exception('Gromacs exporter needs the atom type as grotype')
             
             at_n += 1
-            x, y, z = sys.r_array[offset+j]# + sys.boxsize / 2.0
+            x, y, z = sys.r_array[offset+j]
             
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
                          .format(res_n, res_name, at_name, at_n%99999, x, y, z))
     
     if sys.box_vectors == None:
-        raise Exception('Gromacs exporter need box_vector information\nSet System.boxsize attribute or System.box_vectors')
+        raise Exception('Gromacs exporter need box_vectors information System.box_vectors')
     lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0,0],
                                                       sys.box_vectors[1,1],
                                                       sys.box_vectors[2,2]))

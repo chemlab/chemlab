@@ -322,5 +322,6 @@ class by using the astype methods::
     mol = mymol.astype(Molecule)
     sys = mysys.astype(System)
 
-.. todo:: attributes doesn't sound like a right name for its purpose,
-          it will be better to use something like "arrays" or "derived_arrays".
+..
+ todo attributes doesn't sound like a right name for its purpose,
+      it will be better to use something like "arrays" or "derived_arrays".
