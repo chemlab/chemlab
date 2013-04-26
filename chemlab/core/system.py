@@ -3,11 +3,12 @@ from .molecule import Atom, Molecule
 from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr
 from .serialization import json_to_data, data_to_json
 
-from ..db import units, masses
+from ..db import ChemlabDB
+cdb = ChemlabDB()
+masses = cdb.get("data", "massdict")
+
 from ..utils import overlapping_points
-
 from collections import namedtuple
-
 
 class MoleculeGenerator(object):
     def __init__(self, system):
@@ -167,7 +168,7 @@ class System(object):
         NDArrayAttr('r_array', 'r_array', np.float, 3),
         
         AtomicArrayAttr('m_array', 'm_array',  np.float,
-            default=lambda s: np.array([masses.typetomass[t] for t in s.type_array])),
+            default=lambda s: np.array([masses[t] for t in s.type_array])),
         
         AtomicArrayAttr('atom_export_array', 'atom_export_array', np.object,
             default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),

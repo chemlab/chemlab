@@ -3,7 +3,7 @@ from .atom import AtomRenderer
 from .bond import BondRenderer
 
 from ...db import ChemlabDB
-cbd = ChemlabDB()
+cdb = ChemlabDB()
 
 class BallAndStickRenderer(AbstractRenderer):
     '''Render a ball and stick representation of a series of

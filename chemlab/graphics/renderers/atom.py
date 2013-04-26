@@ -1,10 +1,13 @@
 import numpy as np
 from .. import colors
-from ...db.vdw import vdw_dict
+from ...db import ChemlabDB
 from .base import AbstractRenderer
 from .sphere import SphereRenderer
 from .sphere_imp import SphereImpostorRenderer
 from .point import PointRenderer
+
+
+vdw_dict = ChemlabDB().get("data", 'vdwdict')
 
 class AtomRenderer(AbstractRenderer):
     """Render atoms by using different rendering methods.

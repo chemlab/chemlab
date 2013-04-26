@@ -78,7 +78,7 @@ class Atom(object):
     fields = [AtomicField("type", default=False),
               AtomicField("r", default=lambda at: np.zeros(3,dtype=np.float)),
               AtomicField('export', default=lambda at: {}),
-              AtomicField('mass', default=lambda at: masses.typetomass[at.type])]
+              AtomicField('mass', default=lambda at: masses[at.type])]
     
     def __init__(self, type, r, export=None):
         self.type = type
@@ -91,7 +91,7 @@ class Atom(object):
             self.export = {}
 
         #self.atno = symbols.symbol_list.index(type.lower()) + 1
-        self.mass = masses.typetomass[type]
+        self.mass = masses[type]
 
     @classmethod
     def from_fields(cls, **kwargs):
@@ -219,7 +219,7 @@ class Molecule(object):
     # Association between the Molecule array attribute and the atom one
     attributes = [MArrayAttr('type_array', 'type', object, default=False),
                   MArrayAttr('r_array', 'r', np.float, default=lambda mol: np.zeros((mol.n_atoms, 3), np.float)),
-                  MArrayAttr('m_array', 'mass', np.float, default=lambda mol: np.array([masses.typetomass[t] for t in mol.type_array])),
+                  MArrayAttr('m_array', 'mass', np.float, default=lambda mol: np.array([masses[t] for t in mol.type_array])),
                   MArrayAttr('atom_export_array', 'export', object, default=lambda mol: np.array([{} for i in range(mol.n_atoms)])),
                   ]
     
