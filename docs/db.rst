@@ -75,5 +75,6 @@ The reason for such a simple structure is that in the future it will
 be easy to define custom-made remote database, for example you could
 have a community mantained github repo with commonly used molecules
 and data, that can be directly accessed by chemlab (everybody is
-welcome to develop such an extension).
+welcome to develop such an extension). On top of that, you can
+copy-paste json molecule files without having to do any migration.
 
