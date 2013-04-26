@@ -263,8 +263,19 @@ class Camera:
 
     def autozoom(self, points):
         '''Fit the current view to the correct zoom level to display
-        all *points*
+        all *points*.
 
+        The camera viewing direction and rotation pivot match the
+        geometric center of the points and the distance from that
+        point is calculated in order for all points to be in the field
+        of view. This is currently used to provide optimal
+        visualization for molecules and systems
+
+        **Parameters**
+        
+        points: np.ndarray((N, 3))
+             Array of points.
+        
         '''
         extraoff = 0.01
         

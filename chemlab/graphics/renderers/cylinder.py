@@ -15,10 +15,6 @@ class CylinderRenderer(AbstractRenderer):
     The API is quite similar to
     :py:class:`~chemlab.graphics.renderers.LineRenderer`
     
-    .. note:: The current implementation is a bit slow and can't render
-              a lot of cylinders (~1000) fast enough, we expect to 
-              optimize it in the near future.
-    
     .. image:: /_static/cylinder_renderer.png
     
     **Parameters**

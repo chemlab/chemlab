@@ -3,8 +3,27 @@ from . import CylinderRenderer, LineRenderer
 import numpy as np
 from chemlab.graphics.colors import default_atom_map
 
-
 class BondRenderer(AbstractRenderer):
+    '''
+        Render chemical bonds as cylinders or lines.
+
+        **Parameters**
+    
+        widget:
+           The parent QChemlabWidget
+        bonds: np.ndarray((NBONDS, 2), dtype=int)
+            An array of integer pairs that represent the bonds.
+        r_array: np.ndarray((NATOMS, 3), dtype=float)
+            The coordinate array
+        type_array: np.ndarray((NATOMS, 3), dtype=object)
+            An array containing all the atomic symbols like `Ar`, `H`, `O`.
+            If the atomic type is unknown, use the `Xx` symbol.
+        radius: float, default=0.02
+            The radius of the bonds
+        style: "cylinders" | "lines"
+            Whether to render the bonds as cylinders or lines.
+    
+    '''
     def __init__(self, widget, bonds, r_array, type_array, radius=0.02,
                  style="cylinders"):
         super(BondRenderer, self).__init__(widget)

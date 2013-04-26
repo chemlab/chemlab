@@ -32,7 +32,24 @@ AtomRenderer
 	       
 .. autoclass:: chemlab.graphics.renderers.AtomRenderer(widget, r_array, type_array, backend="impostors", color_scheme=colors.default_atom_map, radii_map=vdw_dict)
     :members:
-	       
+
+
+BondRenderer
+------------
+
+.. autoclass:: chemlab.graphics.renderers.BondRenderer
+    :members:
+
+BallAndStickRenderer
+--------------------
+.. autoclass:: chemlab.graphics.renderers.BallAndStickRenderer
+    :members:
+
+WireframeRenderer
+--------------------
+.. autoclass:: chemlab.graphics.renderers.WireframeRenderer
+    :members:
+
 PointRenderer
 -------------
 

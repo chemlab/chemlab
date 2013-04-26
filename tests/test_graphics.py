@@ -207,7 +207,7 @@ def test_wireframe_renderer():
     ar = v.add_renderer(WireframeRenderer, mol.r_array, mol.type_array, mol.bonds)
     
     # Try without bonds
-    ar2 = v.add_renderer(WireframeRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
+    #ar2 = v.add_renderer(WireframeRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
     
     v.run()
 
