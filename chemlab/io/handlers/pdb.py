@@ -2,7 +2,9 @@ from ...core import Atom, Molecule, System
 from .base import IOHandler
 from itertools import groupby
 import numpy as np
-from ...db import cdb
+from ...db import ChemlabDB
+
+cdb = ChemlabDB()
 
 symbols = cdb.get("data", "symbols")
 u_symbols = [s.upper() for s in symbols]

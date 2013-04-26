@@ -3,8 +3,9 @@ from collections import Counter
 import numpy as np
 from copy import copy
 
-from ..db import symbols
-from ..db import masses
+from ..db import ChemlabDB
+
+masses = ChemlabDB().get("data", "massdict")
 
 from .attributes import MArrayAttr, MField
 from .fields import AtomicField, FieldRequired

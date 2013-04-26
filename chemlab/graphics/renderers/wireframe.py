@@ -2,7 +2,9 @@ from .base import AbstractRenderer
 from .atom import AtomRenderer
 from .bond import BondRenderer
 
-from ...db import cdb
+from ...db import ChemlabDB
+
+cdb = ChemlabDB()
 
 class WireframeRenderer(AbstractRenderer):
     '''

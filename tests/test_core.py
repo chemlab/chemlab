@@ -150,7 +150,8 @@ def test_bonds():
 
 def test_random():
     '''Testing random made box'''
-    from chemlab.db import cdb
+    from chemlab.db import ChemlabDB
+    cdb = ChemlabDB()
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
     wat = cdb.get("molecule", 'gromacs.spce')

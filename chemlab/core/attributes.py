@@ -1,5 +1,6 @@
 import numpy as np
-from ..db import cdb
+from ..db import ChemlabDB
+cdb = ChemlabDB()
 
 
 class ArrayAttr(object):
