@@ -11,6 +11,7 @@ class WireframeRenderer(AbstractRenderer):
     
         .. image:: /_static/wireframe_renderer.png
                  :width: 300px
+    
         **Parameters**
     
         widget:

@@ -82,8 +82,9 @@ User Manual
    core
    io
    graphics
+   db
    gromacs
-   
+
 Reference Documentation
 -----------------------
 
@@ -95,6 +96,7 @@ Reference Documentation
    api/chemlab.core
    api/chemlab.io
    api/chemlab.graphics
+   api/chemlab.db
    api/chemlab.utils
 
 License
