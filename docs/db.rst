@@ -78,3 +78,4 @@ and data, that can be directly accessed by chemlab (everybody is
 welcome to develop such an extension). On top of that, you can
 copy-paste json molecule files without having to do any migration.
 
+.. seealso:: :doc:`api/chemlab.db`
