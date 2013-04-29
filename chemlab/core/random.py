@@ -24,9 +24,9 @@ def meshgrid2(*arrs):
     return tuple(ans)
 
 def spaced_lattice(size, spacing):
-    x = np.arange(0.0, size[0], spacing[0])
-    y = np.arange(0.0, size[1], spacing[1])
-    z = np.arange(0.0, size[2], spacing[2])
+    x = np.arange(0.0, size[0], spacing[0])[:-1]
+    y = np.arange(0.0, size[1], spacing[1])[:-1]
+    z = np.arange(0.0, size[2], spacing[2])[:-1]
     
     g = meshgrid2(x, y, z)
     positions = np.vstack(map(np.ravel, g)).transpose()

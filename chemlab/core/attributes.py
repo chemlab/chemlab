@@ -66,7 +66,7 @@ class AtomicArrayAttr(ArrayAttr):
         attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
         
     def on_remove_molecules(self, sys, indices):
-        at_indices = self.mol_to_atom_indices(indices)
+        at_indices = sys.mol_to_atom_indices(indices)
         setattr(sys, self.name, np.delete(getattr(sys, self.name), at_indices, axis=0))
     
     def on_reorder_molecules(self, sys, new_order):

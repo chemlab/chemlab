@@ -85,8 +85,20 @@ def test_system():
                                              False, False, False,
                                              False, False, False]))
     assert sub.n_mol == 1
-    
 
+def test_system_remove():
+        # 3 water molecules
+    r_array = np.random.random((9, 3))
+    type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
+    mol_indices = [0, 3, 6]
+    mol_n_atoms = [3, 3, 3]
+    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
+                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+
+    s2.remove_atoms([0, 1])
+    
+    print s2.type_array
+    
 def test_merge_system():
     # take a protein
     from chemlab.io import datafile

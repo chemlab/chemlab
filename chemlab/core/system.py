@@ -371,6 +371,18 @@ class System(object):
         self.n_mol = len(self.mol_n_atoms)
         self.n_atoms = len(self.r_array)
         
+    def remove_atoms(self, indices):
+        mol_indices = self.atom_to_molecule_indices(indices)
+        self.remove_molecules(mol_indices)
+        
+    def atom_to_molecule_indices(self, selection):
+        # Which atom belongs to which molecule
+        atomic_ids = _selection_to_index(selection)   
+    
+        molecule_ids = np.digitize(atomic_ids, self.mol_indices)-1
+        molecule_ids = np.unique(molecule_ids)
+        return molecule_ids
+        
     def mol_to_atom_indices(self, indices):
         '''Given the indices over molecules, return the indices over
         atoms.
@@ -588,27 +600,28 @@ def merge_systems(sysa, sysb, bounding=0.2):
        First system
     sysb: System
        Second system
-    bounding: float
+    bounding: float or False
        Extra space used when cutting molecules in *sysa* to make space
        for *sysb*.
 
     '''
-    # Delete overlaps.
-    if sysa.box_vectors is not None:
-        periodicity = sysa.box_vectors.diagonal()
-    else:
-        periodicity = None
-    
-    p = overlapping_points(sysb.r_array, sysa.r_array,
-                           cutoff=bounding, periodic=periodicity)
-    
-    
-    # sel = np.logical_not(xmask & ymask & zmask)
-    sel = np.ones(len(sysa.r_array), dtype=np.bool)
-    sel[p] = False
-    
-    # Rebuild sysa without water molecules
-    sysa = subsystem_from_atoms(sysa, sel)
+
+    if bounding is not False:
+        # Delete overlaps.
+        if sysa.box_vectors is not None:
+            periodicity = sysa.box_vectors.diagonal()
+        else:
+            periodicity = None
+
+        p = overlapping_points(sysb.r_array, sysa.r_array,
+                               cutoff=bounding, periodic=periodicity)
+
+
+        sel = np.ones(len(sysa.r_array), dtype=np.bool)
+        sel[p] = False
+
+        # Rebuild sysa without water molecules
+        sysa = subsystem_from_atoms(sysa, sel)
     
     sysres = System.empty(sysa.n_mol + sysb.n_mol, sysa.n_atoms + sysb.n_atoms)
     
