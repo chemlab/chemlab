@@ -211,10 +211,21 @@ class System(object):
         
     @classmethod
     def from_json(cls, string):
+        """Create a System instance from a json string. Such strings
+        are produced from the method
+        :py:meth:`chemlab.core.System.tojson`
+
+        """
+
         kwargs = json_to_data(string)
         return cls.from_arrays(**kwargs)
         
     def tojson(self):
+        '''Serialize a System instance using json.
+
+        .. seealso:: :py:meth:`chemlab.core.System.from_json`
+        
+        '''
         return data_to_json(self.todict())
         
     def todict(self):
@@ -355,7 +366,20 @@ class System(object):
         self._at_counter += mol.n_atoms
     
     def remove_molecules(self, indices):
+        """Remove the molecules positioned at *indices*.
+
+        For example, if you have a system comprised of 10 water
+        molecules you can remove the first, fifth and nineth by using::
+
+            system.remove_molecules([0, 4, 8])
+
+        **Parameters**
         
+        indices: np.ndarray((N,), dtype=int)
+            Array of integers between 0 and System.n_mol
+
+        """
+
         # Shift the arrays
         for attr in self.attributes:
             attr.on_remove_molecules(self, indices)
@@ -372,10 +396,38 @@ class System(object):
         self.n_atoms = len(self.r_array)
         
     def remove_atoms(self, indices):
+        """Remove the atoms positioned at *indices*. The molecule
+        containing the atom is removed as well.
+
+        If you have a system of 10 water molecules (and 30 atoms), if
+        you remove the atoms at indices 0, 1 and 29 you will remove
+        the first and last water molecules.
+
+        **Parameters**
+        
+        indices: np.ndarray((N,), dtype=int)
+            Array of integers between 0 and System.n_atoms
+
+        """
+
         mol_indices = self.atom_to_molecule_indices(indices)
         self.remove_molecules(mol_indices)
         
     def atom_to_molecule_indices(self, selection):
+        '''Given the indices over atoms, return the indices over
+        molecules. If an atom is selected, all the containing molecule
+        is selected too.
+
+        **Parameters**
+
+        selection: np.ndarray((N,), dtype=int) | np.ndarray((NATOMS,), dtype=book)
+             Either an index array or a boolean selection array over the atoms
+        
+        **Returns**
+
+        np.ndarray((N,), dtype=int) an array of molecular indices.
+
+        '''
         # Which atom belongs to which molecule
         atomic_ids = _selection_to_index(selection)   
     
@@ -387,6 +439,16 @@ class System(object):
         '''Given the indices over molecules, return the indices over
         atoms.
         
+        **Parameters**
+        
+        indices: np.ndarray((N,), dtype=int)
+            Array of integers between 0 and System.n_mol
+
+        **Returns**
+
+        np.ndarray((N,), dtype=int) the indices of all the atoms
+        belonging to the selected molecules.
+
         '''
         rng = np.arange(self.n_atoms)
         ind = []
@@ -418,6 +480,17 @@ class System(object):
         self.reorder_molecules(sorted_index)
         
     def reorder_molecules(self, new_order):
+        """Reorder the molecules in the system according to
+        *new_order*.
+        
+        **Parameters**
+
+        new_order: np.ndarray((NMOL,), dtype=int)
+            An array of integers
+            containing the new order of the system.
+
+        """
+
         old_indices = self.mol_indices.copy()
         old_n_atoms = self.mol_n_atoms.copy()
         
@@ -460,6 +533,18 @@ class System(object):
         return Molecule.from_arrays(**kwargs)
         
     def get_bond_array(self):
+        """Get the bonds between the atoms in the system.
+
+        **Returns**
+        np.ndarray((NBONDS, 2), dtype=int)
+        
+        An array of 2d indices that specify the index of the bonded
+        atoms.
+        
+        .. warning:: The bond handling has to be considered experimental
+
+        """
+
         bdlist = self._mol_bonds
         cumulatives = []
         
@@ -602,7 +687,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
        Second system
     bounding: float or False
        Extra space used when cutting molecules in *sysa* to make space
-       for *sysb*.
+       for *sysb*. If it is False, no overlap handling will be performed.
 
     '''
 
