@@ -45,3 +45,7 @@ chemlab.ipython:
     - Preliminary ipython notebook integration. It can display
       Molecule and System instances by using out-of-screen rendering.
 
+chemlab.utils:
+
+    - Implemented some (periodic/non-periodic) distance finding
+      routines.
