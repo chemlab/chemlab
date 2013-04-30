@@ -22,4 +22,12 @@ chemlab.core:
     - Removed boxsize attribute, now you have to always specify
       box_vectors.
 
+chemlab.graphics:
+
+    - New Renderers:
+      - BallAndStickRenderer
+      - BondRenderer
+      - WireframeRenderer
+
+    - Implemented Camera.autozoom for autoscaling
 

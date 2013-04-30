@@ -43,7 +43,7 @@ origin and summing its coordinates by a random displacement::
     
     wat = Molecule([Atom("H", [0.0, 0.0, 0.0]),
                     Atom("H", [0.0, 1.0, 0.0]),
-                    Atom("O", [0.0, 0.0, 1.0])])
+                    Atom("O", [0.0, 0.0, 1.0])], bonds=[[2, 0], [2, 1]])
  
     # Shapes (NA, 3) and (3,)
     wat.r_array += np.random.rand(3)
@@ -263,14 +263,35 @@ bounding box around the two systems and removing the molecules of the
 first system that are inside the second system bounding box. In the
 future there will be more clever ways to handle this overlaps.
 
-Sorting
-~~~~~~~
+Removing
+--------
+
+There are two methods used to remove specific atoms and molecules from
+a system. :py:meth:`chemlab.core.System.remove_molecules` and
+:py:meth:`chemlab.core.System.remove_atoms`. Taking from the previous
+NaCl example, you may need to remove some excess ions to met the
+electroneutrality condition::
+
+  # n_na and n_cl are the number of Na and Cl molecules 
+  toremove = 'Na' if n_na > n_cl else 'Cl'
+  nremove = abs(n_na - n_cl) # Number of indices to be removed
+  
+  remove_indices = (s.type_array == toremove).nonzero()[0][:nremove]
+  
+  s.remove_atoms(rem_indices)
+
+Sorting and reordering
+~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible to reorder the molecules in a System by using the
+method :py:meth:`chemlab.core.System.reorder_molecules` that takes the
+new order as the first argument. Reordering can be useful for example
+to sort the molecules against a certain key.
 
 If you use chemlab in conjunction with GROMACS, you may use the
 :py:meth:`chemlab.core.System.sort` to sort the molecules according to 
 their molecular formulas before exporting. The topology file expect to 
 have a file with the same molecule type ordererd.
-
 
 Extending the base types
 ------------------------

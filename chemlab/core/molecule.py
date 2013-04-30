@@ -183,6 +183,7 @@ class Molecule(object):
     
        Array of `Atom.export` dicts.
     
+       
     .. py:attribute:: n_atoms
     
        :type: int
@@ -194,6 +195,12 @@ class Molecule(object):
        :type: dict
     
        Export information for the whole Molecule.
+    
+    .. py:attribute:: bonds
+
+       :type: np.ndarray((NBONDS,2), dtype=int)
+    
+       A list containing the indices of the atoms connected by a bond. Example: ``[[0 1] [0 2] [3 4]]``
     
     .. py:attribute:: mass
        
