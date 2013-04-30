@@ -133,8 +133,31 @@ Preallocating and adding molecules is a pretty fast way to build a
 build the system by passing ready-made arrays, this is done by using
 :py:meth:`chemlab.core.System.from_arrays`.
 
-Building Crystals
-.................
+Building Systems
+................
+
+Random Boxes
+~~~~~~~~~~~~
+
+It is possible to build boxes where atoms are placed randomly by using
+the :py:meth:`chemlab.core.random_lattice_box` function. A set of
+template molecules are copied and translated randomly on the points of
+a 3d lattice. This ensure that the spacing between molecules is
+consistent and to avoid overlaps.
+
+To make an example box::
+
+  from chemlab.db import ChemlabDB
+  from chemlab.core import random_lattice_box
+  
+  # Example water molecule
+  water = ChemlabDB().get('molecule', 'example.water')
+  
+  s = random_lattice_box([water], [1000], [4.0, 4.0, 4.0])
+
+
+Crystals
+~~~~~~~~
 
 chemlab provides an handy way to build crystal structures from the
 atomic coordinates and the space group information. If you have
@@ -264,7 +287,7 @@ first system that are inside the second system bounding box. In the
 future there will be more clever ways to handle this overlaps.
 
 Removing
---------
+~~~~~~~~
 
 There are two methods used to remove specific atoms and molecules from
 a system. :py:meth:`chemlab.core.System.remove_molecules` and

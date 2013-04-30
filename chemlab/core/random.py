@@ -37,7 +37,40 @@ def spaced_lattice(size, spacing):
 
 def random_lattice_box(mol_list, mol_number, size,
                        spacing=np.array([0.3, 0.3, 0.3])):
+    '''Make a box by placing the molecules specified in *mol_list* on
+    random points of an evenly spaced lattice.
+
+    Using a lattice automatically ensures that no two molecules are
+    overlapping.
+
+    **Parameters**
+
+    mol_list: list of Molecule instances
+       A list of each kind of molecules to add to the system.
+    mol_number: list of int
+       The number of molecules to place for each kind.
+    size: np.ndarray((3,), float)
+       The box size in nm
+    spacing: np.ndarray((3,), float), [0.3 0.3 0.3]
+       The lattice spacing in nm.
+
+    **Returns**
     
+    A System instance.
+    
+    **Example**
+    
+    Typical box with 1000 water molecules randomly placed in a box of size
+    ``[2.0 2.0 2.0]``::
+
+      from chemlab.db import ChemlabDB
+      
+      # Example water molecule
+      water = ChemlabDB().get('molecule', 'example.water')
+      
+      s = random_water_box([water], [1000], [2.0, 2.0, 2.0])
+    
+    '''
     # Generate the coordinates
     positions = spaced_lattice(size, spacing)
     # Randomize them

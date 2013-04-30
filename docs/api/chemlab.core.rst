@@ -39,3 +39,5 @@ Routines to create Systems
 --------------------------
 
 .. autofunction:: chemlab.core.crystal
+
+.. autofunction:: chemlab.core.random_lattice_box

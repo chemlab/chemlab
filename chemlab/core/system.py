@@ -3,6 +3,7 @@ from .molecule import Atom, Molecule
 from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr
 from .serialization import json_to_data, data_to_json
 
+from collections import Counter
 from ..db import ChemlabDB
 cdb = ChemlabDB()
 masses = cdb.get("data", "massdict")
@@ -564,6 +565,12 @@ class System(object):
         end_index = start_index + self.mol_n_atoms[i]
         return start_index, end_index
 
+    def __repr__(self):
+        counts = Counter(self.type_array)
+        composition = ','.join('{} {}'.format(sym, counts[sym])
+                               for sym in sorted(counts))
+        return 'system({})'.format(composition)
+            
 # Functions to operate on systems
 def subsystem_from_molecules(orig, selection):
     '''Create a system from the *orig* system by picking the molecules

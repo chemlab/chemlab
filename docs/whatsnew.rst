@@ -21,6 +21,7 @@ chemlab.core:
     - System.merge_systems has a better overlap handling.
     - Removed boxsize attribute, now you have to always specify
       box_vectors.
+    - Implemented random_lattice_box to do random solvent boxes.
 
 chemlab.graphics:
 
@@ -30,4 +31,17 @@ chemlab.graphics:
       - WireframeRenderer
 
     - Implemented Camera.autozoom for autoscaling
+    - Reimplemented BondRenderer in cython.
+
+chemlab.db:
+
+    - New package to handle databases
+    - CirDB to retrieve molecules from chemical identifier resolver
+    - ChemlabDB to retrieve built-in data
+    - LocalDB to make personal databases
+
+chemlab.ipython:
+    
+    - Preliminary ipython notebook integration. It can display
+      Molecule and System instances by using out-of-screen rendering.
 
