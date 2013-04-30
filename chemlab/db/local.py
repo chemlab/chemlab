@@ -2,9 +2,38 @@
 '''
 import numpy as np
 import os
-from .base import EntryNotFound
+from .base import EntryNotFound, AbstractDB
 
-class LocalDB(object):
+class LocalDB(AbstractDB):
+    '''Store serialized molecules and systems in a directory tree.
+    
+    See :ref:`localdb` for an example of usage.
+    
+    .. py:attribute:: directory
+
+       Directory where the database is located.
+    
+    .. method:: get(self, 'molecule', key)
+
+       Get an entry from the database. Key is the filename without
+       extension of the serialized molecule. Molecules are stored in
+       the subdirectory.
+    
+    .. method:: get(self, 'molecule', key)
+
+       Get an entry from the database. Key is the filename without
+       extension of the serialized system.
+
+    .. method:: store(self, 'molecule', key, value)
+    
+    .. method:: store(self, 'system', key, value)
+
+       Store a Molecule or a System passed as *value* in the directory
+       structure. The objects are dumped to disk after being
+       serialized to json.
+
+    '''
+    
     def __init__(self, directory):
         self.directory = directory
         

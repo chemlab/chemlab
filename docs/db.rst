@@ -31,6 +31,10 @@ OpenBabel) you can::
 For more information refer to the :py:class:`chemlab.db.ChemlabDB`
 documentation.
 
+.. seealso:: :doc:`api/chemlab.db`
+
+.. _localdb:
+
 Having your own molecular database
 ----------------------------------
 
@@ -66,10 +70,10 @@ a very simple directory structure. For the previous example, the
 database directory would look like this::
 
   /path/to/yourdb/
-                 + molecule
-		   + examplemol.json
-                 + system
-                   + examplesys.json
+          - molecule/
+	    - examplemol.json
+          - system/
+            - examplesys.json
 
 The reason for such a simple structure is that in the future it will
 be easy to define custom-made remote database, for example you could

@@ -3,7 +3,7 @@ What's new
 ==========
 
 Version 0.2
-===========
+-----------
 
 chemlab.core:
 

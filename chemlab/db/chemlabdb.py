@@ -5,9 +5,30 @@ import os
 class ChemlabDB(AbstractDB):
     """Chemlab default database.
     
-    It contains some pretty generic atomic data and some example
-    molecules and systems.
+    This database contains some example molecules and some atomic
+    data.
+    
+    .. method:: get(self, 'molecule', key)
+    
+        Retrieve a molecule from the database.
+        The included molecule keys are:
 
+        - example.water
+        - example.norbornene
+        - gromacs.spc
+        - gromacs.spce
+        - gromacs.na+
+        - gromacs.cl-
+
+    .. method:: get(self, 'data', key)
+    
+        Retrieve atomic data. The available data is:
+
+        - vdwdict: Dictionary with per-element Van Der Waals radii.
+        - massdict: Dictionary of masses.
+        - symbols: Atomic symbols in a list.
+
+        Data was taken from the `OpenBabel <http://openbabel.org>`_ distribution.
     """
 
     def __init__(self):
