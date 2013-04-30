@@ -47,7 +47,7 @@ Chemlab long term goal is to be:
   write the hard bits in C with the help of cython.
 
 Current Status
-------------------------
+--------------
 
 Computational and theoretical chemistry is a huge field, and providing
 a program that encompasses all aspect of it is an impossible task. The
@@ -55,10 +55,12 @@ spirit of chemlab is to provide a common ground from where you can
 build specific programs. For this reason it includes an :doc:`fully
 programmable </graphics>` molecular viewer.
 
-Chemlab is in its early developement and it provides the most basic
-data structures. The molecular viewer has a solid ground and can
-actually draw and play trajectories in an efficient way. To get
-started be sure to check the :ref:`user-manual`.
+Chemlab includes a lot of utilities to programmatically download and
+generate geometries. The molecular viewer is very fast (it can easily
+*animate* ~100000 spheres) and the design is simple and flexible. For
+more information about the newest features check out the release notes
+in the :doc:`whatsnew` document.
+
 
 Chemlab is developer-friendly, it provides good documentation and has
 an easy structure to get in. Feel free to send me anything that you
@@ -73,6 +75,12 @@ your mind. Get involved!
 User Manual
 -----------
 
+.. toctree::
+   
+   whatsnew
+	       
+
+
 **Table of Contents**
 
 .. toctree::
@@ -83,6 +91,7 @@ User Manual
    io
    graphics
    db
+   ipython
    gromacs
 
 Reference Documentation

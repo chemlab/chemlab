@@ -204,10 +204,10 @@ the potential energy, pressure, temperature and density. This information
 is written by GROMACS in the ".edr" file. You can use the chemlab script 
 to view that::
 
-  $ chemlab gromacs ener.edr -e Pressure
-  $ chemlab gromacs ener.edr -e Temperature
-  $ chemlab gromacs ener.edr -e Potential
-  $ chemlab gromacs ener.edr -e Density
+  $ chemlab gromacs energy ener.edr -e Pressure
+  $ chemlab gromacs energy ener.edr -e Temperature
+  $ chemlab gromacs energy ener.edr -e Potential
+  $ chemlab gromacs energy ener.edr -e Density
 
 .. warning:: The chemlab gromacs command is a work in progress, the
              syntax may change in the future.
