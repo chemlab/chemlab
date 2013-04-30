@@ -1,6 +1,14 @@
 Supported File Formats
 ======================
 
+cml: Chemical Markup Language
+-----------------------------
+
+:Extension: .cml
+
+.. autoclass:: chemlab.io.handlers.CmlIO
+	       :members:
+
 edr: GROMACS energy file
 ------------------------
 
@@ -18,6 +26,14 @@ gro: GROMACS coordinate files
 .. autoclass:: chemlab.io.handlers.GromacsIO
 	:members:
 
+mol: MDL Coordinate files
+-------------------------
+
+:Extension: .mol
+
+.. autoclass:: chemlab.io.handlers.MolIO
+	       :members:
+	       
 pdb: Protein Data Bank format
 -----------------------------
 

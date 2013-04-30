@@ -33,6 +33,12 @@ chemlab.graphics:
     - Implemented Camera.autozoom for autoscaling
     - Reimplemented BondRenderer in cython.
 
+chemlab.io:
+
+    - New Handlers:
+       - MDL molfile (.mol extension)
+       - Chemical Markup Language (.cml extension)
+
 chemlab.db:
 
     - New package to handle databases
