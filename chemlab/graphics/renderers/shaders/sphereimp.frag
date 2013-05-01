@@ -43,14 +43,12 @@ void impostor_point_normal(out vec3 point, out vec3 normal)
 
   determinant = b*b - 4.0*a*c;
 
-  if (determinant > 0.0)
+  if (determinant >= 0.0)
     {
       // 3. Calculation of the normal
       // We'll take the closest intersection value
       float x1 = (- b - sqrt(determinant))/2.0;
-      float x2 = (- b + sqrt(determinant))/2.0;
       vec3 inter_1 = ray_origin + x1*ray_direction;
-      vec3 inter_2 = ray_origin + x2*ray_direction;
   
       sph_intersection = inter_1;
 
@@ -81,7 +79,7 @@ void main()
     
   impostor_point_normal(point, normal);
 
-    
+  
   // Fix the z-buffer thingy
   point_clipspace = mvproj * vec4(point, 1.0);
   float ndc_depth = point_clipspace.z / point_clipspace.w;
