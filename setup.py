@@ -19,7 +19,7 @@ ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
 
 setup(
     name = "chemlab",
-    version = "0.1",
+    version = "0.2",
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
@@ -27,7 +27,8 @@ setup(
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.resources' : ["*"],
-                    'chemlab.db' : ['*'],
+                    'chemlab.db.localdb.data' : ['*'],
+                    'chemlab.db.localdb.molecule' : ['*'],
                     'chemlab.core.spacegroup': ['*']},
     
     author = "Gabriele Lanaro",

@@ -2,7 +2,7 @@
 from .transformations import rotation_matrix, translation_matrix
 from .transformations import simple_clip_matrix, clip_matrix
 from .transformations import vector_product, angle_between_vectors, normalized
-from ..mathutils import fequal 
+from ..utils import fequal 
 
 import numpy as np
 import numpy.linalg as LA
