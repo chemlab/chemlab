@@ -10,4 +10,4 @@ graft chemlab/db/localdb
 graft chemlab/resources
 graft tests/data
 graft docs
-#prune docs/_build
+prune docs/_build

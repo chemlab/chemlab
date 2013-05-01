@@ -2,7 +2,7 @@ chemlab - the python chemistry package you were waiting for
 -----------------------------------------------------------
 
 :Version:
-   0.1
+   0.2
 
 :Author:
    Gabriele Lanaro
@@ -45,7 +45,7 @@ Installation
 TIP: more updated instructions are located in the docs:
      http://chemlab.readthedocs.org/en/latest/installation.html
 
-chemlab is currently tested on Ubuntu 12.10. First install the dependencies:
+chemlab is currently tested on Ubuntu 13.04. First install the dependencies:
 
     $ sudo apt-get install python-numpy python-scipy python-pyside python-opengl cython python-matplotlib
 
