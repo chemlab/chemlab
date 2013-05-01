@@ -19,7 +19,7 @@ class LocalDB(AbstractDB):
        extension of the serialized molecule. Molecules are stored in
        the subdirectory.
     
-    .. method:: get(self, 'molecule', key)
+    .. method:: get(self, 'system', key)
 
        Get an entry from the database. Key is the filename without
        extension of the serialized system.
