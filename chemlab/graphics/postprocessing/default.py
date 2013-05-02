@@ -38,6 +38,8 @@ class NoEffect(object):
         self.fb = glGenFramebuffers(1)
 
         glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
+        glViewport(0, 0, self.widget.width(), self.widget.height())
+        
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              self.texture.id, 0)
         
@@ -49,27 +51,16 @@ class NoEffect(object):
             return False
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
-        
-    def pre_render(self):
-        # Unbind the framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                             self.texture.id, 0)
         glViewport(0, 0, self.widget.width(), self.widget.height())
         
-
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                             self.texture.id, 0)
-        
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
-            != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
-            return False
-        #glDrawBuffers(1, np.array([GL_COLOR_ATTACHMENT0], dtype='uint32'))
+    def pre_render(self):
+        glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
+        glViewport(0, 0, self.widget.width(), self.widget.height())
         
     def post_render(self):
+        self.widget.swapBuffers()
+        
         # We need to render to a quad
-        # # Render the framebuffer texture
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
         
@@ -83,6 +74,11 @@ class NoEffect(object):
         
         # Set our "quad_texture" sampler to user Texture Unit 0
         glUniform1i(qd_id, 0)
+        
+        # Debug time
+        time_id = glGetUniformLocation(self.quad_program, "time")
+        import time
+        glUniform1f(time_id, time.time())
 
         # # Let's render a quad
         quad_data = np.array([-1.0, -1.0, 0.0,
