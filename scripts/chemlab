@@ -47,6 +47,7 @@ def view(args):
         
         df = datafile(args.traj)
         times, frames = df.read('trajectory', skip=args.skip or None)
+
         
         cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
@@ -73,6 +74,20 @@ def view(args):
                 nf /= navg
                 frames[i] = nf
             cprint('DONE (%f s)'%(time.time()-t0), color='green')
+        
+
+        from chemlab.utils import minimum_image
+        if args.translate:
+            translate = [float(it) for it in args.translate.split(',')]
+            boxes = df.read('boxes')
+            infoprint('Translating by {} ...'.format(translate))
+            t0 = time.time()
+            for i,f in enumerate(frames):
+                frames[i] = minimum_image(f + translate, boxes[i].diagonal())
+            
+            sys.r_array = minimum_image(sys.r_array + translate,
+                                        sys.box_vectors.diagonal())
+            cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
         display_trajectory(sys, times,  frames)
 
@@ -95,6 +110,9 @@ view_parser.add_argument('--nowater', action='store_true',
 view_parser.add_argument('--smooth', action='store_true',
                          help='Apply a very crude smoothing filter')
 view_parser.add_argument('--skip', action='store', type=int,
+                         help='Take only the ith frames')
+
+view_parser.add_argument('--translate', action='store', type=str,
                          help='Take only the ith frames')
 
 view_parser.set_defaults(func=view)
