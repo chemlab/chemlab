@@ -102,6 +102,9 @@ class QChemlabWidget(QGLWidget):
         # Ui elements represent user interactions
         self.uis = []
         
+        # Post processing
+        self.post_processing = None
+        
         self.light_dir = np.array([0.0, 0.0, 1.0])
         self.background_color = colors.white
         
@@ -121,6 +124,10 @@ class QChemlabWidget(QGLWidget):
         
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
+
+        # Here goes the prerequisite for post-processing effects
+        if self.post_processing:
+            self.post_processing.pre_render()
         
         # Clear color take floats
         bg_r, bg_g, bg_b, bg_a = self.background_color
@@ -138,12 +145,13 @@ class QChemlabWidget(QGLWidget):
         self.on_draw_ui()
         # Draw World
         self.on_draw_world()
-
-         
+        
+        if self.post_processing:
+            self.post_processing.post_render()
+        
     def resizeGL(self, w, h):
         glViewport(0, 0, w, h)
         self.camera.aspectratio = float(self.width()) / self.height()
-        
         
     def on_draw_ui(self):
         for u in self.uis:
