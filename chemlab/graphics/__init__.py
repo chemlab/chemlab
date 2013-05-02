@@ -5,12 +5,15 @@ from .renderers import AtomRenderer, BoxRenderer, BallAndStickRenderer
 from .uis import TextUI
 
 import numpy as np
+from .postprocessing import FXAAEffect
 
 def display_molecule(mol, style='ball-and-stick'):
     '''Display the molecule *mol* with the default viewer.
 
     '''
     v = QtViewer()
+
+    
     if style == 'ball-and-stick':
         bs = v.add_renderer(BallAndStickRenderer,
                             mol.r_array,
@@ -31,6 +34,7 @@ def display_system(sys):
 
     '''
     
+
     v = QtViewer()
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
@@ -71,6 +75,7 @@ def display_trajectory(sys, times, coords_list, style='spheres'):
     '''
     
     v = QtTrajectoryViewer()
+    v.widget.post_processing = FXAAEffect(v.widget)    
     
     if style == 'spheres':
         backend = 'impostors'
