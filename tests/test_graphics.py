@@ -282,7 +282,7 @@ def test_camera_autozoom():
     
     v.run()
 
-def test_post_processing():
+def test_noeffect():
     from chemlab.graphics.postprocessing import NoEffect
     v = QtViewer()
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
@@ -292,5 +292,18 @@ def test_post_processing():
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     
     v.widget.post_processing = NoEffect(v.widget)
+    
+    v.run()
+
+def test_fxaa():
+    from chemlab.graphics.postprocessing.fxaa import FXAAEffect
+    v = QtViewer()
+    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    radii = [0.5, 0.1, 0.5]
+    colors = np.array([orange, blue, forest_green])
+    
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
+    
+    v.widget.post_processing = FXAAEffect(v.widget)
     
     v.run()
