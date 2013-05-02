@@ -4,8 +4,9 @@ from OpenGL.GL import *
 
 class Texture(object):
 
-    def __init__(self, kind, width, height, format, dtype):
+    def __init__(self, kind, width, height, intformat, format, dtype):
         self.kind = kind
+        self.intformat = intformat
         self.format = format
         self.id = glGenTextures(1)
         self.width, self.height = width, height
@@ -14,7 +15,7 @@ class Texture(object):
         
     def empty(self):
         self.bind()
-        glTexImage2D(self.kind, 0, self.format, self.width, self.height, 0,
+        glTexImage2D(self.kind, 0, self.intformat, self.width, self.height, 0,
                      self.format, self.dtype, 0)
         
     def bind(self):
