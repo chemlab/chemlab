@@ -17,10 +17,6 @@ uniform float kernel_radius;
 uniform mat4 i_proj; // Inverse projection
 uniform mat4 proj; // projection
 
-float linearizeDepth(in float depth, in mat4 projMatrix) {
-	return projMatrix[3][2] / (depth - projMatrix[2][2]);
-}
-
 void main() {
   
   float u = gl_FragCoord.x/resolution.x;
@@ -31,7 +27,7 @@ void main() {
   vec3 normal = texture2D(normal_texture, uv).xyz;
   vec4 depth = texture2D(depth_texture, uv); // This is gl_FragDepth
   
-  normal = normalize(normal);
+  normal.xyz = normalize(normal.xyz);
   
   // Get the projected point
 
@@ -44,6 +40,11 @@ void main() {
   
   // Unproject them
   vec4 pos = i_proj * projected_pos;
+  pos /= pos.w; // This is our unprojected guy
+  
+  // Test if it's a background pixel
+  if (z == 1.0)
+    discard;
   
   // 4x4 noise texture, we have to tile this for the screen
   float rand_u, rand_v;
@@ -51,42 +52,52 @@ void main() {
   rand_v = gl_FragCoord.y/4.0;
   
   vec4 noise_value = texture2D(noise_texture, vec2(rand_u, rand_v));
-  vec3 random_axis = noise_value.xyz * 2.0 - 1.0;
+  vec3 rvec = noise_value.xyz * 2.0 - 1.0;
 
   // gram-schmidt
-  vec3 tangent = normalize(random_axis - normal.xyz
-  			   * dot(random_axis, normal.xyz));
+  vec3 tangent = normalize(rvec - normal.xyz
+  			   * dot(rvec, normal.xyz));
   vec3 bitangent = cross(normal.xyz, tangent);
   mat3 tbn = mat3(tangent, bitangent, normal.xyz);
 
-  
+  vec4 offset;
+  vec3 sample;
+  float sample_depth;
+  vec4 sample_depth_v;
   float occlusion = 0.0;
   
   for (int i=0; i < kernel_size; ++i){
     // Sample position
-    vec3 sample = tbn * random_kernel[i];
-    sample = sample * kernel_radius + pos.xyz;
+    sample = (tbn * random_kernel[i]) * kernel_radius;
+    sample = sample + pos.xyz;
     
     // Project sample position
-    vec4 offset = vec4(sample, 1.0);
-    offset = proj * offset;
-    // offset.xy /= offset.w;
-    offset.xy = offset.xy * 0.5 + 0.5;
+    offset = vec4(sample, 1.0);
+    offset = proj * offset; // In the range -w, w
+    offset /= offset.w; // in the range -1, 1
+    offset.xyz = offset.xyz * 0.5 + 0.5;
     
     // Sample depth
-    vec4 sample_depth_v = texture2D(depth_texture, offset.xy);
-    float sample_depth = sample_depth_v.x;
+    sample_depth_v = texture2D(depth_texture, offset.xy);
+    sample_depth = sample_depth_v.x;
     
-    sample_depth = linearizeDepth(sample_depth, proj);
+    // We have to linearize it.. again
+    vec4 throwaway = vec4(offset.xy, sample_depth, 1.0); // range 0, 1
+    throwaway.xyz = throwaway.xyz * 2.0 - 1.0;
+    throwaway = i_proj * throwaway;
+    throwaway /= throwaway.w;
     
-    if (sample_depth >= sample.z) {
+    if (throwaway.z >= sample.z) {
       float rangeCheck = smoothstep(0.0, 1.0, kernel_radius 
-				    / abs(pos.z - sample_depth));
-      occlusion += 1.0 * rangeCheck;
+      				    / abs(pos.z - throwaway.z));
+      occlusion += 1.0 * rangeCheck; 
     }
   }
   
   occlusion = 1.0 - (occlusion / float(kernel_size));
+  //occlusion = pow(occlusion, 2);
+
   
-  gl_FragColor = vec4(occlusion*color.xyz,  1.0);
+  gl_FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
+  //gl_FragColor = vec4(color.xyz * occlusion, 1.0);
 }

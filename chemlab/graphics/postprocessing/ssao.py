@@ -40,32 +40,34 @@ class SSAOEffect(object):
         glViewport(0, 0, self.widget.width(), self.widget.height())
 
         # Kernel sampling
-        self.kernel_size = 64
+        self.kernel_size = 32
         self.kernel = []
         for i in range(self.kernel_size):
             randpoint = normalized([uniform(-1.0, 1.0),
                                     uniform(-1.0, 1.0),
                                     uniform(0.0, 1.0)])
-            randpoint *= uniform(0.0, 1.0)
+            
+            #randpoint *= uniform(0.0, 1.0)
             # Accumulating points in the middle
             scale = float(i)/self.kernel_size
             scale = 0.1 + (1.0 - 0.1)*scale*scale # linear interpolation
             randpoint *= scale
             
             self.kernel.append(randpoint)
+
         self.kernel = np.array(self.kernel, dtype='float32')
         
+        self.kernel_radius = 0.1
         # Random rotations of the kernel
         self.noise_size = 4
         self.noise = []
-        for i in range(self.noise_size):
+        for i in range(self.noise_size**2):
             randpoint = normalized([uniform(-1.0, 1.0),
                                     uniform(-1.0, 1.0),
                                     0.0])
             self.noise.append(randpoint)
         self.noise = np.array(self.noise, dtype='float32')
-        
-        
+
         # Save this stuff into a small texture
         self.noise_texture = Texture(GL_TEXTURE_2D, 4, 4, GL_RGB,
                                      GL_RGB, GL_FLOAT, self.noise)
@@ -96,6 +98,20 @@ class SSAOEffect(object):
         
         set_uniform(self.quad_program, "i_proj", "mat4fv", i_proj)
         set_uniform(self.quad_program, "proj", "mat4fv", proj)
+
+        # We need to do some cross-checks
+        # Got one point, and I project it, I should obtain
+        # something that goes between -w and +w
+
+        # 1, 1, -5, 1 is the transformed guy
+        projected = np.dot(proj, [-1.0, 2.0, -3.0, 1.0])
+        print projected # It's in the range -w, + w
+        ndc =  projected / projected[3] # in the range -1 1
+        print ndc
+        print 'Getting back'
+        back =  np.dot(i_proj, ndc)
+        print back/back[3]
+        
         
         # Setting up the textures
         glActiveTexture(GL_TEXTURE0)
@@ -118,12 +134,12 @@ class SSAOEffect(object):
 
         # Set up the random kernel
         random_id = glGetUniformLocation(self.quad_program, "random_kernel")
-        glUniform3fv(random_id, self.kernel_size, self.kernel.ravel().astype('float32'))
+        glUniform3fv(random_id, self.kernel_size, self.kernel)
         
         kernel_size_id = glGetUniformLocation(self.quad_program, "kernel_size")
         glUniform1i(kernel_size_id, self.kernel_size)
         
-        self.kernel_radius = 4.0
+
         kernel_radius_id = glGetUniformLocation(self.quad_program,
                                                 "kernel_radius")
         glUniform1f(kernel_radius_id, self.kernel_radius)

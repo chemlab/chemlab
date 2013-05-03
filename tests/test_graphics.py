@@ -321,7 +321,7 @@ def test_ssao():
     radii = [0.5, 0.1, 0.5]
     colors = np.array([orange, blue, forest_green])
     
-    v.widget.camera.z_near = 1.0
+    v.widget.camera.z_near = 0.1
     v.widget.camera.z_far = 10.0
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     
