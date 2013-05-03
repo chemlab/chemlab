@@ -123,6 +123,12 @@ class SSAOEffect(object):
         kernel_size_id = glGetUniformLocation(self.quad_program, "kernel_size")
         glUniform1i(kernel_size_id, self.kernel_size)
         
+        self.kernel_radius = 4.0
+        kernel_radius_id = glGetUniformLocation(self.quad_program,
+                                                "kernel_radius")
+        glUniform1f(kernel_radius_id, self.kernel_radius)
+        
+        
         # Set resolution
         res_id = glGetUniformLocation(self.quad_program, "resolution")
         glUniform2f(res_id, self.widget.width(), self.widget.height())

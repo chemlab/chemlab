@@ -9,11 +9,10 @@ uniform sampler2D noise_texture;
 uniform vec2 resolution;
 
 const int MAX_KERNEL_SIZE = 128;
-const float kernel_radius = 10.0; // TODO, transfer as an uniform
 
 uniform vec3 random_kernel[MAX_KERNEL_SIZE];
 uniform int kernel_size;
-
+uniform float kernel_radius;
 
 uniform mat4 i_proj; // Inverse projection
 uniform mat4 proj; // projection
@@ -29,10 +28,11 @@ void main() {
   vec2 uv = vec2(u, v);
   
   vec4 color = texture2D(quad_texture, uv);
-  vec4 normal = texture2D(normal_texture, uv);
+  vec3 normal = texture2D(normal_texture, uv).xyz;
   vec4 depth = texture2D(depth_texture, uv); // This is gl_FragDepth
   
-   
+  normal = normalize(normal);
+  
   // Get the projected point
 
   // Those are the coordinates in normalized device coordinates
@@ -76,18 +76,17 @@ void main() {
     // Sample depth
     vec4 sample_depth_v = texture2D(depth_texture, offset.xy);
     float sample_depth = sample_depth_v.x;
-    offset.z = sample_depth;
-    offset.w = 1.0;
     
-    sample_depth = (i_proj * offset).z;
-  
+    sample_depth = linearizeDepth(sample_depth, proj);
     
     if (sample_depth >= sample.z) {
-      occlusion += 1.0;
+      float rangeCheck = smoothstep(0.0, 1.0, kernel_radius 
+				    / abs(pos.z - sample_depth));
+      occlusion += 1.0 * rangeCheck;
     }
   }
   
   occlusion = 1.0 - (occlusion / float(kernel_size));
   
-  gl_FragColor = vec4(occlusion, occlusion, occlusion,  1.0);
+  gl_FragColor = vec4(occlusion*color.xyz,  1.0);
 }

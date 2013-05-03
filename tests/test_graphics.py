@@ -310,6 +310,11 @@ def test_fxaa():
     
 def test_ssao():
     from chemlab.graphics.postprocessing.ssao import SSAOEffect
+    from chemlab.db import ChemlabDB
+    
+    cdb = ChemlabDB()
+    
+    mol = cdb.get('molecule', 'example.norbornene')
     
     v = QtViewer()
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.7, 0.0, 0.0]]
@@ -318,7 +323,9 @@ def test_ssao():
     
     v.widget.camera.z_near = 1.0
     v.widget.camera.z_far = 10.0
-    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
+    
+    sr = sr.sr
     sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
     sr.compile_shader()
     
