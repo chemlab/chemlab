@@ -33,7 +33,13 @@ class SSAOEffect(object):
         self.ssao_program = shaders.compileProgram(vertex, fragment)
 
         # Setup Blur program
+        vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
+        frag = open(os.path.join(curdir, 'shaders', 'ssao_blur.frag')).read()        
         
+        # Compile quad shader
+        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
+        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        self.blur_program = shaders.compileProgram(vertex, fragment)
         
         # Create the framebuffer for the scene to draw on
         self.fb = glGenFramebuffers(1)
@@ -41,7 +47,8 @@ class SSAOEffect(object):
         # Framebuffer where to draw the occlusion factors and colors
         self.ssao_fb = glGenFramebuffers(1)
         
-        # This will create the texture and setup at the correct resolution
+        # This will create the texture and setup the correct
+        # resolution for the framebuffers
         self.on_resize()
         
         # Cleanup
@@ -67,6 +74,7 @@ class SSAOEffect(object):
         self.kernel = np.array(self.kernel, dtype='float32')
         
         self.kernel_radius = 2.0
+        
         # Random rotations of the kernel
         self.noise_size = 4
         self.noise = []
@@ -90,8 +98,9 @@ class SSAOEffect(object):
         glViewport(0, 0, self.widget.width(), self.widget.height())
         
     def post_render(self):
-        # We need to render to a quad
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        # We need to render to the ssao framebuffer
+        # Then we will blur the result
+        glBindFramebuffer(GL_FRAMEBUFFER, self.ssao_fb)
         glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
@@ -146,9 +155,23 @@ class SSAOEffect(object):
 
         self.render_quad()
 
-
-        # Re-render
+        # Re-render on-screen by blurring the result
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)        
         
+        glUseProgram(self.blur_program)
+        glActiveTexture(GL_TEXTURE0)
+
+        self.ssao_texture.bind()
+        
+        qd_id = glGetUniformLocation(self.blur_program, "quad_texture")
+        glUniform1i(qd_id, 0)
+        
+        res_id = glGetUniformLocation(self.blur_program, "resolution")
+        glUniform2f(res_id, self.widget.width(), self.widget.height())
+        
+        self.render_quad()
         
         glUseProgram(0)
         
@@ -237,7 +260,7 @@ class SSAOEffect(object):
 
 
         self.ssao_texture = Texture(GL_TEXTURE_2D, self.widget.width(),
-                               self.widget.height(), GL_RGB, GL_RGB,
+                               self.widget.height(), GL_RGBA, GL_RGBA,
                                GL_UNSIGNED_BYTE)
 
         # Set some parameters
@@ -253,4 +276,3 @@ class SSAOEffect(object):
             != GL_FRAMEBUFFER_COMPLETE):
             print "Problem"
             return False
-        
