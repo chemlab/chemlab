@@ -312,10 +312,12 @@ def test_ssao():
     from chemlab.graphics.postprocessing.ssao import SSAOEffect
     
     v = QtViewer()
-    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.7, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
     colors = np.array([orange, blue, forest_green])
     
+    v.widget.camera.z_near = 1.0
+    v.widget.camera.z_far = 10.0
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
     sr.compile_shader()

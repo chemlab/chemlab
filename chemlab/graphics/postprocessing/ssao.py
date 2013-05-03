@@ -9,9 +9,11 @@ from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
 import numpy as np
+import numpy.linalg as LA
 import os
-from random import randrange
+from random import uniform
 from ..transformations import normalized
+from ..shaders import set_uniform
 
 class SSAOEffect(object):
     
@@ -38,30 +40,38 @@ class SSAOEffect(object):
         glViewport(0, 0, self.widget.width(), self.widget.height())
 
         # Kernel sampling
-        self.kernel_size = 4
+        self.kernel_size = 64
         self.kernel = []
-        for i in range(4):
-            randpoint = normalized([randrange(-1.0, 1.0),
-                                    randrange(-1.0, 1.0),
-                                    randrange(0.0, 1.0)])
-            randpoint *= randrange(0.0, 1.0)
+        for i in range(self.kernel_size):
+            randpoint = normalized([uniform(-1.0, 1.0),
+                                    uniform(-1.0, 1.0),
+                                    uniform(0.0, 1.0)])
+            randpoint *= uniform(0.0, 1.0)
             # Accumulating points in the middle
             scale = float(i)/self.kernel_size
             scale = 0.1 + (1.0 - 0.1)*scale*scale # linear interpolation
             randpoint *= scale
             
             self.kernel.append(randpoint)
+        self.kernel = np.array(self.kernel, dtype='float32')
         
         # Random rotations of the kernel
-        self.noise_size = 8
+        self.noise_size = 4
         self.noise = []
         for i in range(self.noise_size):
-            randpoint = normalized([randrange(-1.0, 1.0),
-                                    randrange(-1.0, 1.0),
+            randpoint = normalized([uniform(-1.0, 1.0),
+                                    uniform(-1.0, 1.0),
                                     0.0])
             self.noise.append(randpoint)
+        self.noise = np.array(self.noise, dtype='float32')
+        
         
         # Save this stuff into a small texture
+        self.noise_texture = Texture(GL_TEXTURE_2D, 4, 4, GL_RGB,
+                                     GL_RGB, GL_FLOAT, self.noise)
+        
+        self.texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        self.texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)  
         
         
     def pre_render(self):
@@ -74,14 +84,20 @@ class SSAOEffect(object):
         glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        
         glUseProgram(self.quad_program)
         
         qd_id = glGetUniformLocation(self.quad_program, "quad_texture")
         normal_id = glGetUniformLocation(self.quad_program, "normal_texture")
         depth_id = glGetUniformLocation(self.quad_program, "depth_texture")
+        noise_id = glGetUniformLocation(self.quad_program, "noise_texture")
         
-        # Setting up the texture
+        proj = self.widget.camera.projection
+        i_proj = LA.inv(proj)
+        
+        set_uniform(self.quad_program, "i_proj", "mat4fv", i_proj)
+        set_uniform(self.quad_program, "proj", "mat4fv", proj)
+        
+        # Setting up the textures
         glActiveTexture(GL_TEXTURE0)
         self.texture.bind()
         
@@ -90,11 +106,22 @@ class SSAOEffect(object):
         
         glActiveTexture(GL_TEXTURE2)
         self.depth_texture.bind()
+
+        glActiveTexture(GL_TEXTURE3)
+        self.noise_texture.bind()
         
         # Set our "quad_texture" sampler to user Texture Unit 0
         glUniform1i(qd_id, 0)
         glUniform1i(normal_id, 1)
         glUniform1i(depth_id, 2)
+        glUniform1i(noise_id, 3)
+
+        # Set up the random kernel
+        random_id = glGetUniformLocation(self.quad_program, "random_kernel")
+        glUniform3fv(random_id, self.kernel_size, self.kernel.ravel().astype('float32'))
+        
+        kernel_size_id = glGetUniformLocation(self.quad_program, "kernel_size")
+        glUniform1i(kernel_size_id, self.kernel_size)
         
         # Set resolution
         res_id = glGetUniformLocation(self.quad_program, "resolution")

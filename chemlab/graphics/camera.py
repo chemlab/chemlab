@@ -240,7 +240,7 @@ class Camera:
         x: float in the interval [-1.0, 1.0]
             Horizontal coordinate, -1.0 is leftmost, 1.0 is rightmost.
         
-        y: float in the interval [1.0, 1.0]
+        y: float in the interval [1.0, -1.0]
             Vertical coordinate, -1.0 is down, 1.0 is up.
         
         z: float in the interval [1.0, -1.0]
