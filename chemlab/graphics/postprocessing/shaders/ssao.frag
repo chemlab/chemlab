@@ -27,7 +27,7 @@ void main() {
   vec3 normal = texture2D(normal_texture, uv).xyz;
   vec4 depth = texture2D(depth_texture, uv); // This is gl_FragDepth
   
-  normal.xyz = normalize(normal.xyz);
+  normal.xyz = normal.xyz * 2.0 - 1.0;
   
   // Get the projected point
 
@@ -95,9 +95,10 @@ void main() {
   }
   
   occlusion = 1.0 - (occlusion / float(kernel_size));
-  //occlusion = pow(occlusion, 2);
+  occlusion = pow(occlusion, 2);
 
   
   gl_FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
-  //gl_FragColor = vec4(color.xyz * occlusion, 1.0);
+  //gl_FragColor = vec4(normal.xyz, 1.0);
+  gl_FragColor = vec4((color.xyz + 0.3) * occlusion, 1.0);
 }

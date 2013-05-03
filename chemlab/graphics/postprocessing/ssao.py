@@ -57,7 +57,7 @@ class SSAOEffect(object):
 
         self.kernel = np.array(self.kernel, dtype='float32')
         
-        self.kernel_radius = 0.1
+        self.kernel_radius = 0.3
         # Random rotations of the kernel
         self.noise_size = 4
         self.noise = []
