@@ -20,7 +20,7 @@ class SSAOEffect(object):
         curdir = os.path.dirname(__file__)
         
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
-        frag = open(os.path.join(curdir, 'shaders', 'noeffect.frag')).read()        
+        frag = open(os.path.join(curdir, 'shaders', 'ssao.frag')).read()        
         
         # Compile quad shader
         vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
@@ -46,7 +46,7 @@ class SSAOEffect(object):
                                     randrange(0.0, 1.0)])
             randpoint *= randrange(0.0, 1.0)
             # Accumulating points in the middle
-            scale = float(i)/kernel_size
+            scale = float(i)/self.kernel_size
             scale = 0.1 + (1.0 - 0.1)*scale*scale # linear interpolation
             randpoint *= scale
             
@@ -62,8 +62,6 @@ class SSAOEffect(object):
             self.noise.append(randpoint)
         
         # Save this stuff into a small texture
-            
-            
         
         
     def pre_render(self):
@@ -80,13 +78,24 @@ class SSAOEffect(object):
         glUseProgram(self.quad_program)
         
         qd_id = glGetUniformLocation(self.quad_program, "quad_texture")
+        normal_id = glGetUniformLocation(self.quad_program, "normal_texture")
+        depth_id = glGetUniformLocation(self.quad_program, "depth_texture")
         
         # Setting up the texture
         glActiveTexture(GL_TEXTURE0)
         self.texture.bind()
         
+        glActiveTexture(GL_TEXTURE1)
+        self.normal_texture.bind()
+        
+        glActiveTexture(GL_TEXTURE2)
+        self.depth_texture.bind()
+        
         # Set our "quad_texture" sampler to user Texture Unit 0
         glUniform1i(qd_id, 0)
+        glUniform1i(normal_id, 1)
+        glUniform1i(depth_id, 2)
+        
         # Set resolution
         res_id = glGetUniformLocation(self.quad_program, "resolution")
         glUniform2f(res_id, self.widget.width(), self.widget.height())
@@ -149,10 +158,13 @@ class SSAOEffect(object):
                              self.texture.id, 0)
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                              self.depth_texture.id, 0);
-
+        
         # Attach the normal texture to the color_attachment_1
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
                              self.normal_texture.id, 0)
+        
+        # Setup drawbuffers
+        glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):

@@ -307,3 +307,19 @@ def test_fxaa():
     v.widget.post_processing = FXAAEffect(v.widget)
     
     v.run()
+    
+def test_ssao():
+    from chemlab.graphics.postprocessing.ssao import SSAOEffect
+    
+    v = QtViewer()
+    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    radii = [0.5, 0.1, 0.5]
+    colors = np.array([orange, blue, forest_green])
+    
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
+    sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
+    sr.compile_shader()
+    
+    v.widget.post_processing = SSAOEffect(v.widget)
+    
+    v.run()
