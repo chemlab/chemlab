@@ -20,7 +20,9 @@ class SSAOEffect(object):
     def __init__(self, widget):
         self.widget = widget
         curdir = os.path.dirname(__file__)
-        
+
+
+        # Setup SSAO program
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
         frag = open(os.path.join(curdir, 'shaders', 'ssao.frag')).read()        
         
@@ -28,19 +30,26 @@ class SSAOEffect(object):
         vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
         fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
         
-        self.quad_program = shaders.compileProgram(vertex, fragment)
+        self.ssao_program = shaders.compileProgram(vertex, fragment)
 
-        # Create the framebuffer
+        # Setup Blur program
+        
+        
+        # Create the framebuffer for the scene to draw on
         self.fb = glGenFramebuffers(1)
+        
+        # Framebuffer where to draw the occlusion factors and colors
+        self.ssao_fb = glGenFramebuffers(1)
         
         # This will create the texture and setup at the correct resolution
         self.on_resize()
         
+        # Cleanup
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         glViewport(0, 0, self.widget.width(), self.widget.height())
 
         # Kernel sampling
-        self.kernel_size = 32
+        self.kernel_size = 64
         self.kernel = []
         for i in range(self.kernel_size):
             randpoint = normalized([uniform(-1.0, 1.0),
@@ -57,7 +66,7 @@ class SSAOEffect(object):
 
         self.kernel = np.array(self.kernel, dtype='float32')
         
-        self.kernel_radius = 0.3
+        self.kernel_radius = 2.0
         # Random rotations of the kernel
         self.noise_size = 4
         self.noise = []
@@ -86,20 +95,19 @@ class SSAOEffect(object):
         glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        glUseProgram(self.quad_program)
+        glUseProgram(self.ssao_program)
         
-        qd_id = glGetUniformLocation(self.quad_program, "quad_texture")
-        normal_id = glGetUniformLocation(self.quad_program, "normal_texture")
-        depth_id = glGetUniformLocation(self.quad_program, "depth_texture")
-        noise_id = glGetUniformLocation(self.quad_program, "noise_texture")
+        qd_id = glGetUniformLocation(self.ssao_program, "quad_texture")
+        normal_id = glGetUniformLocation(self.ssao_program, "normal_texture")
+        depth_id = glGetUniformLocation(self.ssao_program, "depth_texture")
+        noise_id = glGetUniformLocation(self.ssao_program, "noise_texture")
         
         proj = self.widget.camera.projection
         i_proj = LA.inv(proj)
         
-        set_uniform(self.quad_program, "i_proj", "mat4fv", i_proj)
-        set_uniform(self.quad_program, "proj", "mat4fv", proj)
+        set_uniform(self.ssao_program, "i_proj", "mat4fv", i_proj)
+        set_uniform(self.ssao_program, "proj", "mat4fv", proj)
 
-        
         # Setting up the textures
         glActiveTexture(GL_TEXTURE0)
         self.texture.bind()
@@ -120,22 +128,32 @@ class SSAOEffect(object):
         glUniform1i(noise_id, 3)
 
         # Set up the random kernel
-        random_id = glGetUniformLocation(self.quad_program, "random_kernel")
+        random_id = glGetUniformLocation(self.ssao_program, "random_kernel")
         glUniform3fv(random_id, self.kernel_size, self.kernel)
         
-        kernel_size_id = glGetUniformLocation(self.quad_program, "kernel_size")
+        kernel_size_id = glGetUniformLocation(self.ssao_program, "kernel_size")
         glUniform1i(kernel_size_id, self.kernel_size)
         
 
-        kernel_radius_id = glGetUniformLocation(self.quad_program,
+        kernel_radius_id = glGetUniformLocation(self.ssao_program,
                                                 "kernel_radius")
         glUniform1f(kernel_radius_id, self.kernel_radius)
         
         
         # Set resolution
-        res_id = glGetUniformLocation(self.quad_program, "resolution")
+        res_id = glGetUniformLocation(self.ssao_program, "resolution")
         glUniform2f(res_id, self.widget.width(), self.widget.height())
 
+        self.render_quad()
+
+
+        # Re-render
+        
+        
+        glUseProgram(0)
+        
+        
+    def render_quad(self):
         # # Let's render a quad
         quad_data = np.array([-1.0, -1.0, 0.0,
                               1.0, -1.0, 0.0,
@@ -187,6 +205,7 @@ class SSAOEffect(object):
         self.normal_texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         self.normal_texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)        
         
+        # Make the scene framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
         glViewport(0, 0, self.widget.width(), self.widget.height())
         
@@ -194,6 +213,8 @@ class SSAOEffect(object):
                              self.texture.id, 0)
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                              self.depth_texture.id, 0);
+        
+        
         
         # Attach the normal texture to the color_attachment_1
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
@@ -206,3 +227,30 @@ class SSAOEffect(object):
             != GL_FRAMEBUFFER_COMPLETE):
             print "Problem"
             return False
+        
+        # Make the ssao-containing framebuffer, we will have to blur
+        # that
+        
+            
+        glBindFramebuffer(GL_FRAMEBUFFER, self.ssao_fb)
+        glViewport(0, 0, self.widget.width(), self.widget.height())
+
+
+        self.ssao_texture = Texture(GL_TEXTURE_2D, self.widget.width(),
+                               self.widget.height(), GL_RGB, GL_RGB,
+                               GL_UNSIGNED_BYTE)
+
+        # Set some parameters
+        self.ssao_texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        self.ssao_texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)        
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             self.ssao_texture.id, 0)
+        
+        # Setup drawbuffers
+        glDrawBuffers(1, np.array([GL_COLOR_ATTACHMENT0], dtype='uint32'))
+        
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
+            != GL_FRAMEBUFFER_COMPLETE):
+            print "Problem"
+            return False
+        

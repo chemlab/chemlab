@@ -311,18 +311,15 @@ def test_fxaa():
 def test_ssao():
     from chemlab.graphics.postprocessing.ssao import SSAOEffect
     from chemlab.db import ChemlabDB
+    from chemlab.io import datafile
     
     cdb = ChemlabDB()
     
-    mol = cdb.get('molecule', 'example.norbornene')
+    # mol = cdb.get('molecule', 'example.norbornene')
     
+    mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtViewer()
-    centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.7, 0.0, 0.0]]
-    radii = [0.5, 0.1, 0.5]
-    colors = np.array([orange, blue, forest_green])
     
-    v.widget.camera.z_near = 0.1
-    v.widget.camera.z_far = 10.0
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     
     sr = sr.sr
