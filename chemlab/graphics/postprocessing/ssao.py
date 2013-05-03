@@ -47,7 +47,7 @@ class SSAOEffect(object):
                                     uniform(-1.0, 1.0),
                                     uniform(0.0, 1.0)])
             
-            #randpoint *= uniform(0.0, 1.0)
+            randpoint *= uniform(0.0, 1.0)
             # Accumulating points in the middle
             scale = float(i)/self.kernel_size
             scale = 0.1 + (1.0 - 0.1)*scale*scale # linear interpolation
@@ -99,19 +99,6 @@ class SSAOEffect(object):
         set_uniform(self.quad_program, "i_proj", "mat4fv", i_proj)
         set_uniform(self.quad_program, "proj", "mat4fv", proj)
 
-        # We need to do some cross-checks
-        # Got one point, and I project it, I should obtain
-        # something that goes between -w and +w
-
-        # 1, 1, -5, 1 is the transformed guy
-        projected = np.dot(proj, [-1.0, 2.0, -3.0, 1.0])
-        print projected # It's in the range -w, + w
-        ndc =  projected / projected[3] # in the range -1 1
-        print ndc
-        print 'Getting back'
-        back =  np.dot(i_proj, ndc)
-        print back/back[3]
-        
         
         # Setting up the textures
         glActiveTexture(GL_TEXTURE0)
