@@ -89,8 +89,7 @@ void main() {
     throwaway /= throwaway.w;
     
     if (throwaway.z >= sample.z) {
-      float rangeCheck = smoothstep(0.0, 1.0, kernel_radius 
-			      / abs(pos.z - throwaway.z));
+      float rangeCheck= abs(pos.z - throwaway.z) < kernel_radius ? 1.0 : 0.0;
       occlusion += 1.0 * rangeCheck; 
     }
   }

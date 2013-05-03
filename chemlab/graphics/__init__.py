@@ -36,6 +36,8 @@ def display_system(sys):
     
 
     v = QtViewer()
+    v.widget.post_processing = SSAOEffect(v.widget)    
+    
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
     

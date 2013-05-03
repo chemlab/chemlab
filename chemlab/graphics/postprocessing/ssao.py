@@ -59,7 +59,7 @@ class SSAOEffect(object):
         # SSAO power
         self.ssao_power = 2.0
         # Kernel sampling
-        self.kernel_size = 64
+        self.kernel_size = 128
         self.kernel_radius = 1.0
         
         self.kernel = []
