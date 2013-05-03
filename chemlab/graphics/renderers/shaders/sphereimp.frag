@@ -95,6 +95,10 @@ void main()
   diffuse = gl_Color;
   color =  diffuse * NdotL + specular;
    
-  gl_FragColor = color;
+  //gl_FragColor = color;
+  gl_FragData[0] = color;
+  
+  // This is needed for ssao and other effects that require normals
+  gl_FragData[1].xyz = normal * 0.5 + 0.5;
   
 }

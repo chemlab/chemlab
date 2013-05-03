@@ -55,8 +55,13 @@ class SSAOEffect(object):
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
         glViewport(0, 0, self.widget.width(), self.widget.height())
 
+
+        # SSAO power
+        self.ssao_power = 2.0
         # Kernel sampling
         self.kernel_size = 64
+        self.kernel_radius = 1.0
+        
         self.kernel = []
         for i in range(self.kernel_size):
             randpoint = normalized([uniform(-1.0, 1.0),
@@ -73,7 +78,7 @@ class SSAOEffect(object):
 
         self.kernel = np.array(self.kernel, dtype='float32')
         
-        self.kernel_radius = 2.0
+
         
         # Random rotations of the kernel
         self.noise_size = 4
@@ -143,10 +148,12 @@ class SSAOEffect(object):
         kernel_size_id = glGetUniformLocation(self.ssao_program, "kernel_size")
         glUniform1i(kernel_size_id, self.kernel_size)
         
-
         kernel_radius_id = glGetUniformLocation(self.ssao_program,
                                                 "kernel_radius")
         glUniform1f(kernel_radius_id, self.kernel_radius)
+        ssao_power_id = glGetUniformLocation(self.ssao_program,
+                                                "ssao_power")
+        glUniform1f(ssao_power_id, self.ssao_power)
         
         
         # Set resolution

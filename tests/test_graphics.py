@@ -322,9 +322,9 @@ def test_ssao():
     
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     
-    sr = sr.sr
-    sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
-    sr.compile_shader()
+    #sr = sr.sr
+    #sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
+    #sr.compile_shader()
     
     v.widget.post_processing = SSAOEffect(v.widget)
     

@@ -13,6 +13,7 @@ const int MAX_KERNEL_SIZE = 128;
 uniform vec3 random_kernel[MAX_KERNEL_SIZE];
 uniform int kernel_size;
 uniform float kernel_radius;
+uniform float ssao_power;
 
 uniform mat4 i_proj; // Inverse projection
 uniform mat4 proj; // projection
@@ -89,16 +90,13 @@ void main() {
     
     if (throwaway.z >= sample.z) {
       float rangeCheck = smoothstep(0.0, 1.0, kernel_radius 
-      				    / abs(pos.z - throwaway.z));
+			      / abs(pos.z - throwaway.z));
       occlusion += 1.0 * rangeCheck; 
     }
   }
   
   occlusion = 1.0 - (occlusion / float(kernel_size));
-  occlusion = pow(occlusion, 2);
+  occlusion = pow(occlusion, ssao_power);
 
-  
-  gl_FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
-  //gl_FragColor = vec4(normal.xyz, 1.0);
   gl_FragColor = vec4((color.xyz + 0.3), occlusion);
 }
