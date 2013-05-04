@@ -111,7 +111,12 @@ class DefaultRenderer(ShaderBaseRenderer):
                                                 "default_light.frag")
         
         super(DefaultRenderer, self).__init__(widget, vert, frag)
-
+        set_uniform(self.shader, "modelview", "mat4fv", self.viewer.camera.matrix)
+        
+    def setup_shader(self):
+        super(DefaultRenderer, self).setup_shader()
+        
+    
     def draw_vertices(self):
         '''Subclasses should reimplement this method.
 

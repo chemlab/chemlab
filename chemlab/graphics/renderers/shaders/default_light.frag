@@ -9,11 +9,16 @@ void main()
   vec4 color, diffuse;
   float specular;
   
+  normal = normalize(normal);
+  
   NdotL = dot(normalize(lightDir), normalize(normal));
   NdotHV = max(dot(normalize(normal), normalize(halfvector)), 0.0);
   specular = 0.2*pow(NdotHV, 122.0); /* Shininess */
   diffuse = gl_Color;
   color =  diffuse * NdotL + specular;
 
-  gl_FragColor = color;
+  gl_FragData[0] = color;
+  
+  // This is needed for ssao and other effects that require normals
+  gl_FragData[1].xyz = normal * 0.5 + 0.5;
 }
