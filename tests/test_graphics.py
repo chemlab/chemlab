@@ -321,8 +321,10 @@ def test_ssao():
     v = QtViewer()
     
 
-    v.widget.post_processing = SSAOEffect(v.widget, kernel_size=32, kernel_radius=3.0, ssao_power=2.7)
-    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'polygons')
-    #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
+    v.widget.camera.autozoom(mol.r_array)
+    v.widget.post_processing = SSAOEffect(v.widget, kernel_size=128, kernel_radius=3.0, ssao_power=2.7)
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
+    
+    #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, [])
     
     v.run()
