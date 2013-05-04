@@ -14,6 +14,12 @@ ChemlabDB
 .. autoclass:: chemlab.db.ChemlabDB
     :members:
 
+ChemSpiderDB
+------------
+
+.. autoclass:: chemlab.db.ChemSpiderDB
+    :members:
+
 CirDB
 -----
 
