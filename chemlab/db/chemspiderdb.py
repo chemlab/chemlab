@@ -3,6 +3,8 @@
 from .base import EntryNotFound, AbstractDB
 from ..libs import chemspipy
 from StringIO import StringIO
+import ConfigParser, os
+import sys
 
 class ChemSpiderDB(AbstractDB):
     """Get 3D structure of arbitrary molecules given a string
@@ -23,7 +25,26 @@ class ChemSpiderDB(AbstractDB):
     """
     def __init__(self, token=None):
         if not token:
-            raise Exception('Need to pass the chemspider token.')
+            config = ConfigParser.ConfigParser()
+            userconfig = os.path.expanduser('~/.chemlabrc')
+            
+            config.read([userconfig])
+            try:
+                token = config.get('chemspider', 'token')
+                chemspipy.TOKEN = token
+            except ConfigParser.NoSectionError:
+                lines = ('',
+                         '-'*70,
+                         'You need to write your chemspider token in order to use the database.',
+                         'Register on http://www.chemspider.com and write the security token in the',
+                         '%s file in this way:'%userconfig,
+                         '',
+                         '# file .chemlabrc',
+                         '[chemspider]',
+                         'token=YOUR-SECURITY-TOKEN',
+                         '',
+                         '-'*70)
+                raise Exception('\n'.join(lines))
         else:
             # I know, this is monkeypatching but it should do the
             # trick.

@@ -30,7 +30,7 @@ def test_local():
     assert pre_string == post_string
     
 def test_chemspider():
-    db = ChemSpiderDB('INSERT YOUR TOKEN')
+    db = ChemSpiderDB()
     
     name = 'fullerene'
     mol = db.get('molecule', name)
