@@ -31,16 +31,39 @@ class ChemSpiderDB(AbstractDB):
     
     def get(self, feature, key):
         from ..io.handlers import MolIO
+        result = chemspipy.find_one(key)
+        if not result:
+            raise EntryNotFound()
         
         if feature == "molecule":
-            result = chemspipy.find_one(key)
-            
-            if result:
-                sdf = result.mol3d
-                fd = StringIO(sdf)
-                return MolIO(fd).read("molecule")
-                
-            else:
-                raise EntryNotFound()
+            sdf = result.mol3d
+            fd = StringIO(sdf)
+            return MolIO(fd).read("molecule")
+        elif feature == 'inchi':
+            return result.inchi
+        elif feature == 'imageurl':
+            return result.imageurl
+        elif feature == 'smiles':
+            return result.smiles
+        elif feature == 'averagemass':
+            return result.averagemass
+        elif feature == 'nominalmass':
+            return result.nominalmass
+        elif feature == 'molecularweight':
+            return result.molecularweight
+        elif feature == 'inchikey':
+            return result.inchikey
+        elif feature == 'molecularformula':
+            return result.mf
+        elif feature == 'alogp':
+            return result.alogp
+        elif feature == 'xlogp':
+            return result.xlogp
+        elif feature == 'image':
+            return result.image
+        elif feature == 'mol2d':
+            return result.mol
+        elif feature == 'commonname':
+            return result.commonname
         else:
-            raise Exception("feature not present")
+            raise Exception("%s feature not present"%feature)
