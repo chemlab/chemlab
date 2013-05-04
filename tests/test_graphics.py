@@ -310,22 +310,19 @@ def test_fxaa():
     
 def test_ssao():
     from chemlab.graphics.postprocessing.ssao import SSAOEffect
-    from chemlab.db import ChemlabDB
+    from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
     
     cdb = ChemlabDB()
     
-    # mol = cdb.get('molecule', 'example.norbornene')
+    mol = cdb.get('molecule', 'example.norbornene')
     
     mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtViewer()
     
+
+    v.widget.post_processing = SSAOEffect(v.widget, kernel_size=32, kernel_radius=3.0, ssao_power=2.7)
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'polygons')
-    
-    #sr = sr.sr
-    #sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()
-    #sr.compile_shader()
-    
-    v.widget.post_processing = SSAOEffect(v.widget)
+    #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
     
     v.run()

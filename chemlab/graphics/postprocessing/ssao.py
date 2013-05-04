@@ -17,7 +17,7 @@ from ..shaders import set_uniform
 
 class SSAOEffect(object):
     
-    def __init__(self, widget):
+    def __init__(self, widget, kernel_size=32, kernel_radius=2.0, ssao_power=2.0):
         self.widget = widget
         curdir = os.path.dirname(__file__)
 
@@ -57,10 +57,13 @@ class SSAOEffect(object):
 
 
         # SSAO power
-        self.ssao_power = 2.0
+        self.ssao_power = ssao_power
         # Kernel sampling
-        self.kernel_size = 32
-        self.kernel_radius = 1.0
+        self.kernel_radius = kernel_radius
+        self.kernel_size = kernel_size
+        self.generate_kernel()
+        
+    def generate_kernel(self):
         
         self.kernel = []
         for i in range(self.kernel_size):
@@ -76,10 +79,9 @@ class SSAOEffect(object):
             
             self.kernel.append(randpoint)
 
-        self.kernel = np.array(self.kernel, dtype='float32')
-        
 
         
+        self.kernel = np.array(self.kernel, dtype='float32')
         # Random rotations of the kernel
         self.noise_size = 4
         self.noise = []

@@ -97,5 +97,5 @@ void main() {
   occlusion = 1.0 - (occlusion / float(kernel_size));
   occlusion = pow(occlusion, ssao_power);
 
-  gl_FragColor = vec4((color.xyz + 0.3), occlusion);
+  gl_FragColor = vec4((color.xyz + 0.1), occlusion);
 }
