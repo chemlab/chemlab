@@ -320,7 +320,7 @@ def test_ssao():
     mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtViewer()
     
-    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'polygons')
     
     #sr = sr.sr
     #sr.FRAGMENT_SHADER = open('chemlab/graphics/renderers/shaders/sphereimp_writenormal.frag').read()

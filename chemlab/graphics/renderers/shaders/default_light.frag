@@ -2,6 +2,7 @@ uniform vec3 lightDir;
 varying vec3 normal;
 varying vec3 halfvector;
 uniform vec3 camera;
+uniform mat4 viewmatrix;
                    
 void main()
 {
@@ -20,5 +21,5 @@ void main()
   gl_FragData[0] = color;
   
   // This is needed for ssao and other effects that require normals
-  gl_FragData[1].xyz = normal * 0.5 + 0.5;
+  gl_FragData[1].xyz = (normal * mat3(viewmatrix)) * 0.5 + 0.5;
 }
