@@ -1,5 +1,6 @@
 from chemlab.db.cirdb import CirDB
 from chemlab.db.local import LocalDB
+from chemlab.db.chemspiderdb import ChemSpiderDB
 from chemlab.graphics import display_molecule
 from chemlab.core import System
 
@@ -27,3 +28,23 @@ def test_local():
     post_string = db.get('system', 'norbornene-3').tojson()
     
     assert pre_string == post_string
+    
+def test_chemspider():
+    db = ChemSpiderDB('INSERT YOUR TOKEN')
+    
+    name = 'fullerene'
+    mol = db.get('molecule', name)
+    print db.get('inchi', name)
+    print db.get('molecularformula', name)
+    print db.get('imageurl', name)
+    print db.get('smiles', name)
+    print db.get('averagemass', name)
+    print db.get('nominalmass', name)
+    print db.get('molecularweight', name)
+    print db.get('inchikey', name)
+    print db.get('molecularformula', name)
+    print db.get('alogp', name)
+    print db.get('xlogp', name)
+    print db.get('image', name)
+    print db.get('mol2d', name)
+    print db.get('commonname', name)
