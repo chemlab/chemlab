@@ -9,6 +9,7 @@ from .triangles import TriangleRenderer
 from .box import BoxRenderer
 from .line import LineRenderer
 from .cylinder import CylinderRenderer
+from .cylinder_imp import CylinderImpostorRenderer
 from .bond import BondRenderer
 from .ballandstick import BallAndStickRenderer
 from .wireframe import WireframeRenderer

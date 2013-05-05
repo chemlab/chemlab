@@ -145,6 +145,29 @@ def test_cylinder_renderer():
     
     v.run()
     
+def test_cylinder_impostor_renderer():
+    from chemlab.graphics.renderers import CylinderImpostorRenderer
+    
+    bounds = np.array([[[-1.0, 0.0, 0.0], [-1.0, 1.0, 0.0]],
+                       [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]],
+                       [[1.0, 0.0, 0.0], [1.0, 0.0, 1.0]]])
+    radii = np.array([0.5, 0.3, 0.3])
+    colors = np.array([blue, orange, green])
+    
+    # Test for speed
+    # random bounds
+    # n = 1000
+    #bounds = np.random.rand(n, 2, 3) * 10
+    #radii = np.random.rand(n)
+    #colors = np.array([blue] * n)
+    
+    v = QtViewer()
+    ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
+    #ar.update_bounds(bounds)
+    
+    v.run()
+    
+    
 def test_bond_renderer():
 
     from chemlab.db.cirdb import CirDB
