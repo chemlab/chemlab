@@ -24,6 +24,9 @@ varying vec2 mapping;
 varying vec3 nx, ny, nz;
 varying vec3 view_pos;
 varying float cyl_radius;
+varying float cyl_length;
+varying float dz;
+varying vec3 origin;
 
 attribute vec3 at_cylinder_direction;
 //attribute vec3 at_cylinder_vert;
@@ -38,6 +41,7 @@ void main()
   // Pass the mapping
   mapping = at_mapping;
   cyl_radius = cylinder_radius;
+  cyl_length = length(at_cylinder_direction);
   
   // Cylinder start point
   vec3 cylinder_start = gl_Vertex.xyz;
@@ -47,8 +51,11 @@ void main()
   vec4 view_cylinder_start = camera_mat * vec4(cylinder_start, 1.0);
   vec4 view_cylinder_end = camera_mat * vec4(cylinder_end, 1.0);
 
+
   view_cylinder_start /= view_cylinder_start.w;
   view_cylinder_end /= view_cylinder_end.w;
+  
+  origin = view_cylinder_start.xyz;  
   
   vec3 view_direction = view_cylinder_end.xyz - view_cylinder_start.xyz;
   vec3 normal_direction;
@@ -60,7 +67,11 @@ void main()
   
   nx = normal_direction;// perpendicular to cylinder axis, it's our 'x'
   ny = normalize(view_direction);  // cylinder axis
-  nz = cross(nx, ny); // The direction of cylinder that points in front of us
+  nz = normalize(cross(nx, ny)); // The direction of cylinder that points in front of us
+  
+  // Cosine of viewing angle
+  float costheta = dot(nz, vec3(0.0, 0.0, 1.0)); 
+  dz = abs(cyl_radius / costheta);
   
   displacement = vec4(normal_direction * at_mapping.x * cylinder_radius + 
 		      view_direction.xyz * (at_mapping.y * 0.5 + 0.5),  0.0);

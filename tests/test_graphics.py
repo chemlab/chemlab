@@ -157,15 +157,18 @@ def test_cylinder_impostor_renderer():
 
     # Test for speed
     # random bounds
-    # n = 1000
+    #n = 50000
     #bounds = np.random.rand(n, 2, 3) * 10
-    #radii = np.random.rand(n)
+    #radii = np.random.rand(n)/10.0
     #colors = np.array([blue] * n)
     
+    import time
+    t0 = time.time()
     v = QtViewer()
     ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii*0.2, colors)
     sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 0], radii, colors)
     sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 1], radii, colors)
+    print time.time() - t0
     
     #ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     #ar.update_bounds(bounds)
@@ -187,12 +190,12 @@ def test_bond_renderer():
     mol.bonds = np.array([[0, 1],[0, 2]])
     
     
-    mol = CirDB().get("molecule", "moronic acid")
+    #mol = CirDB().get("molecule", "moronic acid")
     #radii_map = {"O": 0.03, "H": 0.03}
     radii_map = defaultdict(lambda: 0.03)
     
     br = v.add_renderer(BondRenderer, mol.bonds, mol.r_array,
-                        mol.type_array, style='lines')
+                        mol.type_array, style='impostors')
     ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
                         "impostors", radii_map = radii_map)
     

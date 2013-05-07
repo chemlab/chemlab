@@ -1,5 +1,5 @@
 from .base import AbstractRenderer
-from . import CylinderRenderer, LineRenderer
+from . import CylinderRenderer, LineRenderer, CylinderImpostorRenderer
 import numpy as np
 from chemlab.graphics.colors import default_atom_map
 
@@ -52,6 +52,9 @@ class BondRenderer(AbstractRenderer):
                                     np.tile(colors_a, 2))
             self.cr2 = LineRenderer(widget, bounds_b.flatten(),
                                     np.tile(colors_b, 2))
+        elif style == 'impostors':
+            self.cr1 = CylinderImpostorRenderer(widget, bounds_a, radii, colors_a)
+            self.cr2 = CylinderImpostorRenderer(widget, bounds_b, radii, colors_b)
         else:
             raise Exception("Available backends: cylinders, lines")
     def _compute_bounds(self, r_array, bonds):
