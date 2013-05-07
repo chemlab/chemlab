@@ -163,6 +163,7 @@ def test_cylinder_impostor_renderer():
     
     v = QtViewer()
     ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
+    ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     #ar.update_bounds(bounds)
     
     v.run()

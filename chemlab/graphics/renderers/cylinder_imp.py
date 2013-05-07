@@ -24,11 +24,15 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self.n_cylinders = len(bounds)
         
         self.ldir = np.array([0.0, 0.0, 10.0, 1.0])
-        
-        vertices = np.repeat(bounds, 2, axis=1).astype(np.float32)
+
+        # We pass the starting position 4 times, and each of these has
+        # a mapping to the impostor coordinates. We will compute the
+        # displacements by using the directions
+        vertices = np.repeat(bounds[:, 0], 4, axis=0).astype(np.float32)
         radii = np.repeat(radii, 4, axis=0).astype(np.float32)
         colors = np.repeat(colors, 4, axis=0).astype(np.uint8)
-        directions = np.repeat(bounds[:, 1] - bounds[:, 0], 4, axis=0).astype(np.float32)
+        directions = np.repeat(bounds[:, 1] - bounds[:, 0], 4,
+                               axis=0).astype(np.float32)
 
         mapping = np.tile([-1, -1, # Black corner
                            1, -1, # Red Corner
@@ -39,7 +43,6 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self._verts_vbo = VertexBuffer(vertices,GL_DYNAMIC_DRAW)
         self._color_vbo = VertexBuffer(colors,GL_DYNAMIC_DRAW)
         self._mapping_vbo = VertexBuffer(mapping,GL_DYNAMIC_DRAW)
-        #self._centers_vbo = VertexBuffer(vertices,GL_DYNAMIC_DRAW)
         self._radii_vbo = VertexBuffer(radii,GL_DYNAMIC_DRAW)
         self._directions_vbo = VertexBuffer(directions, GL_DYNAMIC_DRAW)
         
@@ -72,17 +75,17 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         
         at_mapping = glGetAttribLocation(self.shader,
                                          "at_mapping")
-        #at_cylinder_direction = glGetAttribLocation(self.shader,
-        #                                       "at_cylinder_direction")
+        at_cylinder_direction = glGetAttribLocation(self.shader,
+                                               "at_cylinder_direction")
         
         glEnableVertexAttribArray(at_mapping)        
-        #glEnableVertexAttribArray(at_cylinder_direction)
+        glEnableVertexAttribArray(at_cylinder_direction)
         
         glEnableClientState(GL_VERTEX_ARRAY)
         self._verts_vbo.bind_vertexes(3, GL_FLOAT)
         
         self._mapping_vbo.bind_attrib(at_mapping, 2, GL_FLOAT)
-        #self._directions_vbo.bind_attrib(at_cylinder_direction, 3, GL_FLOAT)
+        self._directions_vbo.bind_attrib(at_cylinder_direction, 3, GL_FLOAT)
         #self._radii_vbo.bind_attrib(at_cylinder_radius, 1, GL_FLOAT)
 
         glEnableClientState(GL_COLOR_ARRAY)
@@ -96,7 +99,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self._color_vbo.unbind()
         
         glDisableVertexAttribArray(at_mapping)        
-        #glDisableVertexAttribArray(at_cylinder_direction)
+        glDisableVertexAttribArray(at_cylinder_direction)
 
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)

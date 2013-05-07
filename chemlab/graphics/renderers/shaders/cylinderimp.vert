@@ -30,30 +30,33 @@ attribute vec3 at_cylinder_direction;
 
 void main()
 {
-  //mapping = at_mapping;
+  // Cylinder start point
+  vec3 cylinder_start = gl_Vertex.xyz;
+  vec3 cylinder_end = cylinder_start + at_cylinder_direction;  
+  
+  // In view space
+  vec4 view_cylinder_start = camera_mat * vec4(cylinder_start, 1.0);
+  vec4 view_cylinder_end = camera_mat * vec4(cylinder_end, 1.0);
 
-    //sphere_center = vec3(
-    //    camera_mat*vec4(at_sphere_center, 1.0)).xyz;
-    
-    //sphere_radius = at_sphere_radius;
-    vec4 actual_vertex = gl_Vertex;
-    
-    // Project the points on the plane (now this is in clip space)
-    actual_vertex = mvproj * actual_vertex;
+  view_cylinder_start /= view_cylinder_start.w;
+  view_cylinder_end /= view_cylinder_end.w;
+  
+  vec3 view_direction = view_cylinder_end.xyz - view_cylinder_start.xyz;
+  vec3 normal_direction;
+  
+  if (view_direction.z * at_mapping.y > 0.0) {
+    normal_direction = normalize(cross(vec3(view_direction.xy, 0.0), view_cylinder_start.xyz));
+  }
+  else {
+    normal_direction = normalize(cross(vec3(view_direction.xy, 0.0), view_cylinder_end.xyz));
+  }
 
-    // calculate the cylinder axis in camera space.  we want the
-    // axis of our billboard, so we need to project this guy on the z
-    // plane
-    vec3 axis = normalize(mat3(camera_rotation) * at_cylinder_direction);
-    
-    // Side development of our cylinder billboard
-    vec3 disp = normalize(cross(actual_vertex.xyz, axis));
-    
-    actual_vertex = vec4(actual_vertex.x + 0.5*at_mapping.x,
-			 actual_vertex.y,
-			 actual_vertex.z,
-			 actual_vertex.w);
-    
-    gl_Position = actual_vertex;       
-    gl_FrontColor = vec4(actual_vertex.x, actual_vertex.y, abs(actual_vertex.z), 1.0);
+
+  vec4 displacement = vec4(normalize(normal_direction.xy) * at_mapping.x * 0.5 + 
+			   view_direction.xy * (at_mapping.y * 0.5 + 0.5), 
+			   0.0, 0.0);
+  vec4 view_vertex = view_cylinder_start + displacement;
+  
+  gl_Position = projection_mat * view_vertex;       
+  gl_FrontColor = vec4(view_vertex.x, view_vertex.y, abs(view_vertex.z), 1.0);
 }
