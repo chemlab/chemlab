@@ -60,7 +60,7 @@ void main()
   
   nx = normal_direction;// perpendicular to cylinder axis, it's our 'x'
   ny = normalize(view_direction);  // cylinder axis
-  nz = cross(ny, nx); // The direction of cylinder that points in front of us
+  nz = cross(nx, ny); // The direction of cylinder that points in front of us
   
   displacement = vec4(normal_direction * at_mapping.x * cylinder_radius + 
 		      view_direction.xyz * (at_mapping.y * 0.5 + 0.5),  0.0);
