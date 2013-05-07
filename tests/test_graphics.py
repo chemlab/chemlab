@@ -154,6 +154,7 @@ def test_cylinder_impostor_renderer():
     radii = np.array([0.5, 0.3, 0.3])
     colors = np.array([blue, orange, green])
     
+
     # Test for speed
     # random bounds
     # n = 1000
@@ -162,8 +163,11 @@ def test_cylinder_impostor_renderer():
     #colors = np.array([blue] * n)
     
     v = QtViewer()
-    ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
-    ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
+    ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii*0.2, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 0], radii, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 1], radii, colors)
+    
+    #ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     #ar.update_bounds(bounds)
     
     v.run()

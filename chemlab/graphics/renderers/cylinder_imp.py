@@ -14,7 +14,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "cylinderimp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
-                                                "no_light.frag")
+                                                "cylinderimp.frag")
         
         super(CylinderImpostorRenderer, self).__init__(viewer, vert, frag)
         
@@ -77,16 +77,19 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
                                          "at_mapping")
         at_cylinder_direction = glGetAttribLocation(self.shader,
                                                "at_cylinder_direction")
-        
+        at_cylinder_radius = glGetAttribLocation(self.shader,
+                                                 "cylinder_radius")
+
         glEnableVertexAttribArray(at_mapping)        
         glEnableVertexAttribArray(at_cylinder_direction)
+        glEnableVertexAttribArray(at_cylinder_radius)
         
         glEnableClientState(GL_VERTEX_ARRAY)
         self._verts_vbo.bind_vertexes(3, GL_FLOAT)
         
         self._mapping_vbo.bind_attrib(at_mapping, 2, GL_FLOAT)
         self._directions_vbo.bind_attrib(at_cylinder_direction, 3, GL_FLOAT)
-        #self._radii_vbo.bind_attrib(at_cylinder_radius, 1, GL_FLOAT)
+        self._radii_vbo.bind_attrib(at_cylinder_radius, 1, GL_FLOAT)
 
         glEnableClientState(GL_COLOR_ARRAY)
         self._color_vbo.bind_colors(4, GL_UNSIGNED_BYTE)
@@ -97,6 +100,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self._mapping_vbo.unbind()
         self._directions_vbo.unbind()
         self._color_vbo.unbind()
+        self._radii_vbo.unbind()
         
         glDisableVertexAttribArray(at_mapping)        
         glDisableVertexAttribArray(at_cylinder_direction)
