@@ -2,6 +2,8 @@ from OpenGL.GL import *
 from OpenGL.raw import GL
 from OpenGL.arrays import ArrayDatatype as ADT
 
+import numpy as np
+
 class VertexBuffer(object):
 
   def __init__(self, data, usage):
@@ -9,6 +11,10 @@ class VertexBuffer(object):
     self.buffer = glGenBuffers(1)
     self.usage = usage
     self.data = data
+    
+    # Add a little warning
+    if data.dtype == np.float:
+      Warning('This float array is 64 bit')
     
     glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
     glBufferData(GL_ARRAY_BUFFER, ADT.arrayByteCount(data),

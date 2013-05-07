@@ -163,10 +163,10 @@ def test_cylinder_impostor_renderer():
     #colors = np.array([blue] * n)
     
     import time
-    t0 = time.time()
     v = QtViewer()
+    t0 = time.time()
     ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
-    ar = v.add_renderer(CylinderRenderer, bounds, radii*0.5, colors)
+    #ar = v.add_renderer(CylinderRenderer, bounds, radii*0.5, colors)
     # sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 0], radii, colors)
     #sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 1], radii, colors)
     print time.time() - t0
