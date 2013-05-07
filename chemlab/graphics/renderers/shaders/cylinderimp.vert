@@ -71,14 +71,20 @@ void main()
   
   // Cosine of viewing angle
   float costheta = dot(nz, vec3(0.0, 0.0, 1.0)); 
-  dz = abs(cyl_radius / costheta);
+  float sintheta = sqrt(1 - costheta*costheta);
+  
+  dz = cyl_radius / costheta;
+  float cap_offset = dz * sintheta;
   
   displacement = vec4(normal_direction * at_mapping.x * cylinder_radius + 
-		      view_direction.xyz * (at_mapping.y * 0.5 + 0.5),  0.0);
+		      view_direction.xyz * (at_mapping.y * 0.5 + 0.5),
+		      0.0);
   
+  //displacement.xyz += ny * abs(cap_offset);
+
   view_vertex = view_cylinder_start + displacement;
-  // We need also an extra displacement at end caps
   
+  // We need also an extra displacement at end caps
   
   
   view_pos = view_vertex.xyz/view_vertex.w;
@@ -86,5 +92,6 @@ void main()
   gl_Position = projection_mat * view_vertex;       
 
   
-  gl_FrontColor = gl_Color;
+  gl_FrontColor = vec4(gl_Color);
+  
 }

@@ -20,7 +20,7 @@ void main()
   // Point intersection
   // Now it starts to get pretty hard, first we need to find the point
   vec3 point_impostorspace = vec3(mapping.x, mapping.y * 0.5 + 0.5,
-				  sqrt(1.0 - mapping.x*mapping.x));
+				  sqrt(1.0 - mapping.x * mapping.x));
   
   //view_pos = origin + cyl_radius * point_impostorspace.x * nx 
   //  + cyl_length * point_impostorspace.y * ny + 
@@ -28,7 +28,8 @@ void main()
   
   // Now we need to convert from impostor space to view space for
   // light computations
-  vec3 point_viewspace = view_pos + vec3(0.0, 0.0, dz*point_impostorspace.z);// + cyl_radius * point_impostorspace.z * nz;
+  vec3 point_viewspace = view_pos + 
+    vec3(0.0, 0.0, abs(dz)*point_impostorspace.z);
   
   // Now correct the depth value, we first project and then extract the z
   vec4 projected_point = projection_mat * vec4(point_viewspace, 1.0);
@@ -49,7 +50,8 @@ void main()
   
   //gl_FragColor = color;
   float light_factor = dot(normal_viewspace, vec3(0.0, 0.0, 1.0));
-  gl_FragData[0] = vec4(light_factor * gl_Color.xyz, 1.0);
+  gl_FragData[0] = vec4(gl_Color.xyz, 1.0);
+  //gl_FragData[0] = vec4( gl_Color.xyz, 1.0);
   //gl_FragData[0] = vec4(dz, dz, dz, 1.0);
   // This is needed for ssao and other effects that require normals
   // gl_FragData[1].xyz = normal * 0.5 + 0.5;
