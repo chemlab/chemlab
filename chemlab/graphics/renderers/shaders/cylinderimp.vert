@@ -43,20 +43,15 @@ void main()
   
   vec3 view_direction = view_cylinder_end.xyz - view_cylinder_start.xyz;
   vec3 normal_direction;
+  vec4 displacement;
+  vec4 view_vertex;
   
-  if (view_direction.z * at_mapping.y > 0.0) {
-    normal_direction = normalize(cross(vec3(view_direction.xy, 0.0), view_cylinder_start.xyz));
-  }
-  else {
-    normal_direction = normalize(cross(vec3(view_direction.xy, 0.0), view_cylinder_end.xyz));
-  }
-
-
-  vec4 displacement = vec4(normalize(normal_direction.xy) * at_mapping.x * 0.5 + 
-			   view_direction.xy * (at_mapping.y * 0.5 + 0.5), 
-			   0.0, 0.0);
-  vec4 view_vertex = view_cylinder_start + displacement;
-  
+  normal_direction = normalize(cross(vec3(view_direction.xy, 0.0), view_cylinder_start.xyz));
+  displacement = vec4(normalize(normal_direction.xy) * at_mapping.x * 0.5 + 
+		      view_direction.xy * (at_mapping.y * 0.5 + 0.5), 
+		      0.0, 0.0);
+  view_vertex = view_cylinder_start + displacement;
+  view_vertex.z = max(view_cylinder_start.z, view_cylinder_end.z); 
   gl_Position = projection_mat * view_vertex;       
   gl_FrontColor = vec4(view_vertex.x, view_vertex.y, abs(view_vertex.z), 1.0);
 }
