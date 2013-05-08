@@ -16,6 +16,8 @@ varying float cylinder_radiusv;
 varying float cylinder_lengthv;
 varying vec3 U, V, H;
 varying vec4 cylinder_origin;
+varying vec3 local_coords;
+
 
 void main()
 {
@@ -64,6 +66,10 @@ void main()
   
   // Projecting
   vertex = model_view_projection_mat * vertex;
+  
+  // To reconstruct the current fragment position, I pass the local
+  // coordinates
+  local_coords = vert_local_coordinate;
   
   gl_Position = vertex;
   gl_FrontColor = vec4(vertex_viewspace.xyz, 1.0);
