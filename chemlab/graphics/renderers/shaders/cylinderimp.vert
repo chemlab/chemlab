@@ -3,6 +3,7 @@
 uniform mat4 model_view_mat;
 uniform mat4 model_view_projection_mat;
 uniform mat4 model_view_rotation_mat;
+uniform mat4 projection_mat;
 
 attribute vec3 cylinder_axis;
 attribute float cylinder_radius;
@@ -52,8 +53,8 @@ void main()
   // We do the addition in object space
   vec4 vertex = cylinder_base;
   vertex.xyz += u * (vert_local_coordinate.x*2.0 - 1.0) * cylinder_radius; 
-  vertex.xyz += h * vert_local_coordinate.y * cylinder_length;
-  vertex.xyz += v * (vert_local_coordinate.z*2.0 - 1.0) * cylinder_radius;  
+  vertex.xyz += v * (vert_local_coordinate.y*2.0 - 1.0) * cylinder_radius;  
+  vertex.xyz += h * vert_local_coordinate.z * cylinder_length;
   
   // Vertex in view space
   vertex_viewspace = vertex * model_view_mat;
@@ -72,5 +73,5 @@ void main()
   local_coords = vert_local_coordinate;
   
   gl_Position = vertex;
-  gl_FrontColor = vec4(vertex_viewspace.xyz, 1.0);
+  gl_FrontColor = gl_Color;
 }
