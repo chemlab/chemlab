@@ -167,7 +167,7 @@ class QChemlabWidget(QGLWidget):
         z = evt.delta()
         self.camera.mouse_zoom(z*0.01)
         
-        self.repaint()
+        self.update()
             
     def mousePressEvent(self, evt):
         self._last_mouse_right = evt.button() == Qt.RightButton
@@ -196,7 +196,7 @@ class QChemlabWidget(QGLWidget):
                 
                 cam.position += (-cam.a * dx  + -cam.b * dy) * 10
                 cam.pivot += (-cam.a * dx + -cam.b * dy) * 10
-                self.repaint()
+                self.update()
         
         if self._last_mouse_left:
             # Orbiting Rotation
@@ -216,4 +216,4 @@ class QChemlabWidget(QGLWidget):
                 cam = self.camera
                 cam.mouse_rotate(dx, dy)
 
-                self.repaint()
+                self.update()

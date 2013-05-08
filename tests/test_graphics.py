@@ -210,20 +210,25 @@ def test_bond_renderer():
 
 def test_ball_and_stick_renderer():
     from collections import defaultdict
+    from chemlab.io import datafile
     from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
     v.widget.post_processing = SSAOEffect(v.widget, kernel_radius = 0.15)
     
-    v.widget.background_color = black
-    mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
-                    Atom("H", [-0.402, 0.249, 0.0]),
-                    Atom("H", [-0.532, 0.198, 0.10])])
+    #v.widget.background_color = black
+    #mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
+    #                Atom("H", [-0.402, 0.249, 0.0]),
+    #                Atom("H", [-0.532, 0.198, 0.10])])
     
-    mol.bonds = np.array([[0, 1],[0, 2]])
+    #mol.bonds = np.array([[0, 1],[0, 2]])
     
-    mol = CirDB().get("molecule", "moronic acid")
+    #mol = CirDB().get("molecule", "moronic acid")
+    mol = datafile('tests/data/3ZJE.pdb').read('molecule')
+    mol.bonds = find_bonds(mol)
+    
     ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
+
     
     # Try without bonds
     # ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
@@ -310,7 +315,7 @@ def test_traj_viewer():
         f = frames[index]
         ar.update_positions(f)
         tv.set_text(format_time(times[index]))
-        tv.widget.repaint()
+        tv.widget.update()
     
     tv.run()
 

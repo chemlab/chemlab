@@ -41,7 +41,7 @@ class WireframeRenderer(AbstractRenderer):
             vdw_dict[k] = vdw_dict[k] * scale
         
         self.has_bonds = len(bonds) > 0
-        self.ar = SphereImpostorRenderer(widget, r_array, [0.005] * len(r_array),
+        self.ar = SphereImpostorRenderer(widget, r_array, [0.01] * len(r_array),
                                          colors.black * len(r_array))
         
         self.bonds = bonds
@@ -55,7 +55,7 @@ class WireframeRenderer(AbstractRenderer):
             bounds[:, 1, :] = ends
             
             self.br = CylinderImpostorRenderer(widget, bounds,
-                                               [0.005] * len(bounds),
+                                               [0.01] * len(bounds),
                                                [colors.black] * len(bounds))
 
         
