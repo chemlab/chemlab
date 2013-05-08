@@ -1,5 +1,7 @@
 #version 120
 uniform mat4 projection_mat;
+uniform vec3 light_dir;
+uniform vec3 camera_position;
 
 varying vec4 vertex_viewspace; // this guy should be the surface point.
 
@@ -9,6 +11,17 @@ varying float cylinder_lengthv;
 
 varying vec4 cylinder_origin;
 varying vec3 local_coords;
+
+vec3 phong_lighting(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color) {
+  
+  vec3 halfvector = normalize(light_dir + camera_position);
+  
+  float NdotL = dot(normalize(light_dir), normal);
+  float NdotHV = max(dot(normal, halfvector), 0.0);
+   
+  float specular = 0.3*pow(NdotHV, 110.0); /* Shininess */
+  return color * NdotL + specular;
+}
 
 void main()
 {
@@ -81,6 +94,10 @@ void main()
    float light_fact = dot(normal, vec3(0.0, 0.0, 1.0));
    
 
-   gl_FragData[0] = vec4(light_fact * gl_Color.xyz , 1.0);
-   gl_FragData[1] = vec4(normal, 1.0);
+   //gl_FragData[0] = vec4(light_fact * gl_Color.xyz , 1.0);
+   gl_FragData[0] = vec4(phong_lighting(light_dir, camera_position, normal, gl_Color.xyz), 1.0);
+   gl_FragData[1].xyz = normal * 0.5 + 0.5;
 }
+
+
+

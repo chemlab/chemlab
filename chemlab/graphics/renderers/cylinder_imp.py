@@ -113,12 +113,13 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         set_uniform(self.shader, 'projection_mat', 'mat4fv',
                     self.viewer.camera.projection)
         
-        #set_uniform(self.shader, 'light_dir', '3f', self.ldir[:3])
+        set_uniform(self.shader, 'light_dir', '3f', self.ldir[:3])
+
         
         cam = np.dot(self.viewer.camera.matrix[:3,:3],
                      -self.viewer.camera.position)
-        
-        set_uniform(self.shader, 'camera', '4f', cam)
+        set_uniform(self.shader, 'camera_position', '4f', cam)                
+
         
     def draw(self):
         self.setup_shader()

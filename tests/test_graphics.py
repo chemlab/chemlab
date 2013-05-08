@@ -13,6 +13,8 @@ import numpy as np
 import time
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
+from chemlab.graphics.postprocessing.ssao import SSAOEffect    
+
 
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
@@ -211,6 +213,8 @@ def test_ball_and_stick_renderer():
     from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
+    v.widget.post_processing = SSAOEffect(v.widget, kernel_radius = 0.15)
+    
     v.widget.background_color = black
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
@@ -222,7 +226,7 @@ def test_ball_and_stick_renderer():
     ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
     
     # Try without bonds
-    ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
+    # ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
     
     v.run()
 
@@ -342,9 +346,9 @@ def test_fxaa():
     v.widget.post_processing = FXAAEffect(v.widget)
     
     v.run()
-    
+
 def test_ssao():
-    from chemlab.graphics.postprocessing.ssao import SSAOEffect
+
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
     

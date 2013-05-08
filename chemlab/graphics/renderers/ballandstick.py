@@ -37,7 +37,7 @@ class BallAndStickRenderer(AbstractRenderer):
         
         self.ar = AtomRenderer(widget, r_array, type_array, radii_map = vdw_dict)
         if self.has_bonds:
-            self.br = BondRenderer(widget, bonds, r_array, type_array)
+            self.br = BondRenderer(widget, bonds, r_array, type_array, style='impostors')
 
         
     def draw(self):
