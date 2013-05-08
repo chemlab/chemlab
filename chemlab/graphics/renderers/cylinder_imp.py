@@ -93,8 +93,9 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         local = np.tile(local, self.n_cylinders)
         
         self._verts_vbo = VertexBuffer(vertices,GL_DYNAMIC_DRAW)
-        self._local_vbo = VertexBuffer(local,GL_DYNAMIC_DRAW)
         self._directions_vbo = VertexBuffer(directions, GL_DYNAMIC_DRAW)
+        
+        self._local_vbo = VertexBuffer(local,GL_DYNAMIC_DRAW)
         self._color_vbo = VertexBuffer(colors, GL_DYNAMIC_DRAW)
         self._radii_vbo = VertexBuffer(radii, GL_DYNAMIC_DRAW)
 
@@ -162,10 +163,11 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         glDisableClientState(GL_COLOR_ARRAY)
         glUseProgram(0)
         
-    def update_positions(self, rarray):
-        vertices = np.repeat(rarray, 4, axis=0).astype(np.float32)
-        self.poslist = rarray
-        
-        self._verts_vbo.set_data(vertices)
-        self._centers_vbo.set_data(vertices)
+    def update_bounds(self, bounds):
+        vertices = np.repeat(bounds[:, 0], 36, axis=0).astype('float32')
+        directions = np.repeat(bounds[:, 1] - bounds[:, 0],
+                               36, axis=0).astype('float32')
+
+        self._verts_vbo = VertexBuffer(vertices,GL_DYNAMIC_DRAW)
+        self._directions_vbo = VertexBuffer(directions, GL_DYNAMIC_DRAW)
         

@@ -235,7 +235,7 @@ def test_wireframe_renderer():
     from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
-    v.widget.background_color = black
+    #v.widget.background_color = black
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
@@ -287,14 +287,21 @@ def test_unproject():
         v.widget.repaint()
     v.mousePressEvent = mouse_move # Super Hack
     v.run()
+
+def find_bonds(sys):
+    from chemlab.libs.ckdtree import cKDTree
+    ck = cKDTree(sys.r_array)
+    return np.unique(ck.query_pairs(0.15))
+    
     
 def test_traj_viewer():
     from chemlab.io import datafile
     tv = QtTrajectoryViewer()
     
     s = datafile('tests/data/water.gro').read('system')
-    ar = tv.add_renderer(AtomRenderer, s.r_array, s.type_array)
-
+    #ar = tv.add_renderer(WireframeRenderer, s.r_array, s.type_array, find_bonds(s))
+    ar = tv.add_renderer(BallAndStickRenderer, s.r_array, s.type_array, find_bonds(s))
+    
     times, frames = datafile('tests/data/trajout.xtc').read('trajectory')
     tv.set_ticks(len(frames))
     

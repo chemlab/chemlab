@@ -1,8 +1,12 @@
 from .base import AbstractRenderer
 from .atom import AtomRenderer
 from .bond import BondRenderer
+from .sphere_imp import SphereImpostorRenderer
+from .cylinder_imp import CylinderImpostorRenderer
 
 from ...db import ChemlabDB
+from .. import colors
+import numpy as np
 
 cdb = ChemlabDB()
 
@@ -37,11 +41,22 @@ class WireframeRenderer(AbstractRenderer):
             vdw_dict[k] = vdw_dict[k] * scale
         
         self.has_bonds = len(bonds) > 0
+        self.ar = SphereImpostorRenderer(widget, r_array, [0.005] * len(r_array),
+                                         colors.black * len(r_array))
         
-        self.ar = AtomRenderer(widget, r_array, type_array, backend='points')
+        self.bonds = bonds
         
         if self.has_bonds:
-            self.br = BondRenderer(widget, bonds, r_array, type_array, style='lines')
+            starts = r_array[bonds[:, 0]]
+            ends = r_array[bonds[:, 1]]
+            bounds = np.empty((len(starts), 2, 3))
+            
+            bounds[:, 0, :] = starts
+            bounds[:, 1, :] = ends
+            
+            self.br = CylinderImpostorRenderer(widget, bounds,
+                                               [0.005] * len(bounds),
+                                               [colors.black] * len(bounds))
 
         
     def draw(self):
@@ -54,4 +69,12 @@ class WireframeRenderer(AbstractRenderer):
         self.ar.update_positions(r_array)
         
         if self.has_bonds:
-            self.br.update_positions(r_array)
+            bonds = self.bonds
+            starts = r_array[bonds[:, 0]]
+            ends = r_array[bonds[:, 1]]
+            bounds = np.empty((len(starts), 2, 3))
+            
+            bounds[:, 0, :] = starts
+            bounds[:, 1, :] = ends
+            
+            self.br.update_bounds(bounds)
