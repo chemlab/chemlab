@@ -388,6 +388,20 @@ class Molecule(object):
 
     formula = property(_det_formula)
 
+
+def guess_bonds(r_array, type_array):
+    from ..libs.ckdtree import cKDTree
+    covalent_radii = {} # This will be a dict with all the covalent radii
+    MAXRADII = 0.25
+    
+    # Find all the pairs
+    ck = cKDTree(r_array)
+    pairs = ck.query_pairs(MAXRADII)
+    
+    bonds = []
+    for i,j in pairs:
+        r_array[i]
+    
 def make_formula(elements):
     c = Counter(elements)
     formula = ''

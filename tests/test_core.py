@@ -173,7 +173,17 @@ def test_random():
     s = random_lattice_box([na, cl, wat], [160, 160, 160], [4, 4, 4])
     display_system(s)
     #random_box([na, cl, wat], [16, 16, 130], [10, 10, 10], rmin=0.2)
-    
+
+
+def test_bond_guessing():
+    from chemlab.core.system import guess_bonds
+    r_array = np.random.random((9, 3))
+    type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
+    mol_indices = [0, 3, 6]
+    mol_n_atoms = [3, 3, 3]
+    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
+                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+    print guess_bonds(s2)
     
 def test_extending():
     from chemlab.core.attributes import NDArrayAttr, MArrayAttr

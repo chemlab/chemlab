@@ -732,3 +732,5 @@ def merge_systems(sysa, sysb, bounding=0.2):
     
     return sysres
 
+def guess_bonds(s):
+    
