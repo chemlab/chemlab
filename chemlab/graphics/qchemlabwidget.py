@@ -92,6 +92,8 @@ class QChemlabWidget(QGLWidget):
        use the colors contained in chemlab.graphics.colors.
 
     '''
+
+    clicked = QtCore.Signal(object)
     
     def __init__(self, *args, **kwargs):
         super(QChemlabWidget, self).__init__(*args, **kwargs)
@@ -170,13 +172,18 @@ class QChemlabWidget(QGLWidget):
         self.update()
             
     def mousePressEvent(self, evt):
+        self.clicked.emit(evt)
         self._last_mouse_right = evt.button() == Qt.RightButton
         self._last_mouse_left = evt.button() == Qt.LeftButton
         
         self._last_mouse_pos = evt.pos()
 
-    def mouseMoveEvent(self, evt):
+    def screen_to_normalized(self, x, y):
+        w = self.width()
+        h = self.height()        
+        return  2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
         
+    def mouseMoveEvent(self, evt):
         if self._last_mouse_right:
             # Panning
             if bool(evt.buttons() & Qt.RightButton):
