@@ -69,7 +69,8 @@ void impostor_point_normal(out vec3 point, out vec3 normal)
 void main()
 {
   float NdotL, NdotHV;
-  vec4 color, diffuse;
+  vec4 color;
+  vec3 diffuse;
   vec3 point, normal;
   float specular;
   vec3 halfvector;
@@ -92,8 +93,8 @@ void main()
   NdotHV = max(dot(normalize(normal), normalize(halfvector)), 0.0);
    
   specular = 0.3*pow(NdotHV, 110.0); /* Shininess */
-  diffuse = gl_Color;
-  color =  diffuse * NdotL + specular;
+  diffuse = gl_Color.xyz;
+  color =  vec4(diffuse * NdotL + specular, gl_Color.a);
    
   //gl_FragColor = color;
   gl_FragData[0] = color;

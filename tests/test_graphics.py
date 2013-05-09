@@ -384,11 +384,12 @@ def test_ssao():
 def test_pickers():
     from chemlab.graphics.pickers import SpherePicker
     centers = [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0]]
-    radii = [1.0, 0.5]
-    colors = [[0, 255, 255, 255], [255, 255, 0, 255]]
+    radii = np.array([1.0, 0.5])
+    colors = [[0, 255, 255, 100], [255, 255, 0, 100]]
     
     v = QtViewer()
-    sr = v.add_renderer(SphereRenderer, centers, radii, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors, transparent=False)
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii*1.5, [[255, 255, 255, 50]]*2, transparent=True)
 
     
     sp = SpherePicker(v.widget, centers, radii)
@@ -397,7 +398,6 @@ def test_pickers():
         x, y = v.widget.screen_to_normalized(evt.x(), evt.y())
         print sp.pick(x, y)
     
-        
     v.widget.clicked.connect(on_click)
     
     v.run()

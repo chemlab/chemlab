@@ -22,7 +22,8 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
        .. image:: /_static/sphere_impostor_renderer.png
 
     """
-    def __init__(self, viewer, poslist, radiuslist, colorlist):
+    def __init__(self, viewer, poslist, radiuslist, colorlist,
+                 transparent=False):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "sphereimp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
@@ -30,6 +31,7 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         
         super(SphereImpostorRenderer, self).__init__(viewer, vert, frag)
         
+        self.transparent = transparent
         self.poslist = poslist
         self.radiuslist = radiuslist
         self.colorlist = colorlist
@@ -70,6 +72,11 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
     def draw(self):
         self.setup_shader()
         
+        if self.transparent:
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glDepthMask(GL_FALSE)
+        
         at_mapping = glGetAttribLocation(self.shader,
                                          "at_mapping")
         at_sphere_center = glGetAttribLocation(self.shader,
@@ -105,6 +112,12 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
 
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
+        
+        if self.transparent:
+            glDisable(GL_BLEND)
+            #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glDepthMask(GL_TRUE)
+
         glUseProgram(0)
         
     def update_positions(self, rarray):
