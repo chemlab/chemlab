@@ -176,14 +176,25 @@ def test_random():
 
 
 def test_bond_guessing():
-    from chemlab.core.system import guess_bonds
-    r_array = np.random.random((9, 3))
-    type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
-    mol_indices = [0, 3, 6]
-    mol_n_atoms = [3, 3, 3]
-    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
-                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
-    print guess_bonds(s2)
+    from chemlab.core.molecule import guess_bonds
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.graphics import display_molecule
+    from chemlab.io import datafile
+    
+    #mol = ChemlabDB().get('molecule', 'example.norbornene')
+    import time
+    #mol = CirDB().get('molecule', 'caffeine')
+
+    mol = datafile('tests/data/3ZJE.pdb').read('molecule')
+    
+    t = time.time()
+    bonds = guess_bonds(mol.r_array, mol.type_array)
+    print 'elapsed', time.time() - t
+    mol.bonds = bonds
+    
+    display_molecule(mol)
+    
+    
     
 def test_extending():
     from chemlab.core.attributes import NDArrayAttr, MArrayAttr

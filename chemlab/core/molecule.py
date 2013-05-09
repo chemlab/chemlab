@@ -3,9 +3,11 @@ from collections import Counter
 import numpy as np
 from copy import copy
 
+from ..libs.ckdtree import cKDTree
 from ..db import ChemlabDB
+cdb = ChemlabDB()
 
-masses = ChemlabDB().get("data", "massdict")
+masses = cdb.get("data", "massdict")
 
 from .attributes import MArrayAttr, MField
 from .fields import AtomicField, FieldRequired
@@ -390,17 +392,30 @@ class Molecule(object):
 
 
 def guess_bonds(r_array, type_array):
-    from ..libs.ckdtree import cKDTree
-    covalent_radii = {} # This will be a dict with all the covalent radii
-    MAXRADII = 0.25
+    covalent_radii = cdb.get('data', 'covalentdict')
+    MAXRADIUS = 0.3
     
     # Find all the pairs
     ck = cKDTree(r_array)
-    pairs = ck.query_pairs(MAXRADII)
+    pairs = ck.query_pairs(MAXRADIUS)
     
     bonds = []
     for i,j in pairs:
-        r_array[i]
+        threshold = 0.01
+        a, b = covalent_radii[type_array[i]], covalent_radii[type_array[j]]
+        rval = a + b
+        
+
+        thr_a = rval - threshold
+        thr_b = rval + threshold 
+        
+        #thr_a2 = thr_a * thr_a
+        thr_b2 = thr_b * thr_b
+        dr2  = ((r_array[i] - r_array[j])**2).sum()
+        
+        if dr2 < thr_b2:
+            bonds.append((i, j))
+    return np.array(bonds)
     
 def make_formula(elements):
     c = Counter(elements)
