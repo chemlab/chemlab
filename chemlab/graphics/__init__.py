@@ -36,7 +36,9 @@ def display_system(sys):
     
 
     v = QtViewer()
-    v.widget.post_processing = SSAOEffect(v.widget)    
+
+    #v.add_post_processing(FXAAEffect)
+    v.add_post_processing(SSAOEffect)    
     
     sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
                         backend='impostors')
@@ -77,7 +79,9 @@ def display_trajectory(sys, times, coords_list, style='spheres'):
     '''
     
     v = QtTrajectoryViewer()
-    v.widget.post_processing = SSAOEffect(v.widget)    
+    
+    v.add_post_processing(SSAOEffect)
+    #v.add_post_processing(FXAAEffect)
     
     if style == 'spheres':
         backend = 'impostors'

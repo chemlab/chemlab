@@ -15,14 +15,15 @@ class Texture(object):
         self.data = data
         self.empty()
         
-        
     def empty(self):
         self.bind()
         glTexImage2D(self.kind, 0, self.intformat, self.width, self.height, 0,
                      self.format, self.dtype, self.data)
-        
     def bind(self):
         glBindTexture(self.kind, self.id)
 
     def set_parameter(self, par, value):
         glTexParameteri(self.kind, par, value)
+    
+    def delete(self):
+        glDeleteTextures(self.id)

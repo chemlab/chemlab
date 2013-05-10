@@ -304,6 +304,11 @@ class QtTrajectoryViewer(QMainWindow):
         ui = klass(self.widget, *args, **kwargs)
         self.widget.uis.append(ui)
         return ui
+    
+    def add_post_processing(self, klass, *args, **kwargs):
+        pp = klass(self.widget, *args, **kwargs)
+        self.widget.post_processing.append(pp)
+        return pp
 
     def run(self):
         app.exec_()

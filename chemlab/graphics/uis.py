@@ -22,7 +22,7 @@ class TextUI(object):
     
     def __init__(self, widget, x, y, text):
         self.viewer = widget
-        w, h = viewer.width(), viewer.height()
+        w, h = widget.width(), widget.height()
         self.x, self.y = x, y
         self.text = text
         

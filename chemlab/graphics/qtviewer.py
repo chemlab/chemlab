@@ -22,14 +22,14 @@ class FpsDraw(object):
         self.ctimer.start(0)
         self.parent = parent
         self.prev = time.time()
-        self.ctimer.timeout.connect(self.parent.glDraw)
-    
+        self.ctimer.timeout.connect(self.parent.update)
+        
     def draw(self):
         self.cur = time.time()
         elapsed = self.cur - self.prev
         self.prev = self.cur
-        self.parent.renderText(50, 50, '%f' % (1/elapsed) )
-        
+        print 1/elapsed
+
 
 class QtViewer(QMainWindow):
     """Bases: `PySide.QtGui.QMainWindow`
@@ -161,6 +161,11 @@ class QtViewer(QMainWindow):
         '''
         ui = klass(self.widget, *args, **kwargs)
         self.widget.uis.append(ui)
+        return ui
+        
+    def add_post_processing(self, klass, *args, **kwargs):
+        ui = klass(self.widget, *args, **kwargs)
+        self.widget.post_processing.append(ui)
         return ui
         
     # Events

@@ -7,9 +7,13 @@ from PySide.QtCore import  Qt
 from PySide.QtOpenGL import QGLWidget
 
 from OpenGL.GL import *
+from OpenGL.GL.framebufferobjects import *
 
 from .camera import Camera
+from .textures import Texture
 from . import colors
+
+DEFAULT_FRAMEBUFFER = 0
 
 class QChemlabWidget(QGLWidget):
     '''Extensible and modular OpenGL widget developed using the Qt (PySide)
@@ -105,7 +109,7 @@ class QChemlabWidget(QGLWidget):
         self.uis = []
         
         # Post processing
-        self.post_processing = None
+        self.post_processing = []
         
         self.light_dir = np.array([0.0, 0.0, 1.0])
         self.background_color = colors.white
@@ -124,13 +128,40 @@ class QChemlabWidget(QGLWidget):
         glDepthFunc(GL_LESS)        
         glEnable(GL_MULTISAMPLE)
         
+        if self.post_processing is not []:
+            self.fb0, self.fb1 = glGenFramebuffers(2)
+            
+            self.textures = {'color': create_color_texture(self.fb0, self.width(), self.height()),
+                             'depth': create_depth_texture(self.fb0, self.width(), self.height()),
+                             'normal': create_normal_texture(self.fb0, self.width(), self.height())}
+            
+            glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
+            
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
+                != GL_FRAMEBUFFER_COMPLETE):
+                raise Exception('Framebuffer is not complete')
+
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
 
-        # Here goes the prerequisite for post-processing effects
-        if self.post_processing:
-            self.post_processing.pre_render()
+        if self.post_processing is not []:
+            # Render to the first framebuffer
+            glBindFramebuffer(GL_FRAMEBUFFER, self.fb0)
+            glViewport(0, 0, self.width(), self.height())
+            
+            status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
+            if (status != GL_FRAMEBUFFER_COMPLETE):
+                reason = dict(GL_FRAMEBUFFER_UNDEFINED='UNDEFINED',
+                              GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT='INCOMPLETE_ATTACHMENT',
+                              GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT='INCOMPLETE_MISSING_ATTACHMENT',
+                              GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER='INCOMPLETE_DRAW_BUFFER',
+                              GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER='INCOMPLETE_READ_BUFFER',
+                              GL_FRAMEBUFFER_UNSUPPORTED='UNSUPPORTED',
+                          )[status]
+                
+                raise Exception('Framebuffer is not complete: {}'.format(reason))
         
+            
         # Clear color take floats
         bg_r, bg_g, bg_b, bg_a = self.background_color
         glClearColor(bg_r/255, bg_g/255, bg_b/255, bg_a/255)
@@ -139,24 +170,51 @@ class QChemlabWidget(QGLWidget):
         proj = self.camera.projection
         cam = self.camera.matrix
         
-        self.mvproj = mvproj = np.dot(proj, cam)
+        self.mvproj = np.dot(proj, cam)
         
         self.ldir = cam[:3, :3].T.dot(self.light_dir)
         
-
         self.on_draw_ui()
         # Draw World
         self.on_draw_world()
         
-        if self.post_processing:
-            self.post_processing.post_render()
-        
+        if self.post_processing is not []:
+            
+            if len(self.post_processing) == 2:
+                fb1 = glGenFramebuffers(1)
+                colortex = create_color_texture(fb1, self.width(), self.height())
+                
+                self.post_processing[0].render(fb1, self.textures)
+            
+                newarg = {}
+                newarg['color'] = colortex
+                newarg['depth'] = self.textures['depth']
+                newarg['normal'] = self.textures['normal']
+                
+                self.post_processing[1].render(DEFAULT_FRAMEBUFFER, newarg)
+            
+            else:
+                self.post_processing[0].render(DEFAULT_FRAMEBUFFER, self.textures)
+            
     def resizeGL(self, w, h):
+
         glViewport(0, 0, w, h)
         self.camera.aspectratio = float(self.width()) / self.height()
-        if self.post_processing:
-            self.post_processing.on_resize()
-        
+
+        if self.post_processing is not []:
+            # We have to recreate our textures
+            self.textures['color'].delete()
+            self.textures['depth'].delete()
+            self.textures['normal'].delete()
+            
+            self.textures = {'color': create_color_texture(self.fb0, self.width(), self.height()),
+                             'depth': create_depth_texture(self.fb0, self.width(), self.height()),
+                             'normal': create_normal_texture(self.fb0, self.width(), self.height())}
+            glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
+            
+            for p in self.post_processing:
+                p.on_resize(w, h)
+            
     def on_draw_ui(self):
         for u in self.uis:
             u.draw()
@@ -224,3 +282,46 @@ class QChemlabWidget(QGLWidget):
                 cam.mouse_rotate(dx, dy)
 
                 self.update()
+
+
+def create_color_texture(fb, width, height):
+    texture = Texture(GL_TEXTURE_2D, width, height, GL_RGB, GL_RGB,
+                      GL_UNSIGNED_BYTE)
+
+    # Set some parameters
+    texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)        
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, fb)
+    glViewport(0, 0, width, height)
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.id, 0)
+
+    return texture
+
+def create_depth_texture(fb, width, height):
+    texture = Texture(GL_TEXTURE_2D, width, height, GL_DEPTH_COMPONENT24,
+                      GL_DEPTH_COMPONENT, GL_FLOAT)
+
+    texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR) 
+                    
+    glBindFramebuffer(GL_FRAMEBUFFER, fb)
+    glViewport(0, 0, width, height)
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture.id, 0)
+
+    return texture
+
+
+def create_normal_texture(fb, width, height):
+    texture = Texture(GL_TEXTURE_2D, width, height, GL_RGB, GL_RGB,
+                      GL_UNSIGNED_BYTE)
+
+    texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR) 
+                    
+    glBindFramebuffer(GL_FRAMEBUFFER, fb)
+    glViewport(0, 0, width, height)
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture.id, 0)
+
+    return texture

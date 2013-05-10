@@ -550,6 +550,8 @@ class System(object):
         cumulatives = []
         
         for i, bd in enumerate(bdlist):
+            if isinstance(bd, list):
+                continue
             if not(bd.shape[0] == 0):
                 # The indices should be offset
                 cumulatives.extend(bd + self.mol_indices[i])

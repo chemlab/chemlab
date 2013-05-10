@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
-from chemlab.graphics.postprocessing.ssao import SSAOEffect    
+from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect
 
 
 def test_triangle_renderer():
@@ -214,7 +214,7 @@ def test_ball_and_stick_renderer():
     from chemlab.db.cirdb import CirDB
     
     v = QtViewer()
-    v.widget.post_processing = SSAOEffect(v.widget, kernel_radius = 0.15)
+    v.add_post_processing(SSAOEffect, kernel_radius = 0.15)
     
     #v.widget.background_color = black
     #mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
@@ -342,7 +342,7 @@ def test_noeffect():
     
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     
-    v.widget.post_processing = NoEffect(v.widget)
+    v.widget.post_processing.append(NoEffect(v.widget))
     
     v.run()
 
@@ -355,12 +355,11 @@ def test_fxaa():
     
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     
-    v.widget.post_processing = FXAAEffect(v.widget)
+    v.widget.post_processing.append(FXAAEffect(v.widget))
     
     v.run()
 
 def test_ssao():
-
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
     
@@ -381,15 +380,41 @@ def test_ssao():
     
     v.run()
 
+def test_multiple_post_processing():
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.io import datafile
+    
+    v = QtViewer()    
+    cdb = ChemlabDB()
+    mol = cdb.get('molecule', 'example.norbornene')
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
+    
+    # Adding multiple post processing effects
+    
+
+    v.add_post_processing(SSAOEffect)
+    v.add_post_processing(FXAAEffect)    
+    
+    v.run()
+
+
 def test_pickers():
     from chemlab.graphics.pickers import SpherePicker
+    from chemlab.io import datafile
+    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    
     centers = [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0]]
     radii = np.array([1.0, 0.5])
     colors = [[0, 255, 255, 100], [255, 255, 0, 100]]
     
+    centers = mol.r_array
+    radii = np.array([0.2]*mol.n_atoms)
+    colors = np.array([[0, 255, 255, 255]]*mol.n_atoms)
+    
     v = QtViewer()
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors, transparent=False)
-    sr = v.add_renderer(SphereImpostorRenderer, centers, radii*1.5, [[255, 255, 255, 50]]*2, transparent=True)
+    #sr = v.add_renderer(SphereImpostorRenderer, centers,
+    #                    radii*1.5, [[255, 255, 255, 50]]*mol.n_atoms, transparent=True)
 
     
     sp = SpherePicker(v.widget, centers, radii)
