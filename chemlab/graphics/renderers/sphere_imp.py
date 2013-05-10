@@ -139,4 +139,9 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         colors = np.repeat(colorlist, 4, axis=0).astype(np.uint8)
         self.colorlist = colorlist
         self._color_vbo.set_data(colors)
+        
+    def update_radii(self, radiuslist):
+        self.radiuslist = radiuslist
+        radii = np.repeat(radiuslist, 4, axis=0).astype(np.float32)
+        self._radius_vbo.set_data(radii)
 

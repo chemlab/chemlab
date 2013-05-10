@@ -180,7 +180,7 @@ class QChemlabWidget(QGLWidget):
         
         if self.post_processing:
             if len(self.post_processing) == 2:
-                fb1 = glGenFramebuffers(1)
+                fb1 = self.fb1 
                 colortex = create_color_texture(fb1, self.width(), self.height())
                 
                 self.post_processing[0].render(fb1, self.textures)
@@ -192,6 +192,7 @@ class QChemlabWidget(QGLWidget):
                 
                 self.post_processing[1].render(DEFAULT_FRAMEBUFFER, newarg)
             
+                colortex.delete()
             else:
                 self.post_processing[0].render(DEFAULT_FRAMEBUFFER, self.textures)
             
