@@ -387,15 +387,15 @@ def test_multiple_post_processing():
     v = QtViewer()    
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
-    #mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
-    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
+    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors', shading='toon')
     
     # Adding multiple post processing effects
     
 
     v.add_post_processing(SSAOEffect)
-    #v.add_post_processing(FXAAEffect)    
-    v.add_post_processing(GammaCorrectionEffect)    
+    v.add_post_processing(GammaCorrectionEffect, 2.0)    
+    v.add_post_processing(FXAAEffect)    
     
     v.run()
 

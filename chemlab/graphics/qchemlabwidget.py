@@ -128,18 +128,24 @@ class QChemlabWidget(QGLWidget):
         glDepthFunc(GL_LESS)        
         glEnable(GL_MULTISAMPLE)
         
-        #if self.post_processing:
-        self.fb0, self.fb1 = glGenFramebuffers(2)
+        # Those are the post-processing buffers
+        self.fb0, self.fb1, self.fb2 = glGenFramebuffers(3)
 
         self.textures = {'color': create_color_texture(self.fb0, self.width(), self.height()),
                          'depth': create_depth_texture(self.fb0, self.width(), self.height()),
                          'normal': create_normal_texture(self.fb0, self.width(), self.height())}
 
+        
+        
         glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
             raise Exception('Framebuffer is not complete')
+
+        self._extra_textures = {'fb1': create_color_texture(self.fb1, self.width(), self.height()),
+                                'fb2': create_color_texture(self.fb2, self.width(), self.height())}
+
 
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
@@ -177,24 +183,31 @@ class QChemlabWidget(QGLWidget):
         self.ldir = cam[:3, :3].T.dot(self.light_dir)
         
         self.on_draw_ui()
+        
         # Draw World
         self.on_draw_world()
         
+        # Iterate over all of the post processing effects
         if self.post_processing:
-            if len(self.post_processing) == 2:
-                fb1 = self.fb1 
-                colortex = create_color_texture(fb1, self.width(), self.height())
-                
-                self.post_processing[0].render(fb1, self.textures)
+            if len(self.post_processing) > 1:
+                newarg = self.textures.copy()
+
+                # Ping-pong framebuffer rendering
+                for i, pp in enumerate(self.post_processing[:-1]):
+                    if i % 2:
+                        outfb = self.fb1
+                        outtex = self._extra_textures['fb1']
+                    else:
+                        outfb = self.fb2
+                        outtex = self._extra_textures['fb2']
+                        
+                    pp.render(outfb, newarg)
             
-                newarg = {}
-                newarg['color'] = colortex
-                newarg['depth'] = self.textures['depth']
-                newarg['normal'] = self.textures['normal']
+                    newarg = {}
+                    newarg['color'] = outtex
                 
-                self.post_processing[1].render(DEFAULT_FRAMEBUFFER, newarg)
+                self.post_processing[-1].render(DEFAULT_FRAMEBUFFER, newarg)
             
-                colortex.delete()
             else:
                 self.post_processing[0].render(DEFAULT_FRAMEBUFFER, self.textures)
             
@@ -204,7 +217,7 @@ class QChemlabWidget(QGLWidget):
         self.camera.aspectratio = float(self.width()) / self.height()
 
         if self.post_processing:
-            # We have to recreate our textures
+            # We have to recreate all of our textures
             self.textures['color'].delete()
             self.textures['depth'].delete()
             self.textures['normal'].delete()
@@ -214,6 +227,14 @@ class QChemlabWidget(QGLWidget):
                              'normal': create_normal_texture(self.fb0, self.width(), self.height())}
             glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
             
+            
+            self._extra_textures['fb1'].delete()
+            self._extra_textures['fb2'].delete()
+            
+            self._extra_textures = {'fb1': create_color_texture(self.fb1, self.width(), self.height()),
+                                    'fb2': create_color_texture(self.fb2, self.width(), self.height())}
+
+            # The post-processing effect can have something to do as well
             for p in self.post_processing:
                 p.on_resize(w, h)
             
