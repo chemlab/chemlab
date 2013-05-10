@@ -128,23 +128,23 @@ class QChemlabWidget(QGLWidget):
         glDepthFunc(GL_LESS)        
         glEnable(GL_MULTISAMPLE)
         
-        if self.post_processing is not []:
-            self.fb0, self.fb1 = glGenFramebuffers(2)
-            
-            self.textures = {'color': create_color_texture(self.fb0, self.width(), self.height()),
-                             'depth': create_depth_texture(self.fb0, self.width(), self.height()),
-                             'normal': create_normal_texture(self.fb0, self.width(), self.height())}
-            
-            glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
-            
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
-                != GL_FRAMEBUFFER_COMPLETE):
-                raise Exception('Framebuffer is not complete')
+        #if self.post_processing:
+        self.fb0, self.fb1 = glGenFramebuffers(2)
+
+        self.textures = {'color': create_color_texture(self.fb0, self.width(), self.height()),
+                         'depth': create_depth_texture(self.fb0, self.width(), self.height()),
+                         'normal': create_normal_texture(self.fb0, self.width(), self.height())}
+
+        glDrawBuffers(2, np.array([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1], dtype='uint32'))
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
+            != GL_FRAMEBUFFER_COMPLETE):
+            raise Exception('Framebuffer is not complete')
 
     def paintGL(self):
         '''GL function called each time a frame is drawn'''
 
-        if self.post_processing is not []:
+        if self.post_processing:
             # Render to the first framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, self.fb0)
             glViewport(0, 0, self.width(), self.height())
@@ -178,8 +178,7 @@ class QChemlabWidget(QGLWidget):
         # Draw World
         self.on_draw_world()
         
-        if self.post_processing is not []:
-            
+        if self.post_processing:
             if len(self.post_processing) == 2:
                 fb1 = glGenFramebuffers(1)
                 colortex = create_color_texture(fb1, self.width(), self.height())
@@ -201,7 +200,7 @@ class QChemlabWidget(QGLWidget):
         glViewport(0, 0, w, h)
         self.camera.aspectratio = float(self.width()) / self.height()
 
-        if self.post_processing is not []:
+        if self.post_processing:
             # We have to recreate our textures
             self.textures['color'].delete()
             self.textures['depth'].delete()

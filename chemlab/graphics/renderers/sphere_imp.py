@@ -135,3 +135,8 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         self._verts_vbo.set_data(vertices)
         self._centers_vbo.set_data(vertices)
         
+    def update_colors(self, colorlist):
+        colors = np.repeat(colorlist, 4, axis=0).astype(np.uint8)
+        self.colorlist = colorlist
+        self._color_vbo.set_data(colors)
+

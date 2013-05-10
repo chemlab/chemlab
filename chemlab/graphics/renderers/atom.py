@@ -44,7 +44,7 @@ class AtomRenderer(AbstractRenderer):
                  backend='impostors',
                  color_scheme=colors.default_atom_map,
                  radii_map=vdw_dict,
-                 shading='normal'):
+                 shading='phong'):
         radii = []
         colorlist = []
         
