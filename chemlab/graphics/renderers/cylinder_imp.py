@@ -10,7 +10,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
     """
 
     """
-    def __init__(self, viewer, bounds, radii, colors):
+    def __init__(self, viewer, bounds, radii, colors, shading='phong'):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "cylinderimp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
@@ -22,6 +22,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self.radii = radii
         self.colors = colors
         self.n_cylinders = len(bounds)
+        self.shading = shading
         
         self.ldir = np.array([0.0, 0.0, 10.0, 1.0])
 
@@ -119,7 +120,12 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         
         cam = np.dot(self.viewer.camera.matrix[:3,:3],
                      -self.viewer.camera.position)
-        set_uniform(self.shader, 'camera_position', '4f', cam)                
+        set_uniform(self.shader, 'camera_position', '3f', cam)
+        
+        shd = {'phong' : 0,
+               'toon': 1}[self.shading]
+        
+        set_uniform(self.shader, 'shading_type', '1i', shd)
 
         
     def draw(self):

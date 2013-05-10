@@ -407,20 +407,29 @@ def test_toon_shading():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
     from chemlab.graphics import colors
+    from chemlab.core.molecule import guess_bonds
+    
     cdb = ChemlabDB()
     
     #mol = cdb.get('molecule', 'example.norbornene')
     
     mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtViewer()
-    v.widget.post_processing = FXAAEffect(v.widget)
+    #v.widget.post_processing = FXAAEffect(v.widget)
     #v.widget.post_processing = SSAOEffect(v.widget, kernel_size=64, kernel_radius=1.0, ssao_power=2.0)
     
 
     v.widget.camera.autozoom(mol.r_array)
+    #sr = v.add_renderer(AtomRenderer, mol.r_array,
+    #                    mol.type_array, 'impostors',
+    #                    shading='toon')
     sr = v.add_renderer(AtomRenderer, mol.r_array,
-                        mol.type_array, 'impostors',
+                        mol.type_array, 'polygons',
                         shading='toon')
-    #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, [])
+    
+    ar = v.add_renderer(BallAndStickRenderer,
+                        mol.r_array, mol.type_array,
+                        guess_bonds(mol.r_array, mol.type_array),
+                        shading='toon')
     
     v.run()

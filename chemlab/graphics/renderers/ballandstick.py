@@ -25,7 +25,7 @@ class BallAndStickRenderer(AbstractRenderer):
 
 
     '''
-    def __init__(self, widget, r_array, type_array, bonds):
+    def __init__(self, widget, r_array, type_array, bonds, shading='phong'):
         super(BallAndStickRenderer, self).__init__(widget)
         vdw_dict = cdb.get("data", 'vdwdict')        
         
@@ -35,9 +35,12 @@ class BallAndStickRenderer(AbstractRenderer):
         
         self.has_bonds = len(bonds) > 0
         
-        self.ar = AtomRenderer(widget, r_array, type_array, radii_map = vdw_dict)
+        self.ar = AtomRenderer(widget, r_array, type_array,
+                               radii_map = vdw_dict, shading=shading)
+        
         if self.has_bonds:
-            self.br = BondRenderer(widget, bonds, r_array, type_array, style='impostors')
+            self.br = BondRenderer(widget, bonds, r_array, type_array, style='impostors',
+                                   shading=shading)
 
         
     def draw(self):

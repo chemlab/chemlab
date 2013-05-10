@@ -62,7 +62,9 @@ class AtomRenderer(AbstractRenderer):
                                         color_scheme['Xx']))
         
         if backend == 'polygons':
-            self.sr = SphereRenderer(widget, r_array, radii, colorlist)
+            self.sr = SphereRenderer(widget, r_array, radii, colorlist,
+                                     shading = shading)
+            
         elif backend == 'impostors':
             self.sr = SphereImpostorRenderer(widget, r_array, radii,
                                              colorlist, shading=shading)

@@ -10,7 +10,7 @@ varying vec3 sphere_center;
 varying float sphere_radius;
 
 
-vec3 phong_lighting(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color) 
+vec3 phong_shading(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color) 
 {
   
   vec3 halfvector = normalize(light_dir + camera_position);
@@ -22,7 +22,7 @@ vec3 phong_lighting(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color
   return color * NdotL + specular;
 }
 
-vec3 toon_lighting(vec3 light_dir, vec3 normal, vec3 color)
+vec3 toon_shading(vec3 light_dir, vec3 normal, vec3 color)
 {
   float NdotL = dot(normalize(light_dir), normal);
   vec3 ret;
@@ -125,11 +125,11 @@ void main()
   
   if (shading_type == 0) 
     {
-      color = phong_lighting(light_dir, camera, normal, gl_Color.xyz);
+      color = phong_shading(light_dir, camera, normal, gl_Color.xyz);
     }
   else if (shading_type == 1)
     {
-      color = toon_lighting(light_dir, normal, gl_Color.xyz);
+      color = toon_shading(light_dir, normal, gl_Color.xyz);
     }
 
   gl_FragData[0] = vec4(color, gl_Color.a);
