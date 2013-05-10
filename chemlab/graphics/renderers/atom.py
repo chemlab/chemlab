@@ -43,7 +43,8 @@ class AtomRenderer(AbstractRenderer):
     def __init__(self, widget, r_array, type_array,
                  backend='impostors',
                  color_scheme=colors.default_atom_map,
-                 radii_map=vdw_dict):
+                 radii_map=vdw_dict,
+                 shading='normal'):
         radii = []
         colorlist = []
         
@@ -63,7 +64,8 @@ class AtomRenderer(AbstractRenderer):
         if backend == 'polygons':
             self.sr = SphereRenderer(widget, r_array, radii, colorlist)
         elif backend == 'impostors':
-            self.sr = SphereImpostorRenderer(widget, r_array, radii, colorlist)
+            self.sr = SphereImpostorRenderer(widget, r_array, radii,
+                                             colorlist, shading=shading)
         elif backend == 'points':
             self.sr = PointRenderer(widget, r_array, colorlist)
         else:

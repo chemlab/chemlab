@@ -202,3 +202,45 @@ default_atom_map = {
 
 "Xx": deep_pink,
 }
+
+
+light_atom_map = {
+"C": gainsboro,
+"O": light_salmon,
+"H": snow,
+
+"N":  pale_turquoise,
+"S":  light_goldenrod_yellow,
+"Cl": pale_green,
+"B":  pale_green,
+    
+"P": beige,
+"Fe": beige,
+"Ba": beige,
+
+"Na": lavender,
+"Mg": aquamarine,
+    
+"Zn": dark_salmon,
+"Cu": dark_salmon,
+"Ni": dark_salmon,
+"Br": dark_salmon,
+
+"Ca": light_slate_gray,
+"Mn": light_slate_gray,
+"Al": light_slate_gray,
+"Ti": light_slate_gray,
+"Cr": light_slate_gray,
+"Ag": light_slate_gray,
+
+"F":  pale_goldenrod,    
+"Si": pale_goldenrod,
+"Au": pale_goldenrod,
+    
+"I": lavender,
+    
+"Li": light_coral,
+"He": light_pink,
+
+"Xx": deep_pink,
+}
