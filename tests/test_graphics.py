@@ -25,7 +25,7 @@ def test_triangle_renderer():
     colors = blue * 3
     
     v = QtViewer()
-    tr = v.add_renderer(TriangleRenderer, vertices, normals, colors)
+    tr = v.add_renderer(TriangleRenderer, vertices, normals, colors, shading='toon')
     v.run()
 
 def test_point_renderer():
@@ -65,7 +65,6 @@ def test_sphere_renderer():
     v = QtViewer()
     sr = v.add_renderer(SphereRenderer, centers, radii, colors)
     
-
     cr = np.array(centers)
     def update(cr=cr):
         cr[0][0] += 0.01
@@ -383,17 +382,20 @@ def test_ssao():
 def test_multiple_post_processing():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
+    from chemlab.graphics.postprocessing.gamma import GammaCorrectionEffect
     
     v = QtViewer()    
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
+    #mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     
     # Adding multiple post processing effects
     
 
     v.add_post_processing(SSAOEffect)
-    v.add_post_processing(FXAAEffect)    
+    #v.add_post_processing(FXAAEffect)    
+    v.add_post_processing(GammaCorrectionEffect)    
     
     v.run()
 

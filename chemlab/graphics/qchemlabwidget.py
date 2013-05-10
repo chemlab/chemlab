@@ -160,6 +160,8 @@ class QChemlabWidget(QGLWidget):
                           )[status]
                 
                 raise Exception('Framebuffer is not complete: {}'.format(reason))
+        else:
+            glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER)
         
             
         # Clear color take floats
