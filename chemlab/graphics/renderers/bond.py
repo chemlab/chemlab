@@ -25,7 +25,7 @@ class BondRenderer(AbstractRenderer):
     
     '''
     def __init__(self, widget, bonds, r_array, type_array, radius=0.02,
-                 style="cylinders"):
+                 style="cylinders", shading='phong'):
         super(BondRenderer, self).__init__(widget)
         
         self.bonds = bonds
@@ -53,8 +53,10 @@ class BondRenderer(AbstractRenderer):
             self.cr2 = LineRenderer(widget, bounds_b.flatten(),
                                     np.tile(colors_b, 2))
         elif style == 'impostors':
-            self.cr1 = CylinderImpostorRenderer(widget, bounds_a, radii, colors_a)
-            self.cr2 = CylinderImpostorRenderer(widget, bounds_b, radii, colors_b)
+            self.cr1 = CylinderImpostorRenderer(widget, bounds_a, radii,
+                                                colors_a, shading=shading)
+            self.cr2 = CylinderImpostorRenderer(widget, bounds_b, radii,
+                                                colors_b, shading=shading)
         else:
             raise Exception("Available backends: cylinders, lines")
     def _compute_bounds(self, r_array, bonds):

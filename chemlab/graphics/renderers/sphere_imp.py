@@ -23,7 +23,8 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
 
     """
     def __init__(self, viewer, poslist, radiuslist, colorlist,
-                 transparent=False):
+                 transparent=False, shading='phong'):
+        
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "sphereimp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
@@ -37,6 +38,8 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         self.colorlist = colorlist
         self.n_spheres = len(poslist)
         self.ldir = np.array([0.0, 0.0, 10.0, 1.0])
+        
+        self.shading = shading
         
         vertices = np.repeat(poslist, 4, axis=0).astype(np.float32)
         radii = np.repeat(radiuslist, 4, axis=0).astype(np.float32)
@@ -67,7 +70,12 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         set_uniform(self.shader, 'scalefac', '1f', 1.5)
         cam = np.dot(self.viewer.camera.matrix[:3,:3],
                      -self.viewer.camera.position)
-        set_uniform(self.shader, 'camera', '4f', cam)
+        set_uniform(self.shader, 'camera', '3f', cam)
+        
+        shd = {'phong' : 0,
+               'toon': 1}[self.shading]
+        
+        set_uniform(self.shader, 'shading_type', '1i', shd)
         
     def draw(self):
         self.setup_shader()

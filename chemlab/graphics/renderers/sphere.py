@@ -33,7 +33,7 @@ class SphereRenderer(AbstractRenderer):
     
     '''
 
-    def __init__(self, widget, poslist, radiuslist, colorlist):
+    def __init__(self, widget, poslist, radiuslist, colorlist, shading='phong'):
         
         self.viewer = widget
 
@@ -77,7 +77,8 @@ class SphereRenderer(AbstractRenderer):
         colors_ = np.repeat(colorlist, verts_one_sphere/3, axis=0)
 
 
-        self.tr = TriangleRenderer(widget, vertices.flatten(), normals.flatten(), colors_)
+        self.tr = TriangleRenderer(widget, vertices.flatten(),
+                                   normals.flatten(), colors_, shading=shading)
     
     def draw(self):
         self.tr.draw()

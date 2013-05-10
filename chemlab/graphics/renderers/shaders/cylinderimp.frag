@@ -2,6 +2,7 @@
 uniform mat4 projection_mat;
 uniform vec3 light_dir;
 uniform vec3 camera_position;
+uniform int shading_type;
 
 varying vec4 vertex_viewspace; // this guy should be the surface point.
 
@@ -12,7 +13,7 @@ varying float cylinder_lengthv;
 varying vec4 cylinder_origin;
 varying vec3 local_coords;
 
-vec3 phong_lighting(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color) {
+vec3 phong_shading(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color) {
   
   vec3 halfvector = normalize(light_dir + camera_position);
   
@@ -22,6 +23,24 @@ vec3 phong_lighting(vec3 light_dir, vec3 camera_position,vec3 normal, vec3 color
   float specular = 0.3*pow(NdotHV, 110.0); /* Shininess */
   return color * NdotL + specular;
 }
+
+vec3 toon_shading(vec3 light_dir, vec3 normal, vec3 color)
+{
+  float NdotL = dot(normalize(light_dir), normal);
+  vec3 ret;
+  
+  if (NdotL <= 0.4)
+    ret = vec3(0.0, 0.0, 0.0); 
+
+  else if (NdotL <= 0.6)
+    ret = 0.75 * color;
+  
+  else
+    ret = color;
+  
+  return ret;
+}
+
 
 void main()
 {
@@ -85,17 +104,19 @@ void main()
    vec4 projected_point = projection_mat * vec4(new_point, 1.0);
    projected_point /= projected_point.w;
    
-
-   
-   
    gl_FragDepth = projected_point.z * 0.5 + 0.5;
    
-   
-   float light_fact = dot(normal, vec3(0.0, 0.0, 1.0));
-   
+   vec3 color;
+   if (shading_type == 0) 
+     {
+       color = phong_shading(light_dir, camera_position, normal, gl_Color.xyz);
+     }
+   else if (shading_type == 1)
+     {
+       color = toon_shading(light_dir, normal, gl_Color.xyz);
+     }
 
-   //gl_FragData[0] = vec4(light_fact * gl_Color.xyz , 1.0);
-   gl_FragData[0] = vec4(phong_lighting(light_dir, camera_position, normal, gl_Color.xyz), 1.0);
+   gl_FragData[0] = vec4(color, gl_Color.a);
    gl_FragData[1].xyz = normal * 0.5 + 0.5;
 }
 
