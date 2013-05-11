@@ -8,7 +8,6 @@ cimport cython
 from scipy.sparse import dok_matrix
 
 from libc.math cimport sqrt, floor
-from libcpp.vector cimport vector
 
 @cython.boundscheck(False)
 def distance_array(arr_a, arr_b, double[:] period, double cutoff):
