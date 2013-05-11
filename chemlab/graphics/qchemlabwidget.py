@@ -203,7 +203,6 @@ class QChemlabWidget(QGLWidget):
                         
                     pp.render(outfb, newarg)
             
-                    newarg = {}
                     newarg['color'] = outtex
                 
                 self.post_processing[-1].render(DEFAULT_FRAMEBUFFER, newarg)
@@ -318,7 +317,8 @@ def create_color_texture(fb, width, height):
     glBindFramebuffer(GL_FRAMEBUFFER, fb)
     glViewport(0, 0, width, height)
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.id, 0)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           texture.id, 0)
 
     return texture
 
@@ -331,7 +331,8 @@ def create_depth_texture(fb, width, height):
                     
     glBindFramebuffer(GL_FRAMEBUFFER, fb)
     glViewport(0, 0, width, height)
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture.id, 0)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                           texture.id, 0)
 
     return texture
 
@@ -345,6 +346,7 @@ def create_normal_texture(fb, width, height):
                     
     glBindFramebuffer(GL_FRAMEBUFFER, fb)
     glViewport(0, 0, width, height)
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture.id, 0)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
+                           texture.id, 0)
 
     return texture

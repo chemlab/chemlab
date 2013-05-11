@@ -1,6 +1,9 @@
+#version 120
+
 uniform vec3 lightDir;
 varying vec3 normal;
 varying vec3 halfvector;
+
 uniform vec3 camera;
 uniform mat4 viewmatrix;
 uniform int shading_type;                   
@@ -44,8 +47,9 @@ void main()
   float NdotL, NdotHV;
   vec3 color;
   float specular;
-  
-  normal = normalize(normal);
+  vec3 normal_interp;
+ 
+  normal_interp = normalize(normal);
   
   if (shading_type == 0) 
     {
@@ -56,7 +60,9 @@ void main()
       color = toon_shading(lightDir, normal, gl_Color.xyz);
     }
 
+ 
   
+ 
   gl_FragData[0] = vec4(color, gl_Color.a);
   
   // This is needed for ssao and other effects that require normals

@@ -371,7 +371,7 @@ def test_ssao():
     
 
     v.widget.camera.autozoom(mol.r_array)
-    v.widget.post_processing = SSAOEffect(v.widget, kernel_size=128, kernel_radius=3.0, ssao_power=2.7)
+    #v.widget.post_processing.append(SSAOEffect(v.widget, kernel_size=16, kernel_radius=3.0, ssao_power=2.7))
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     
     #
@@ -387,15 +387,16 @@ def test_multiple_post_processing():
     v = QtViewer()    
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
-    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    #mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors', shading='toon')
     
     # Adding multiple post processing effects
     
 
     v.add_post_processing(SSAOEffect)
-    v.add_post_processing(GammaCorrectionEffect, 2.0)    
-    v.add_post_processing(FXAAEffect)    
+    v.add_post_processing(GammaCorrectionEffect, 2.0) 
+    #v.add_post_processing(GammaCorrectionEffect, 2.0)   
+    #v.add_post_processing(FXAAEffect)    
     
     v.run()
 
@@ -450,9 +451,9 @@ def test_toon_shading():
     #sr = v.add_renderer(AtomRenderer, mol.r_array,
     #                    mol.type_array, 'impostors',
     #                    shading='toon')
-    sr = v.add_renderer(AtomRenderer, mol.r_array,
-                        mol.type_array, 'polygons',
-                        shading='toon')
+    #sr = v.add_renderer(AtomRenderer, mol.r_array,
+    #                    mol.type_array, 'polygons',
+    #                    shading='toon')
     
     ar = v.add_renderer(BallAndStickRenderer,
                         mol.r_array, mol.type_array,

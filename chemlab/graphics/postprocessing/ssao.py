@@ -216,7 +216,7 @@ class SSAOEffect(object):
         # Set some parameters
         self.ssao_texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         self.ssao_texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)        
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                              self.ssao_texture.id, 0)
         
         # Setup drawbuffers
