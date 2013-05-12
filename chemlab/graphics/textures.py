@@ -5,7 +5,7 @@ from OpenGL.GL import *
 class Texture(object):
 
     def __init__(self, kind, width, height, intformat,
-                 format, dtype, data=0):
+                 format, dtype, data=None):
         self.kind = kind
         self.intformat = intformat
         self.format = format
