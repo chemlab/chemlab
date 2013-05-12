@@ -153,7 +153,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         glEnableClientState(GL_COLOR_ARRAY)
         self._color_vbo.bind_colors(4, GL_UNSIGNED_BYTE)
         
-        glDrawArrays(GL_TRIANGLES, 0, 3 * 36 * self.n_cylinders)
+        glDrawArrays(GL_TRIANGLES, 0, 36 * self.n_cylinders)
         
         self._verts_vbo.unbind()
         self._local_vbo.unbind()
