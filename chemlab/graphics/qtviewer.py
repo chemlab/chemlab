@@ -70,10 +70,8 @@ class QtViewer(QMainWindow):
         # Pre-initializing an OpenGL context can let us use opengl
         # functions without having to show the window first...
         context = QGLContext(QGLFormat())
-        widget = QChemlabWidget(context)
-        widget.setParent(self)
+        widget = QChemlabWidget(context, self)
         context.makeCurrent()
-
         self.setCentralWidget(widget)
         self.resize(1000, 800)
         self.widget = widget
