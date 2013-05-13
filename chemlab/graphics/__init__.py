@@ -5,7 +5,7 @@ from .renderers import AtomRenderer, BoxRenderer, BallAndStickRenderer
 from .uis import TextUI
 
 import numpy as np
-from .postprocessing import FXAAEffect, SSAOEffect
+from .postprocessing import FXAAEffect, SSAOEffect, GammaCorrectionEffect
 
 def display_molecule(mol, style='ball-and-stick'):
     '''Display the molecule *mol* with the default viewer.
@@ -81,7 +81,7 @@ def display_trajectory(sys, times, coords_list, style='spheres'):
     v = QtTrajectoryViewer()
     
     v.add_post_processing(SSAOEffect)
-    #v.add_post_processing(FXAAEffect)
+    v.add_post_processing(GammaCorrectionEffect, 1.60)
     
     if style == 'spheres':
         backend = 'impostors'
