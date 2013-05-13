@@ -461,3 +461,21 @@ def test_toon_shading():
                         shading='toon')
     
     v.run()
+
+
+# Tests for the molecular viewer
+    
+def test_molecular_viewer():
+    from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.io import datafile
+    
+    cdb = ChemlabDB()
+    
+    mol = cdb.get('molecule', 'example.norbornene')
+    
+    #mol = datafile('tests/data/3ZJE.pdb').read('system')
+    v = QtMolecularViewer(mol)
+    v.highlight([0, 2, 8])
+    v.run()
+    
