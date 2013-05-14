@@ -1,6 +1,7 @@
 from __future__ import division
 
 import numpy as np
+import time
 
 from PySide import QtCore, QtGui
 from PySide.QtCore import  Qt
@@ -252,12 +253,16 @@ class QChemlabWidget(QGLWidget):
         self.update()
             
     def mousePressEvent(self, evt):
-        self.clicked.emit(evt)
+        self._clickstart = time.time()
         self._last_mouse_right = evt.button() == Qt.RightButton
         self._last_mouse_left = evt.button() == Qt.LeftButton
         
         self._last_mouse_pos = evt.pos()
 
+    def mouseReleaseEvent(self, evt):
+        if  time.time() - self._clickstart < 0.2:
+            self.clicked.emit(evt)
+        
     def screen_to_normalized(self, x, y):
         w = self.width()
         h = self.height()        

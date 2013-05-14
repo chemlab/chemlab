@@ -150,6 +150,12 @@ class QtViewer(QMainWindow):
         self.widget.renderers.append(renderer)
         return renderer
     
+    def remove_renderer(self, rend):
+        if rend in self.widget.renderers:
+            self.widget.renderers.remove(rend)
+        else:
+            raise Exception("The renderer is not in this viewer")
+        
     def add_ui(self, klass, *args, **kwargs):
         '''Add an UI element for the current scene. The approach is
         the same as renderers.

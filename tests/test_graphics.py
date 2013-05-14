@@ -474,7 +474,7 @@ def test_molecular_viewer():
     
     mol = cdb.get('molecule', 'example.norbornene')
     
-    #mol = datafile('tests/data/3ZJE.pdb').read('system')
+    mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtMolecularViewer(mol)
     v.highlight([0, 2, 8])
     v.run()
