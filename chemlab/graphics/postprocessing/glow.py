@@ -127,7 +127,7 @@ class GlowEffect(object):
         res_id = glGetUniformLocation(self.glow2_program, "offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
         glUniform1i(glGetUniformLocation(self.glow2_program, "horizontal"), 1)
-        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), 4.0)       
+        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), 10.0)       
         self.render_quad()
         
         # Blending!!
@@ -139,8 +139,10 @@ class GlowEffect(object):
         
         glActiveTexture(GL_TEXTURE0)
         textures['color'].bind()
+
         glActiveTexture(GL_TEXTURE1)
         self.glow_texture.bind()
+
         
         glUniform1i(glGetUniformLocation(self.blend_program, "s_color1"), 0)
         glUniform1i(glGetUniformLocation(self.blend_program, "s_color2"), 1)

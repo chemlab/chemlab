@@ -9,6 +9,7 @@ void main() {
   vec2 pos = offset * gl_FragCoord.xy;
   vec4 color1 =  texture2D(s_color1, pos);
   vec4 color2 = texture2D(s_color2, pos);
+  color2.rgb += 0.2;
   
   gl_FragColor = vec4(color1.rgb + color2.rgb*color2.a, 1.0);
 }

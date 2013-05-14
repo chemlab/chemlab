@@ -36,6 +36,6 @@ void main(void)
    }
      
    //gl_FragColor = sum;
-   gl_FragColor = vec4(sum.rgb, 1.0);
+   gl_FragColor = sum.rgba;
    
 }
