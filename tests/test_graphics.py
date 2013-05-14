@@ -403,6 +403,30 @@ def test_outline():
     v.add_post_processing(GammaCorrectionEffect)
     v.run()
     
+def test_glow():
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.io import datafile
+    from chemlab.graphics.postprocessing.glow import GlowEffect
+    
+    cdb = ChemlabDB()
+    mol = cdb.get('molecule', 'example.norbornene')
+    #mol = datafile('tests/data/3ZJE.pdb').read('system')
+
+    v = QtViewer()
+
+    colors = np.array([(255, 0, 0, 255)]*mol.n_atoms)
+    colors[0][3] = 0
+    
+    v.widget.camera.autozoom(mol.r_array)
+    sr = v.add_renderer(SphereImpostorRenderer, mol.r_array, [0.1]*mol.n_atoms,
+                        colors)
+    
+    v.add_post_processing(GlowEffect)
+    #v.add_post_processing(SSAOEffect, ssao_power = 5.0)
+    #v.add_post_processing(FXAAEffect)
+    #v.add_post_processing(GammaCorrectionEffect)
+    v.run()
+
 def test_multiple_post_processing():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile

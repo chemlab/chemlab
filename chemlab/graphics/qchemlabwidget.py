@@ -312,7 +312,7 @@ class QChemlabWidget(QGLWidget):
 
 
 def create_color_texture(fb, width, height):
-    texture = Texture(GL_TEXTURE_2D, width, height, GL_RGB, GL_RGB,
+    texture = Texture(GL_TEXTURE_2D, width, height, GL_RGBA, GL_RGBA,
                       GL_UNSIGNED_BYTE)
 
     # Set some parameters
