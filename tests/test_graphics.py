@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
-from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect
+from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect, GammaCorrectionEffect
 
 
 def test_triangle_renderer():
@@ -379,10 +379,33 @@ def test_ssao():
     
     v.run()
 
+    
+def test_outline():
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.io import datafile
+    from chemlab.graphics.postprocessing.outline import OutlineEffect
+    
+    cdb = ChemlabDB()
+    mol = cdb.get('molecule', 'example.norbornene')
+    
+    mol = datafile('tests/data/3ZJE.pdb').read('system')
+    #mol = datafile('tests/data/water.gro').read('system')
+    #mol = datafile('tests/data/benzene.mol').read('molecule')
+    v = QtViewer()
+
+    v.widget.camera.autozoom(mol.r_array)
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
+                        'impostors', shading='toon')
+    
+    v.add_post_processing(OutlineEffect)
+    #v.add_post_processing(SSAOEffect, ssao_power = 5.0)
+    #v.add_post_processing(FXAAEffect)
+    v.add_post_processing(GammaCorrectionEffect)
+    v.run()
+    
 def test_multiple_post_processing():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
-    from chemlab.graphics.postprocessing.gamma import GammaCorrectionEffect
     
     v = QtViewer()    
     cdb = ChemlabDB()
