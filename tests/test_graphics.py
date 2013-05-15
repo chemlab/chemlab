@@ -404,6 +404,7 @@ def test_glow():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
     from chemlab.graphics.postprocessing.glow import GlowEffect
+    from PySide import QtCore
     
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
@@ -418,7 +419,17 @@ def test_glow():
     sr = v.add_renderer(SphereImpostorRenderer, mol.r_array, [0.1]*mol.n_atoms,
                         colors)
     
-    v.add_post_processing(GlowEffect)
+    ge = v.add_post_processing(GlowEffect)
+    #v.add_post_processing(GammaCorrectionEffect)
+    def changeglow():
+        #ge.radius = np.sin(time.time()*10.0) + 2.5
+        colors[0][3] = 255 * (np.sin(time.time()*10.0)*0.5 + 0.5)
+        sr.update_colors(colors)
+        v.widget.update()
+        
+    timer = QtCore.QTimer()
+    timer.timeout.connect(changeglow)
+    timer.start(10)
     #v.add_post_processing(SSAOEffect, ssao_power = 5.0)
     #v.add_post_processing(FXAAEffect)
     #v.add_post_processing(GammaCorrectionEffect)

@@ -52,9 +52,12 @@ class GlowEffect(object):
         # Intermediate framebuffer
         self.glow_fb, self.glow2_fb = glGenFramebuffers(2)
         
+        self.radius = 1.0
+        
         # This will create the texture and setup the correct
         # resolution for the framebuffers
         self.on_resize(self.widget.width(), self.widget.height())
+        
         
         
     def render(self, fb, textures):
@@ -108,7 +111,7 @@ class GlowEffect(object):
         res_id = glGetUniformLocation(self.glow2_program, "offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
         glUniform1i(glGetUniformLocation(self.glow2_program, "horizontal"), 0)
-        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), 4.0)        
+        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), self.radius)        
         
         self.render_quad()
         
@@ -127,7 +130,7 @@ class GlowEffect(object):
         res_id = glGetUniformLocation(self.glow2_program, "offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
         glUniform1i(glGetUniformLocation(self.glow2_program, "horizontal"), 1)
-        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), 10.0)       
+        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), self.radius) 
         self.render_quad()
         
         # Blending!!
@@ -153,8 +156,6 @@ class GlowEffect(object):
         self.render_quad()
         
         glUseProgram(0)
-        
-        
         
     def render_quad(self):
         # # Let's render a quad
