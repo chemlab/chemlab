@@ -371,11 +371,9 @@ def test_ssao():
     
 
     v.widget.camera.autozoom(mol.r_array)
-    #v.widget.post_processing.append(SSAOEffect(v.widget, kernel_size=16, kernel_radius=3.0, ssao_power=2.7))
+    v.widget.post_processing.append(SSAOEffect(v.widget, kernel_size=16, kernel_radius=3.0, ssao_power=2.7))
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
-    
-    #
-    ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, [])
+    #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, [])
     
     v.run()
 
@@ -397,9 +395,8 @@ def test_outline():
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
                         'impostors', shading='toon')
     
-    v.add_post_processing(OutlineEffect)
-    #v.add_post_processing(SSAOEffect, ssao_power = 5.0)
-    #v.add_post_processing(FXAAEffect)
+    v.add_post_processing(OutlineEffect, 'depthonly')
+    v.add_post_processing(FXAAEffect)
     v.add_post_processing(GammaCorrectionEffect)
     v.run()
     

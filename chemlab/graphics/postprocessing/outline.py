@@ -12,7 +12,7 @@ import os
 
 class OutlineEffect(object):
     
-    def __init__(self, widget):
+    def __init__(self, widget, kind='depthnormal'):
         self.widget = widget
         curdir = os.path.dirname(__file__)
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
@@ -20,6 +20,11 @@ class OutlineEffect(object):
         # Compile quad shader
         vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
         fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        
+        if kind not in ['depthnormal', 'depthonly', 'normalonly']:
+            raise Exception('The kind of outline should be choosen between depthnormal, depthonly and normalonly')
+        
+        self.kind = kind
         
         self.quad_program = shaders.compileProgram(vertex, fragment)
 
@@ -30,6 +35,8 @@ class OutlineEffect(object):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(self.quad_program)
         
+        set_uniform(self.quad_program, 'whichoutline', '1i',
+                    {'depthnormal' : 0, 'depthonly': 1, 'normalonly': 2}[self.kind])
         
         inv_projection = np.linalg.inv(self.widget.camera.projection)
         

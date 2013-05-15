@@ -8,21 +8,28 @@ import numpy as np
 class QtMolecularViewer(QtViewer):
     def __init__(self, system):
         super(QtMolecularViewer, self).__init__()
-        self.system = system
         
-        self.rep = self.add_renderer(AtomRenderer, system.r_array,
-                                     system.type_array)
+        self.system = system
+        self.representation = VdWRepresentation(self, system)
+        self.widget.clicked.connect(self.on_click)
+
+    def on_click(self, evt):
+        self.representation.on_click(evt.x(), evt.y())
+
+class VdWRepresentation(object):
+    
+    def __init__(self, viewer, system):
+        self.system = system
+        self.viewer = viewer
+        self.renderer = self.add_renderer(AtomRenderer, system.r_array,
+                                          system.type_array)
         self.picker = SpherePicker(self.widget, system.r_array,
                                    self.rep.radii)        
-        
         self.widget.clicked.connect(self.on_click)
         self.selection = []
         
         self.highl_rend = None
 
-    def is_selected(self, index):
-        return index in self.selection
-        
     def make_selection(self, indices, additive=False):
         if additive:
             self.selection = set(self.selection) ^ set(indices)
@@ -49,9 +56,10 @@ class QtMolecularViewer(QtViewer):
         self.highl_rend = self.add_renderer(SphereImpostorRenderer,
                                             pos, radii, cols,
                                             transparent=True)
-
-    def on_click(self, evt):
-        x, y = self.widget.screen_to_normalized(evt.x(), evt.y())
+        
+    
+    def on_click(self, x, y):
+        x, y = self.viewer.widget.screen_to_normalized(x, y)
         indices = self.picker.pick(x, y)
         if not indices:
             # Cancel selection
@@ -59,6 +67,4 @@ class QtMolecularViewer(QtViewer):
         else:
             self.make_selection([indices[0]], additive=True)
         
-        self.widget.update()
-    
-
+        self.viewer.widget.update()
