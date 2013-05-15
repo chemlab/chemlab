@@ -48,3 +48,16 @@ def test_chemspider():
     print db.get('image', name)
     print db.get('mol2d', name)
     print db.get('commonname', name)
+
+def test_toxnet():
+    from chemlab.db.toxnetdb import ToxNetDB
+    
+    db = ToxNetDB()
+    testcompounds = ['methane', 'ethane', 'propane', 'butane',
+                     'sodium chloride']
+    for c in testcompounds:
+        print 'Melting point', c, db.get('melting point', c)
+        print 'Boiling point', c, db.get('boiling point', c)
+
+    
+    #db.get('boiling point', 'merda')
