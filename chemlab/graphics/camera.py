@@ -90,7 +90,7 @@ class Camera:
         # Perspective parameters
         self.fov = 45.0
         self.aspectratio = 1.0
-        self.z_near = 0.2
+        self.z_near = 0.5
         self.z_far = 50.0
         
         # Those are the direction fo the three axis of the camera in

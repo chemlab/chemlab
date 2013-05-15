@@ -386,7 +386,8 @@ def test_outline():
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
     
-    mol = datafile('tests/data/3ZJE.pdb').read('system')
+    #mol = datafile('tests/data/3ZJE.pdb').read('system')
+    mol = datafile('/home/gabriele/Downloads/4JA8.pdb').read('system')
     #mol = datafile('tests/data/water.gro').read('system')
     #mol = datafile('tests/data/benzene.mol').read('molecule')
     v = QtViewer()
@@ -395,7 +396,8 @@ def test_outline():
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
                         'impostors', shading='toon')
     
-    v.add_post_processing(OutlineEffect, 'depthonly')
+    v.add_post_processing(OutlineEffect, 'depthnormal')
+    v.add_post_processing(SSAOEffect, ssao_power=4.0)
     v.add_post_processing(FXAAEffect)
     v.add_post_processing(GammaCorrectionEffect)
     v.run()
