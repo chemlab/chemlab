@@ -386,6 +386,25 @@ def test_ssao():
     v.run()
 
     
+def test_gamma():
+    from chemlab.db import ChemlabDB, CirDB
+    from chemlab.io import datafile
+    from chemlab.graphics.postprocessing.outline import OutlineEffect
+    
+    cdb = ChemlabDB()
+    
+    mol = datafile('tests/data/3ZJE.pdb').read('system')
+    v = QtViewer()
+
+    v.widget.camera.autozoom(mol.r_array)
+    v.widget.camera.orbit_y(3.14/3)
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array,
+                        'impostors', shading='phong')
+    
+    v.add_post_processing(SSAOEffect, ssao_power=4.0)
+    v.add_post_processing(GammaCorrectionEffect)
+    v.run()
+    
 def test_outline():
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.io import datafile
@@ -394,8 +413,7 @@ def test_outline():
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
     
-    #mol = datafile('tests/data/3ZJE.pdb').read('system')
-    mol = datafile('/home/gabriele/Downloads/4JA8.pdb').read('system')
+    mol = datafile('tests/data/3ZJE.pdb').read('system')
     #mol = datafile('tests/data/water.gro').read('system')
     #mol = datafile('tests/data/benzene.mol').read('molecule')
     v = QtViewer()

@@ -1,17 +1,30 @@
 # Gamma correction effect
+import numpy as np
+import os
 
-'''
-A post processing effect that does nothing
-'''
-from ..textures import Texture
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
-import numpy as np
-import os
+from ..textures import Texture
+from .base import AbstractEffect
 
-class GammaCorrectionEffect(object):
+class GammaCorrectionEffect(AbstractEffect):
+    '''Add gamma correction to the current scene.
+    
+    Scenes displayed by OpenGL are in RGB color space. The response to
+    colors by our eyes (and by old CRT screens) is not linear, in
+    other words, we perceive better dark tones than light tones. As a
+    result, the image produced is usually too dark.
+
+    To offset this effect you can apply gamma correction. The correct
+    value is screen-dependent but it is usually between 1.8 and
+    2.5. You can tweak this parameter through the parameter *gamma*.
+
+    .. image:: /_static/gamma_on_off.png
+        :width: 800px
+    
+    '''
     
     def __init__(self, widget, gamma=2.2):
         self.widget = widget
