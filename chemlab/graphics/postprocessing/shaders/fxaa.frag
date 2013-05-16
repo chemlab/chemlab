@@ -8,15 +8,16 @@ uniform sampler2D textureSampler;
 // The inverse of the texture dimensions along X and Y
 uniform vec2 texcoordOffset;
 
+uniform float FXAA_SPAN_MAX;
+uniform float FXAA_REDUCE_MUL;
+uniform float FXAA_REDUCE_MIN;
+
 //varying vec4 vertColor;
 //varying vec4 vertTexcoord;
 
 void main() {
   // The parameters are hardcoded for now, but could be
   // made into uniforms to control fromt he program.
-  float FXAA_SPAN_MAX = 4.0;
-  float FXAA_REDUCE_MUL = 1.0/8.0;
-  float FXAA_REDUCE_MIN = (1.0/128.0);
 
   vec2 vertTexcoord = gl_FragCoord.xy * texcoordOffset;
 

@@ -14,7 +14,7 @@ import time
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
 from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect, GammaCorrectionEffect
-
+from chemlab.graphics.postprocessing.outline import OutlineEffect 
 
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
@@ -347,15 +347,23 @@ def test_noeffect():
 
 def test_fxaa():
     from chemlab.graphics.postprocessing.fxaa import FXAAEffect
-    v = QtViewer()
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
     colors = np.array([orange, blue, forest_green])
     
-    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
     
-    v.widget.post_processing.append(FXAAEffect(v.widget))
+    vectors = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],
+                        [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    colors = [blue, orange, orange, orange]
     
+    v = QtViewer()
+    ar = v.add_renderer(LineRenderer, vectors, colors)
+
+    #sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
+    
+    v.widget.post_processing.append(FXAAEffect(v.widget, span_max=8.0,
+                                               reduce_mul=1/8.0,
+                                               reduce_min=1/128.0))
     v.run()
 
 def test_ssao():

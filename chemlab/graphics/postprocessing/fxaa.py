@@ -1,17 +1,25 @@
-'''
-A post processing effect that does nothing
-'''
-from ..textures import Texture
+import numpy as np
+import os
+
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
-import numpy as np
-import os
+from ..textures import Texture
+from ..shaders import set_uniform
+from .base import AbstractEffect
 
-class FXAAEffect(object):
-    
-    def __init__(self, widget):
+
+class FXAAEffect(AbstractEffect):
+    '''Fast Approximate Anti Aliasing. It is an efficient way to add
+    anti-aliasing to your scenes. The reason to have it is to
+    reduce jagged lines.
+
+    The parameters *span_max*, *reduce_mul*, *reduce_min* are
+    tweakable even if it is suggested to keep them at their default value.
+
+    '''
+    def __init__(self, widget, span_max = 4.0, reduce_mul=1/8.0, reduce_min=1/128.0):
         self.widget = widget
         curdir = os.path.dirname(__file__)
         
@@ -20,6 +28,10 @@ class FXAAEffect(object):
         # Compile quad shader
         vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
         fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        
+        self.span_max = span_max
+        self.reduce_mul = reduce_mul
+        self.reduce_min = reduce_min
         
         self.quad_program = shaders.compileProgram(vertex, fragment)
 
@@ -30,9 +42,11 @@ class FXAAEffect(object):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(self.quad_program)
         
+        set_uniform(self.quad_program, 'FXAA_SPAN_MAX', '1f', self.span_max)
+        set_uniform(self.quad_program, 'FXAA_REDUCE_MUL', '1f', self.reduce_mul)
+        set_uniform(self.quad_program, 'FXAA_REDUCE_MIN', '1f', self.reduce_min)
         
         qd_id = glGetUniformLocation(self.quad_program, "textureSampler")
-        
         texture = texturedict['color']
         
         # Setting up the texture
