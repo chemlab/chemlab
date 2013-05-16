@@ -531,8 +531,17 @@ def test_molecular_viewer():
     
     mol = cdb.get('molecule', 'example.norbornene')
     
-    mol = datafile('tests/data/3ZJE.pdb').read('system')
+    #mol = datafile('tests/data/3ZJE.pdb').read('system')
+    mol = datafile('/home/gabriele/projects/NaCl/dissolution/nacl-0.10/confout.gro').read('system')
     v = QtMolecularViewer(mol)
-    v.highlight([0, 2, 8])
+    #v.highlight([0, 2, 8])
+    
+    def on_action1():
+        if len(v.representation.selection) == 2:
+            i,j = v.representation.selection
+            distsq = ((mol.r_array[j] - mol.r_array[i])**2).sum()
+            print np.sqrt(distsq)
+    
+    v.actions['action1'].clicked.connect(on_action1)
     v.run()
     

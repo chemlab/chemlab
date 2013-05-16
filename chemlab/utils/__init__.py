@@ -2,6 +2,7 @@ from distances import distances_within
 from distances import distance_matrix
 from distances import overlapping_points
 
+import numpy as np
 
 def fequal(a, b, tol):
     return (abs(a-b) / max(abs(a), abs(b))) < tol
@@ -25,3 +26,6 @@ def minimum_image(coords, pbc):
     """
     wrap = coords + (coords < 0.0)*pbc - (coords > pbc)*pbc
     return wrap
+
+def moving_average(x, N):
+    return np.convolve(x, np.ones((N,))/N)[(N-1):]
