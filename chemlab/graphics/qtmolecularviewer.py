@@ -25,7 +25,7 @@ class QtMolecularViewer(QtViewer):
         self.controls.setTitleBarWidget(title_widget)
         hb = QtGui.QHBoxLayout() # For controls
         
-
+        self.keys = {}
         
         self.actions['action1'] = QtGui.QPushButton('action1')
         self.actions['action2'] = QtGui.QPushButton('action2')
@@ -37,10 +37,19 @@ class QtMolecularViewer(QtViewer):
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            self.controls)
         
-        
     def on_click(self, evt):
         self.representation.on_click(evt.x(), evt.y())
 
+    def keyPressEvent(self, evt):
+        if evt.key() == Qt.Key_A:
+            if 'a' in self.keys:
+                self.keys['a']()
+
+        if evt.key() == Qt.Key_S:
+            if 's' in self.keys:
+                self.keys['s']()
+        return super(QtMolecularViewer, self).keyPressEvent(evt)
+        
 class VdWRepresentation(object):
     
     def __init__(self, viewer, system):
@@ -50,20 +59,36 @@ class VdWRepresentation(object):
                                                  system.type_array)
         self.picker = SpherePicker(self.viewer.widget, system.r_array,
                                    self.renderer.radii)        
-        self.selection = []
+        
+        self.selection_mask = np.zeros(self.system.n_atoms, dtype='bool')
+        self.hidden_mask = np.zeros(self.system.n_atoms, dtype='bool')
+        
+        self.last_modified = None
         
         self.highl_rend = None
 
-    def make_selection(self, indices, additive=False):
-        if additive:
-            self.selection = set(self.selection) ^ set(indices)
-        else:
-            self.selection = indices
-            
-        self.selection = list(set(self.selection)) # Uniquify
+    @property
+    def selection(self):
+        return self.selection_mask.nonzero()[0].tolist()
         
+    def make_selection(self, indices, additive=False, flip=False):
+        if additive:
+            self.selection_mask[indices] = True
+        elif flip:
+            self.selection_mask[indices] = np.logical_not(self.selection_mask[indices])
+
+        else:
+            self.selection_mask[:] = False
+            self.selection_mask[indices] = True
+
         self.highlight(self.selection)
     
+    def scale_radii(self, selection, scale_factor):
+        self.renderer.radii = np.array(self.renderer.radii)
+        self.renderer.radii[selection] *= scale_factor
+        self.renderer.sr.update_radii(self.renderer.radii)
+        self.picker.radii = self.renderer.radii
+        
     def highlight(self, indices):
         if not indices:
             try:
@@ -74,7 +99,7 @@ class VdWRepresentation(object):
         
         # Make some bigger transparent spheres
         pos = self.system.r_array[indices]
-        radii = [self.renderer.radii[i]+0.01 for i in indices]
+        radii = np.array([0.3] * len(indices))#[self.renderer.radii[i]+0.01 for i in indices]
         cols = np.array([(255, 255, 0, 100)] * len(indices))
         if self.highl_rend:
             self.viewer.remove_renderer(self.highl_rend)
@@ -82,6 +107,25 @@ class VdWRepresentation(object):
         self.highl_rend = self.viewer.add_renderer(SphereImpostorRenderer,
                                                    pos, radii, cols,
                                                    transparent=True)
+        
+    def hide(self, selection, additive=True):
+        if additive:
+            self.hidden_mask[selection] = True
+        else:
+            self.hidden_mask[:] = False
+            self.hidden_mask[selection] = True
+        
+        mask = np.logical_not(self.hidden_mask)
+        self.viewer.remove_renderer(self.renderer)
+        self.renderer = self.viewer.add_renderer(AtomRenderer,
+                                                 self.system.r_array[mask],
+                                                 self.system.type_array[mask])
+        self.picker = SpherePicker(self.viewer.widget, self.system.r_array[mask],
+                                   np.array(self.renderer.radii))   
+        
+        self.viewer.remove_renderer(self.highl_rend)
+        self.make_selection([])
+
     
     def on_click(self, x, y):
         x, y = self.viewer.widget.screen_to_normalized(x, y)
@@ -89,7 +133,99 @@ class VdWRepresentation(object):
         if not indices:
             # Cancel selection
             self.make_selection([])
+            self.last_modified = None
         else:
-            self.make_selection([indices[0]], additive=True)
+            self.last_modified = indices[0]
+            self.make_selection([indices[0]], flip=True)
+        
+        self.viewer.widget.update()
+
+class BallAndStickRepresentation(object):
+    
+    def __init__(self, viewer, system):
+        self.system = system
+        self.viewer = viewer
+        self.renderer = self.viewer.add_renderer(AtomRenderer, system.r_array,
+                                                 system.type_array)
+        self.picker = SpherePicker(self.viewer.widget, system.r_array,
+                                   self.renderer.radii)        
+        
+        self.selection_mask = np.zeros(self.system.n_atoms, dtype='bool')
+        self.hidden_mask = np.zeros(self.system.n_atoms, dtype='bool')
+        
+        self.last_modified = None
+        
+        self.highl_rend = None
+
+    @property
+    def selection(self):
+        return self.selection_mask.nonzero()[0].tolist()
+        
+    def make_selection(self, indices, additive=False, flip=False):
+        if additive:
+            self.selection_mask[indices] = True
+        elif flip:
+            self.selection_mask[indices] = np.logical_not(self.selection_mask[indices])
+
+        else:
+            self.selection_mask[:] = False
+            self.selection_mask[indices] = True
+
+        self.highlight(self.selection)
+    
+    def scale_radii(self, selection, scale_factor):
+        self.renderer.radii = np.array(self.renderer.radii)
+        self.renderer.radii[selection] *= scale_factor
+        self.renderer.sr.update_radii(self.renderer.radii)
+        self.picker.radii = self.renderer.radii
+        
+    def highlight(self, indices):
+        if not indices:
+            try:
+                self.viewer.remove_renderer(self.highl_rend)
+            except:
+                pass
+            self.highl_rend = None
+        
+        # Make some bigger transparent spheres
+        pos = self.system.r_array[indices]
+        radii = np.array([0.3] * len(indices))#[self.renderer.radii[i]+0.01 for i in indices]
+        cols = np.array([(255, 255, 0, 100)] * len(indices))
+        if self.highl_rend:
+            self.viewer.remove_renderer(self.highl_rend)
+            
+        self.highl_rend = self.viewer.add_renderer(SphereImpostorRenderer,
+                                                   pos, radii, cols,
+                                                   transparent=True)
+        
+    def hide(self, selection, additive=True):
+        if additive:
+            self.hidden_mask[selection] = True
+        else:
+            self.hidden_mask[:] = False
+            self.hidden_mask[selection] = True
+        
+        mask = np.logical_not(self.hidden_mask)
+        self.viewer.remove_renderer(self.renderer)
+        self.renderer = self.viewer.add_renderer(AtomRenderer,
+                                                 self.system.r_array[mask],
+                                                 self.system.type_array[mask])
+        self.picker = SpherePicker(self.viewer.widget, self.system.r_array[mask],
+                                   np.array(self.renderer.radii))   
+        
+        self.viewer.remove_renderer(self.highl_rend)
+        self.make_selection([])
+
+    
+    def on_click(self, x, y):
+        x, y = self.viewer.widget.screen_to_normalized(x, y)
+        indices = self.picker.pick(x, y)
+        if not indices:
+            # Cancel selection
+            self.make_selection([])
+            self.last_modified = None
+        else:
+            self.last_modified = indices[0]
+            self.make_selection([indices[0]], flip=True)
         
         self.viewer.widget.update()

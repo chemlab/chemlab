@@ -49,9 +49,16 @@ class SpherePicker(object):
         det_v = b_v * b_v - 4.0 * c_v
         
         inters_mask = det_v >= 0
-        intersections = (inters_mask).nonzero()[0].tolist()
+        intersections = (inters_mask).nonzero()[0]
         distances = (b_v[inters_mask] + np.sqrt(det_v[inters_mask])) / 2.0
-
+        
+        # We need only the thing in front of us, that corresponts to
+        # negative distances. Probably we simply have the wrong
+        # direction intersection.
+        
+        dist_mask = distances < 0.0
+        distances = distances[dist_mask]
+        intersections = intersections[dist_mask].tolist()
         
         if intersections:
             distances, intersections = zip(*sorted(zip(distances, intersections)))

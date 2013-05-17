@@ -558,10 +558,10 @@ def test_molecular_viewer():
     mol = cdb.get('molecule', 'example.norbornene')
     
     #mol = datafile('tests/data/3ZJE.pdb').read('system')
-    mol = datafile('/home/gabriele/projects/NaCl/dissolution/nacl-0.10/confout.gro').read('system')
+    mol = datafile('tests/data/naclwater.gro').read('system')
     v = QtMolecularViewer(mol)
     #v.highlight([0, 2, 8])
-    
+    v.widget.camera.autozoom(mol.r_array)
     def on_action1():
         if len(v.representation.selection) == 2:
             i,j = v.representation.selection
@@ -569,5 +569,39 @@ def test_molecular_viewer():
             print np.sqrt(distsq)
     
     v.actions['action1'].clicked.connect(on_action1)
+    
+    
+    def select_all_atoms():
+        which = v.representation.selection[0]
+        at = mol.type_array[which]
+        sel = mol.type_array == at
+        v.representation.make_selection(sel.nonzero()[0])
+    
+    def select_all_molecules():
+        which = v.representation.last_modified
+        if which is None:
+            return
+        
+        at = mol.type_array[which]
+        sel = mol.type_array == at
+        allmol = mol.atom_to_molecule_indices(sel)
+        allmol = mol.mol_to_atom_indices(allmol)
+        v.representation.make_selection(allmol, additive=True)
+
+    def change_representation():
+        BallAndStickRepresentation = 0
+        # We need two representations
+        rep = v.add_representation(BallAndStickRepresentation, mol)
+        rep.set_mask(self.selection)
+        rep.set_mask(not self.selection)
+        
+    def scale_radii():
+        #v.representation.scale_radii(v.representation.selection, 0.9)
+        v.representation.hide(v.representation.selection)
+        
+        
+    v.keys['a'] = select_all_molecules
+    v.keys['s'] = scale_radii
+    
     v.run()
     
