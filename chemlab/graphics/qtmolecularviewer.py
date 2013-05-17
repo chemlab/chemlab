@@ -120,8 +120,8 @@ class VdWRepresentation(object):
         self.renderer = self.viewer.add_renderer(AtomRenderer,
                                                  self.system.r_array[mask],
                                                  self.system.type_array[mask])
-        self.picker = SpherePicker(self.viewer.widget, self.system.r_array[mask],
-                                   np.array(self.renderer.radii))   
+        #self.picker = SpherePicker(self.viewer.widget, self.system.r_array[mask],
+        #                           np.array(self.renderer.radii))   
         
         self.viewer.remove_renderer(self.highl_rend)
         self.make_selection([])
@@ -135,6 +135,13 @@ class VdWRepresentation(object):
             self.make_selection([])
             self.last_modified = None
         else:
+            # Do not pick if hidden
+            indices = np.array(indices)[~self.hidden_mask[indices]].tolist()
+            
+            if not indices:
+                self.make_selection([])
+                self.last_modified = None
+            
             self.last_modified = indices[0]
             self.make_selection([indices[0]], flip=True)
         
