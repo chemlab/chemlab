@@ -558,7 +558,8 @@ def test_molecular_viewer():
     mol = cdb.get('molecule', 'example.norbornene')
     
     #mol = datafile('tests/data/3ZJE.pdb').read('system')
-    mol = datafile('tests/data/naclwater.gro').read('system')
+    #mol = datafile('tests/data/naclwater.gro').read('system')
+    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
     v = QtMolecularViewer(mol)
     #v.highlight([0, 2, 8])
     v.widget.camera.autozoom(mol.r_array)
@@ -566,7 +567,7 @@ def test_molecular_viewer():
         if len(v.representation.selection) == 2:
             i,j = v.representation.selection
             distsq = ((mol.r_array[j] - mol.r_array[i])**2).sum()
-            print np.sqrt(distsq)
+            print 'distance between', i, j, np.sqrt(distsq)
     
     v.actions['action1'].clicked.connect(on_action1)
     

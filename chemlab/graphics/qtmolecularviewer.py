@@ -152,22 +152,27 @@ class BallAndStickRepresentation(object):
     def __init__(self, viewer, system):
         self.system = system
         self.viewer = viewer
-        self.renderer = self.viewer.add_renderer(AtomRenderer, system.r_array,
-                                                 system.type_array)
-        self.picker = SpherePicker(self.viewer.widget, system.r_array,
+        self.sphere_renderer = self.viewer.add_renderer(SphereImpostorRenderer)
+        self.cylinder_renderer = self.viewer.add_renderer(CylinderImpostorRenderer)
+        
+        
+        self.atom_picker = SpherePicker(self.viewer.widget, system.r_array,
                                    self.renderer.radii)        
+        
+        self.cylinder_picker = CylinderPicker(self.viewer.widget, system.r_array,
+                                              system.get_bond_array(), cylinder_radii)
         
         self.selection_mask = np.zeros(self.system.n_atoms, dtype='bool')
         self.hidden_mask = np.zeros(self.system.n_atoms, dtype='bool')
         
         self.last_modified = None
-        
-        self.highl_rend = None
+        self.highlight_renderer = None
 
     @property
     def selection(self):
         return self.selection_mask.nonzero()[0].tolist()
         
+    # Rename this in atom_selection
     def make_selection(self, indices, additive=False, flip=False):
         if additive:
             self.selection_mask[indices] = True
@@ -179,6 +184,10 @@ class BallAndStickRepresentation(object):
             self.selection_mask[indices] = True
 
         self.highlight(self.selection)
+    
+    # Need to rename another one in bond_selection
+    def bond_selection(self, bond_indices, additive=False, flip=False):
+        pass
     
     def scale_radii(self, selection, scale_factor):
         self.renderer.radii = np.array(self.renderer.radii)

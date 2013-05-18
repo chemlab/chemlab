@@ -7,10 +7,34 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
    width="48"
    height="48"
-   id="svg3030">
+   id="svg3030"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="pause_icon.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview8"
+     showgrid="false"
+     inkscape:zoom="4.9166667"
+     inkscape:cx="24"
+     inkscape:cy="24"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3030" />
   <defs
      id="defs3032" />
   <metadata
@@ -21,18 +45,20 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     id="layer1">
+     id="layer1"
+     style="fill:#1a1a1a">
     <g
        id="text3038"
-       style="font-size:55.33333206px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:FontAwesome;-inkscape-font-specification:FontAwesome">
+       style="font-size:55.33333205999999649px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#1a1a1a;fill-opacity:1;stroke:none;font-family:FontAwesome;-inkscape-font-specification:FontAwesome">
       <path
          d="m 47.714285,2.2619028 c 0,-1.0807281 -0.895463,-1.97619042 -1.976191,-1.97619042 l -15.809523,0 c -1.080728,0 -1.97619,0.89546232 -1.97619,1.97619042 l 0,43.4761892 c 0,1.080728 0.895462,1.976191 1.97619,1.976191 l 15.809523,0 c 1.080728,0 1.976191,-0.895463 1.976191,-1.976191 l 0,-43.4761892 m -27.666666,0 c 0,-1.0807281 -0.895463,-1.97619042 -1.976191,-1.97619042 l -15.8095231,0 c -1.0807281,0 -1.97619042,0.89546232 -1.97619042,1.97619042 l 0,43.4761892 c 0,1.080728 0.89546232,1.976191 1.97619042,1.976191 l 15.8095231,0 c 1.080728,0 1.976191,-0.895463 1.976191,-1.976191 l 0,-43.4761892"
-         id="path3062" />
+         id="path3062"
+         style="fill:#1a1a1a" />
     </g>
   </g>
 </svg>
