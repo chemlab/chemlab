@@ -181,13 +181,20 @@ We can therefore write our vertices and colors::
     
 All is left to do is write the normals to the surface at each
 vertex. This is easily done by calculating the cross product of the
-vectors constituting two sides of a triangle, (remember that the
-normals should point outward)::
+vectors constituting two sides of a triangle (remember that the
+normals should point outward) and normalize the result::
   
     n1 = -np.cross(v4 - v1, v3 - v1)
+    n1 /= np.linalg.norm(n1)
+    
     n2 = -np.cross(v4 - v3, v2 - v3)
+    n2 = np.linalg.norm(n2)
+    
     n3 = -np.cross(v3 - v1, v2 - v1)
+    n3 /= np.linalg.norm(n3)
+    
     n4 = -np.cross(v4 - v2, v1 - v2)
+    n4 /= np.linalg.norm(n4)
 
     normals = [n1, n1, n1, 
                n2, n2, n2,
