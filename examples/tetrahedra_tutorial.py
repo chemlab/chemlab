@@ -25,9 +25,16 @@ colors = [green] * 12
 
 # Normals: cross-product for each face
 n1 = -np.cross(v4 - v1, v3 - v1)
+n1 /= np.linalg.norm(n1)
+
 n2 = -np.cross(v4 - v3, v2 - v3)
+n2 /= np.linalg.norm(n2)
+
 n3 = -np.cross(v3 - v1, v2 - v1)
+n3 /= np.linalg.norm(n3)
+
 n4 = -np.cross(v4 - v2, v1 - v2)
+n4 /= np.linalg.norm(n4)
 
 normals = [n1, n1, n1,
            n2, n2, n2,
