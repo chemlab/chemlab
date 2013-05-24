@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 from .state import SystemHiddenState, SystemSelectionState
 from ..renderers import SphereImpostorRenderer, CylinderImpostorRenderer
@@ -58,17 +59,22 @@ class BallAndStickRepresentation(object):
         x, y = self.viewer.widget.screen_to_normalized(x, y)
         
         # I need another picker
-        at_indices = self.atom_picker.pick(x, y)
-        bond_indices = self.bond_picler.pick(x, y)
+        a_indices, a_dists = self.atom_picker.pick(x, y)
+        b_indices, b_dists = self.bond_picler.pick(x, y)
         
-        indices = at_indices + bond_indices
+        indices = list(itertools.chain(a_indices, b_indices))
         
         if not indices:
             # Cancel selection
-            self.make_selection([])
-            self.last_modified = None
+            self.selection_state.select_atoms()
         else:
-            self.last_modified = indices[0]
-            self.make_selection([indices[0]], flip=True)
-        
+            # Determine the candidate
+            dist_a = a_dists[0] if a_indices else float('inf')
+            dist_b = b_dists[0] if b_indices else float('inf')
+            
+            if dist_a > dist_b:
+                self.selection_state.select_atoms([dist_a], flip=True)
+            else:
+                self.selection_state.select_bonds([dist_b], flip=True)
+            
         self.viewer.widget.update()
