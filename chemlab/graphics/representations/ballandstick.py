@@ -1,39 +1,8 @@
-    
-    
-def _apply_selection(mask, selection, mode):
-    # Apply a selection to a numpy mask using different modes
-    if mode == 'exclusive':
-        mask[...] = False
-        mask[selection] = True
-    elif mode == 'additive':
-        mask[selection] = True
-    elif mode == 'flip':
-        mask[selection] = np.logical_not(mask[selection])
-    else:
-        raise ValueError('invalid mode: {}'.format(mode))
+import numpy as np
 
-class SystemSelectionState(object):
-    def __init__(self, self.system):
-        self.atom_selection_mask = np.zeros(self.system.n_atoms, dtype='bool')
-        self.bond_selection_mask = np.zeros(self.system.n_bonds, dtype='bool')
-
-    def select_atoms(self, selection, mode='exclusive'):
-        _apply_selection(self.atom_selection_mask, selection, mode)
-        
-    def select_bonds(self, selection, mode='exclusive'):
-        _apply_selection(self.bond_selection_mask, selection, mode)
-
-class SystemHiddenState(object):
-    def __init__(self, system):
-        self.atom_hidden_mask = np.zeros(self.system.n_atoms, dtype='bool')
-        self.bond_hidden_mask = np.zeros(self.system.n_bonds, dtype='bool')
-
-    def hide_atoms(self, selection, mode='exclusive'):
-        _apply_selection(self.atom_hidden_mask, selection, mode)
-    
-    def hide_bonds(self, selection, mode='exclusive'):
-        _apply_selection(self.bond_hidden_mask, selection, mode)
-
+from .state import SystemHiddenState, SystemSelectionState
+from ..renderers import SphereImpostorRenderer, CylinderImpostorRenderer
+from ..pickers import SpherePicker, CylinderPicker
 
 class BallAndStickRepresentation(object):
     
@@ -55,24 +24,45 @@ class BallAndStickRepresentation(object):
         # User controls
         self.atom_picker = SpherePicker(self.viewer.widget, system.r_array,
                                         self.renderer.radii)        
-        self.cylinder_picker = CylinderPicker(self.viewer.widget, system.r_array,
-                                              system.get_bond_array(), cylinder_radii)
+        self.cylinder_picker = CylinderPicker(self.viewer.widget,
+                                              system.r_array,
+                                              system.get_bond_array(),
+                                              cylinder_radii)
         
-    def highlight(self, indices):
-        # Given the indices, we have to highlight the spheres
-        pass
+        self.hidden_state.atom_changed.connect(self.on_atom_hidden_changed)
+        self.hidden_state.bond_changed.connect(self.on_bond_hidden_changed)
         
-    def on_hidden_changed(self):
+        self.selection_state.atom_changed.connect(self.on_atom_selection_changed)
+        self.selection_state.bond_changed.connect(self.on_bond_selection_changed)
+
+    def on_atom_hidden_changed(self):
         # When hidden state changes, the view update itself
+        # Update the Renderers and the pickers
         pass
         
-    def on_selection_changed(self):
+    def on_bond_hidden_changed(self):
+        # When hidden state changes, the view update itself
+        # Update the renderers and the pickers
+        pass
+
+    def on_atom_selection_changed(self):
         # When selection state changes, the view update itself
         pass
     
+    def on_bond_selection_changed(self):
+        # When selection state changes, the view update itself
+        pass
+
     def on_click(self, x, y):
+        # This is basically our controller
         x, y = self.viewer.widget.screen_to_normalized(x, y)
-        indices = self.picker.pick(x, y)
+        
+        # I need another picker
+        at_indices = self.atom_picker.pick(x, y)
+        bond_indices = self.bond_picler.pick(x, y)
+        
+        indices = at_indices + bond_indices
+        
         if not indices:
             # Cancel selection
             self.make_selection([])

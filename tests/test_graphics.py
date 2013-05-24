@@ -6,7 +6,7 @@ from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer,
                                         CylinderRenderer, BondRenderer, BallAndStickRenderer,
-                                        WireframeRenderer)
+                                        WireframeRenderer, CylinderImpostorRenderer)
 from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
 import numpy as np
@@ -485,30 +485,39 @@ def test_multiple_post_processing():
 
 
 def test_pickers():
-    from chemlab.graphics.pickers import SpherePicker
+    from chemlab.graphics.pickers import SpherePicker, CylinderPicker
     from chemlab.io import datafile
-    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    #mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    mol = datafile('tests/data/benzene.mol').read('molecule')
     
     centers = [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0]]
     radii = np.array([1.0, 0.5])
     colors = [[0, 255, 255, 100], [255, 255, 0, 100]]
     
     centers = mol.r_array
-    radii = np.array([0.2]*mol.n_atoms)
+    radii = np.array([0.05]*mol.n_atoms)
     colors = np.array([[0, 255, 255, 255]]*mol.n_atoms)
     
-    v = QtViewer()
-    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors, transparent=False)
-    #sr = v.add_renderer(SphereImpostorRenderer, centers,
-    #                    radii*1.5, [[255, 255, 255, 50]]*mol.n_atoms, transparent=True)
-
+    bonds = mol.bonds
+    bounds = np.empty((len(mol.bonds), 2, 3))
+    bounds[:, 0, :] = centers.take(bonds[:, 0], axis=0)
+    bounds[:, 1, :] = centers.take(bonds[:, 1], axis=0)
     
-    sp = SpherePicker(v.widget, centers, radii)
+    radii = np.array([0.05]*len(mol.bonds))
+    colors = np.array([[0, 255, 255, 255]]*len(mol.bonds))
 
+    v = QtViewer()
+    #v.widget.camera.autozoom(mol.r_array)
+    #sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors, transparent=False)
+    cr = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
+    
+    #sp = SpherePicker(v.widget, centers, radii)
+    cp = CylinderPicker(v.widget, bounds, radii)
+    
     def on_click(evt):
         x, y = v.widget.screen_to_normalized(evt.x(), evt.y())
-        print sp.pick(x, y)
-    
+        #print sp.pick(x, y)
+        print cp.pick(x, y)
     v.widget.clicked.connect(on_click)
     
     v.run()

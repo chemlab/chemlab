@@ -28,8 +28,6 @@ class CylinderRenderer(AbstractRenderer):
     
     '''
     def __init__(self, widget, bounds, radii, colors):
-
-        
         self.bounds = bounds
         self.radii = radii
         self.colors = colors
