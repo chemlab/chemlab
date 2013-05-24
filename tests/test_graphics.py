@@ -486,8 +486,9 @@ def test_multiple_post_processing():
 
 def test_pickers():
     from chemlab.graphics.pickers import SpherePicker, CylinderPicker
+    from chemlab.core.molecule import guess_bonds
     from chemlab.io import datafile
-    #mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
     mol = datafile('tests/data/benzene.mol').read('molecule')
     
     centers = [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0]]
@@ -498,13 +499,15 @@ def test_pickers():
     radii = np.array([0.05]*mol.n_atoms)
     colors = np.array([[0, 255, 255, 255]]*mol.n_atoms)
     
-    bonds = mol.bonds
-    bounds = np.empty((len(mol.bonds), 2, 3))
+    bonds = guess_bonds(mol.r_array, mol.type_array)
+    print bonds
+    
+    bounds = np.empty((len(bonds), 2, 3))
     bounds[:, 0, :] = centers.take(bonds[:, 0], axis=0)
     bounds[:, 1, :] = centers.take(bonds[:, 1], axis=0)
     
-    radii = np.array([0.05]*len(mol.bonds))
-    colors = np.array([[0, 255, 255, 255]]*len(mol.bonds))
+    radii = np.array([0.05]*len(bonds))
+    colors = np.array([[0, 255, 255, 255]]*len(bonds))
 
     v = QtViewer()
     #v.widget.camera.autozoom(mol.r_array)

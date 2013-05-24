@@ -98,15 +98,16 @@ class CylinderPicker(object):
 
         # First, take only the things intersection with the bounding spheres
         sph_intersections = self._bounding_sphere.pick(x, y)
-        #print('Sph intersections', sph_intersections)
         
         # Now, do the proper intersection with the cylinders
         z_axis = np.array([0.0, 0.0, 1.0])
 
         intersections = []
+        distances = []
         for i in sph_intersections:
             # 1) Change frame of reference of the origin and direction
             # Rotation matrix
+            cyl_direction = self.directions[i]
             M = rotation_matrix(
                 angle_between_vectors(self.directions[i], z_axis),
                 np.cross(self.directions[i], z_axis))[:3, :3]
@@ -127,8 +128,26 @@ class CylinderPicker(object):
 
             if det >= 0.0:
                 # Hit
-                print 'Hit!', i
-                t = -b + np.sqrt(det)/(2.0*a)
-                intersections.append((i, t))
+                t = (-b - np.sqrt(det))/(2.0*a)
                 
-        return intersections
+                new_point = origin + t * direction
+                # Now, need to check if the intersection point is
+                # outside of the caps
+                end_cyl = cyl_origin + cyl_direction
+                
+                outside_top = np.dot(new_point - end_cyl, -cyl_direction)
+                if outside_top < 0.0:
+                    continue
+                    
+                outside_bottom = np.dot(new_point - cyl_origin, cyl_direction)
+                if outside_bottom < 0.0:
+                    continue
+                
+                intersections.append(i)
+                distances.append(t)
+                
+        if intersections:
+            distances, intersections = zip(*sorted(zip(distances, intersections)))
+            return list(intersections)
+        else:
+            return intersections
