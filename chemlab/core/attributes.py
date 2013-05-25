@@ -168,16 +168,36 @@ class NDArrayAttr(AtomicArrayAttr):
 class BondsAttr(object):
     def __init__(self):
         self.name = 'bonds'
+        self.fieldname = 'bonds'
         
     def from_array(self, sys, arr):
         if arr == None:
-            self.on_empty()
+            self.on_empty(sys)
         else:
             sys.bonds = arr
-        
-    def on_add_molecule(self, sys, mol):
-        sys.bonds = np.concatenate((sys.bonds,  mol.bonds + sys._at_counter))
+    
+    def assign(self, sys, arr):
+        getattr(sys, self.name)[:] = arr
 
+    def on_add_molecule(self, sys, mol):
+        if sys.bonds.size == 0:
+            sys.bonds = mol.bonds.copy()
+        else:
+            sys.bonds = np.concatenate((sys.bonds,  mol.bonds.copy() + sys._at_counter))
+
+    def on_get_molecule_entry(self, sys, index):
+        bond_mask = np.zeros(sys.n_bonds, 'bool')
+        for i, (s, e) in enumerate(sys.bonds):
+            sel_ind_start = sys.mol_indices[index]
+            sel_ind_end = sel_ind_start + sys.mol_n_atoms[index]
+            
+            is_start = (s >= sel_ind_start) & (s <= sel_ind_end)
+            is_end = (e >= sel_ind_start) & (e <= sel_ind_end)
+            
+            bond_mask[i] = is_start and is_end
+        
+        return getattr(sys, self.name)[bond_mask] - sys.mol_indices[index]
+    
     def on_empty(self, sys):
         # No idea how many bonds
         sys.bonds = np.zeros((0, 2), 'int')
@@ -238,6 +258,13 @@ class BondsAttr(object):
             new_b[new_b == -j] = i
         
         return new_b
+
+    def concatenate(self, sys, othersys):
+        # Need to add an offset when concatenating
+        if sys.bonds.size == 0:
+            return othersys.bonds + sys.n_atoms
+        else:
+            return np.concatenate((sys.bonds, othersys.bonds + sys.n_atoms))
 
 class MArrayAttr(object):
     def __init__(self, name, fieldname, dtype, default=None):
