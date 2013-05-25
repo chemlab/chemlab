@@ -205,24 +205,39 @@ class BondsAttr(object):
             sys.bonds[sys.bonds == -i] = j
 
     def selection(self, sys, selection):
-
         # This is called when selecting some molecules
         
-        # old_atomic_indices
+        # Select which bonds we have to take
+        bond_mask = np.zeros(sys.n_bonds, 'bool')
+        for i, (s, e) in enumerate(sys.bonds):
+            sel_ind_start = sys.mol_indices[selection]
+            sel_ind_end = sel_ind_start + sys.mol_n_atoms[selection]
+            
+            is_start =np.any((s >= sel_ind_start) & (s <= sel_ind_end))
+            is_end = np.any((e >= sel_ind_start) & (e <= sel_ind_end))
+            
+            bond_mask[i] = is_start and is_end
+        
+        # We have to change to the new atomic indices
         old_ai = np.arange(sys.n_atoms, dtype='int')
+        size = sum(sys.mol_n_atoms[selection])
+        new_ai = np.empty(size, 'int')
         
-        size = sys.n_bonds
+        new_b = np.copy(sys.bonds[bond_mask])
         
-        old_b = np.empty(sys.n_bonds, 'int')
-        new_b = np.empty(sys.n_bonds, 'int')
-
         offset = 0
         for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[selection],
                                          sys.mol_n_atoms[selection])):
-            old_ai[offset: offset+o_n] = new_ai[o_i: o_i+o_n]
+            
+            new_ai[offset: offset+o_n] = old_ai[o_i: o_i+o_n]
             offset += o_n
+            
+        # Nasty trick to ensure uniqueness
+        new_b = -new_b
+        for i, j in enumerate(new_ai):
+            new_b[new_b == -j] = i
         
-        return attr
+        return new_b
 
 class MArrayAttr(object):
     def __init__(self, name, fieldname, dtype, default=None):
