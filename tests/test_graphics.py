@@ -559,7 +559,6 @@ def test_toon_shading():
 
 
 # Tests for the molecular viewer
-    
 def test_molecular_viewer():
     from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
     from chemlab.db import ChemlabDB, CirDB
@@ -573,17 +572,13 @@ def test_molecular_viewer():
     #mol = datafile('tests/data/naclwater.gro').read('system')
     mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
     v = QtMolecularViewer(mol)
-    #v.highlight([0, 2, 8])
+
     v.widget.camera.autozoom(mol.r_array)
     def on_action1():
         if len(v.representation.selection) == 2:
             i,j = v.representation.selection
             distsq = ((mol.r_array[j] - mol.r_array[i])**2).sum()
             print 'distance between', i, j, np.sqrt(distsq)
-    
-    v.actions['action1'].clicked.connect(on_action1)
-    
-    
     def select_all_atoms():
         which = v.representation.selection[0]
         at = mol.type_array[which]
@@ -611,10 +606,6 @@ def test_molecular_viewer():
     def scale_radii():
         #v.representation.scale_radii(v.representation.selection, 0.9)
         v.representation.hide(v.representation.selection)
-        
-        
-    v.keys['a'] = select_all_molecules
-    v.keys['s'] = scale_radii
     
     v.run()
     

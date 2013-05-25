@@ -44,6 +44,7 @@ class BondRenderer(AbstractRenderer):
                 default_atom_map.get(type_array[j],
                                  default_atom_map['Xx']))
 
+        self.radii = radii
         if style == 'cylinders':
             self.cr1 = CylinderRenderer(widget, bounds_a, radii, colors_a)
             self.cr2 = CylinderRenderer(widget, bounds_b, radii, colors_b)

@@ -5,7 +5,7 @@ from chemlab import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import crystal, random_lattice_box
 import numpy as np
-import unittest
+from nose.tools import eq_
 from chemlab.graphics import display_system
 def test_molecule():
     """Test initialization of the Molecule and Atom classes."""
@@ -14,7 +14,11 @@ def test_molecule():
     mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
                     Atom("H", [-4.02, 2.49, 0.0]),
                     Atom("H", [-5.32, 1.98, 1.0])],[])
-
+    
+def assert_allclose(a, b):
+    mask = a == b
+    
+    assert np.all(mask), '\n{} != {}'.format(a, b)
 def _print_sysinfo(s):
     print "Atom Coordinates"
     print s.r_array
@@ -151,17 +155,29 @@ def test_bonds():
     bz = datafile("tests/data/benzene.mol").read('molecule')
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     
-    s2 = System.empty(2, 2)
-    s2.add(na)
-    s2.add(na)
-    s2.get_bond_array()
-    
+    # Adding bonds
     s = System.empty(2, 2*bz.n_atoms)
     s.add(bz)
+    assert_allclose(s.bonds, bz.bonds)
     s.add(bz)
+    assert_allclose(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
     
-    print s.get_bond_array()
+    # Reordering
+    orig = np.array([[0, 1], [6, 8]])
+    s.bonds = orig
+    s.reorder_molecules([1, 0])
+    assert_allclose(s.bonds, np.array([[6, 7], [0, 2]]))
+    
+    # Selection
+    ss = subsystem_from_molecules(s, [1])
+    assert_allclose(ss.bonds, np.array([[0, 1]]))
+    
+    # From_arrays
+    s = System.from_arrays(mol_indices=[0], **bz.__dict__)
+    assert_allclose(s.bonds, bz.bonds)
+    
 
+    
 def test_random():
     '''Testing random made box'''
     from chemlab.db import ChemlabDB

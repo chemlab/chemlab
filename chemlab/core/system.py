@@ -1,6 +1,6 @@
 import numpy as np
 from .molecule import Atom, Molecule
-from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr
+from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr, BondsAttr
 from .serialization import json_to_data, data_to_json
 
 from collections import Counter
@@ -179,12 +179,15 @@ class System(object):
         
         MoleculeListAttr('_mol_bonds', 'bonds', np.object,
                          default=lambda s: [[] for i in range(s.n_mol)]),
+
+        BondsAttr(),
+        
     ]
     
     def __init__(self, molecules, box_vectors=None):
         n_mol = len(molecules)
         n_atoms = sum(m.n_atoms for m in molecules)
-    
+
         # Initialize an empty system and fill it with molecules
         self._setup_empty(n_mol, n_atoms, box_vectors)
         
@@ -557,6 +560,10 @@ class System(object):
                 cumulatives.extend(bd + self.mol_indices[i])
         
         return np.array(cumulatives, dtype=np.int)
+        
+    @property
+    def n_bonds(self):
+        return len(self.bonds)
         
     def get_atom(self, index):
         return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],

@@ -165,6 +165,65 @@ class NDArrayAttr(AtomicArrayAttr):
         return np.zeros((size, self.ndim), dtype=np.float)
 
 
+class BondsAttr(object):
+    def __init__(self):
+        self.name = 'bonds'
+        
+    def from_array(self, sys, arr):
+        if arr == None:
+            self.on_empty()
+        else:
+            sys.bonds = arr
+        
+    def on_add_molecule(self, sys, mol):
+        sys.bonds = np.concatenate((sys.bonds,  mol.bonds + sys._at_counter))
+
+    def on_empty(self, sys):
+        # No idea how many bonds
+        sys.bonds = np.zeros((0, 2), 'int')
+
+    def on_reorder_molecules(self, sys, new_order):
+        # old_atomic_indices
+        old_ai = np.arange(sys.n_atoms, dtype='int')
+        new_ai = np.empty(sys.n_atoms, 'int')
+
+        # The size of the final arrays are the same, just overwrite
+        # with the new order
+        offset = 0
+        for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[new_order],
+                                         sys.mol_n_atoms[new_order])):
+
+            new_ai[offset: offset+o_n] = old_ai[o_i: o_i+o_n]
+
+            offset += o_n
+        
+        # Replace the old atomic indices with the new ones
+        
+        # Nasty trick to ensure uniqueness
+        sys.bonds = -sys.bonds
+        for i, j in enumerate(new_ai):
+            sys.bonds[sys.bonds == -i] = j
+
+    def selection(self, sys, selection):
+
+        # This is called when selecting some molecules
+        
+        # old_atomic_indices
+        old_ai = np.arange(sys.n_atoms, dtype='int')
+        
+        size = sys.n_bonds
+        
+        old_b = np.empty(sys.n_bonds, 'int')
+        new_b = np.empty(sys.n_bonds, 'int')
+
+        offset = 0
+        for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[selection],
+                                         sys.mol_n_atoms[selection])):
+            old_ai[offset: offset+o_n] = new_ai[o_i: o_i+o_n]
+            offset += o_n
+        
+        return attr
+
 class MArrayAttr(object):
     def __init__(self, name, fieldname, dtype, default=None):
         self.name = name

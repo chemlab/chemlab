@@ -2,8 +2,12 @@ import numpy as np
 import itertools
 
 from .state import SystemHiddenState, SystemSelectionState
-from ..renderers import SphereImpostorRenderer, CylinderImpostorRenderer
+from ..renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
+                         AtomRenderer, BondRenderer)
 from ..pickers import SpherePicker, CylinderPicker
+from ...db import ChemlabDB
+
+vdw_radii = ChemlabDB().get('data', 'vdwdict')
 
 class BallAndStickRepresentation(object):
     
@@ -15,20 +19,35 @@ class BallAndStickRepresentation(object):
         self.hidden_state = SystemHiddenState(system)
         self.selection_state = SystemSelectionState(system)
         
-        # Visualization classes
-        self.sphere_renderer = self.viewer.add_renderer(SphereImpostorRenderer)
-        self.cylinder_renderer = self.viewer.add_renderer(CylinderImpostorRenderer)
+        atom_scale = 0.4
+        radii_map = {k: v * atom_scale for k, v in vdw_radii.items()}
         
-        self.sphere_highlight = self.viewer.add_renderer(SphereImpostorRenderer)
-        self.cylinder_highlight = self.viewer.add_renderer(CylinderImpostorRenderer) 
+        bonds = self.system.get_bond_array()
+        
+        # Visualization classes
+        self.atom_renderer = self.viewer.add_renderer(AtomRenderer,
+                                                      system.r_array,
+                                                      system.type_array,
+                                                      radii_map=radii_map)
+        self.atom_radii = self.atom_renderer.radii
+        
+        self.bond_renderer = self.viewer.add_renderer(BondRenderer,
+                                                      bonds, system.r_array,
+                                                      system.type_array)
+        self.bond_radii = self.bond_renderer.radii
+        
+        # Highlighting
+        #self.atom_highlight = self.viewer.add_renderer(SphereImpostorRenderer)
+        #self.bond_highlight = self.viewer.add_renderer(CylinderImpostorRenderer) 
         
         # User controls
         self.atom_picker = SpherePicker(self.viewer.widget, system.r_array,
-                                        self.renderer.radii)        
+                                        self.renderer.radii)
+        
         self.cylinder_picker = CylinderPicker(self.viewer.widget,
                                               system.r_array,
                                               system.get_bond_array(),
-                                              cylinder_radii)
+                                              self.bond_radii)
         
         self.hidden_state.atom_changed.connect(self.on_atom_hidden_changed)
         self.hidden_state.bond_changed.connect(self.on_bond_hidden_changed)
@@ -36,6 +55,12 @@ class BallAndStickRepresentation(object):
         self.selection_state.atom_changed.connect(self.on_atom_selection_changed)
         self.selection_state.bond_changed.connect(self.on_bond_selection_changed)
 
+    def _gen_atom_renderer(self):
+        pass
+        
+    def _gen_cylinder_renderer(self):
+        pass
+    
     def on_atom_hidden_changed(self):
         # When hidden state changes, the view update itself
         # Update the Renderers and the pickers

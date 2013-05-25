@@ -1,6 +1,6 @@
 import numpy as np
 
-from .. import Model, Event
+from ..events import Model, Event
     
 def _apply_selection(mask, selection, mode):
     # Apply a selection to a numpy mask using different modes
@@ -23,8 +23,10 @@ class SystemSelectionState(Model):
     def __init__(self, system):
         super(SystemSelectionState, self).__init__()
         self.system = system
+        bonds = system.get_bond_array()
+        n_bonds = len(bonds)
         self.atom_selection_mask = np.zeros(self.system.n_atoms, dtype='bool')
-        self.bond_selection_mask = np.zeros(self.system.n_bonds, dtype='bool')
+        self.bond_selection_mask = np.zeros(n_bonds, dtype='bool')
 
     def select_atoms(self, selection, mode='exclusive'):
         _apply_selection(self.atom_selection_mask, selection, mode)
@@ -36,9 +38,12 @@ class SystemSelectionState(Model):
 class SystemHiddenState(Model):
     def __init__(self, system):
         super(SystemHiddenState, self).__init__()
+        bonds = system.get_bond_array()
+        n_bonds = len(bonds)
+
         self.system = system
         self.atom_hidden_mask = np.zeros(self.system.n_atoms, dtype='bool')
-        self.bond_hidden_mask = np.zeros(self.system.n_bonds, dtype='bool')
+        self.bond_hidden_mask = np.zeros(n_bonds, dtype='bool')
 
     def hide_atoms(self, selection, mode='exclusive'):
         _apply_selection(self.atom_hidden_mask, selection, mode)
