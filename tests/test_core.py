@@ -20,6 +20,12 @@ def test_molecule():
 def assert_npequal(a, b):
     assert np.array_equal(a, b), '\n{} != {}'.format(a, b)
 
+def assert_eqbonds(a, b):
+    # compare bonds by sorting
+    a = np.sort(np.sort(a, axis=0))
+    b = np.sort(np.sort(b, axis=0))
+    assert_npequal(a, b)
+
 def _print_sysinfo(s):
     print "Atom Coordinates"
     print s.r_array
@@ -231,6 +237,29 @@ def test_bond_guessing():
     mol = datafile('tests/data/3ZJE.pdb').read('molecule')
     mol.guess_bonds()
     assert mol.bonds.size > 0
+    
+    # We should find the bond guessing also for systems
+    
+    # System Made of two benzenes
+    bz = datafile("tests/data/benzene.mol").read('molecule')
+    bzbonds = bz.bonds
+    bz.bonds = np.array([])
+    
+    # Separating the benzenes by large amount
+    bz2 = bz.copy()
+    bz2.r_array += 2.0
+    
+    s = System([bz, bz2])
+    s.guess_bonds()
+    assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
+    
+    # Separating benzenes by small amount
+    bz2 = bz.copy()
+    bz2.r_array += 0.15
+    
+    s = System([bz, bz2])
+    s.guess_bonds()
+    assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
     
     #display_molecule(mol)
     

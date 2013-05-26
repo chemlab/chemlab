@@ -1,5 +1,5 @@
 import numpy as np
-from .molecule import Atom, Molecule
+from .molecule import Atom, Molecule, guess_bonds
 from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr, BondsAttr
 from .serialization import json_to_data, data_to_json
 
@@ -98,7 +98,15 @@ class System(object):
            >>> o_coordinates = s.r_array[oxygens] 
            >>> o_indices = np.arange(s.n_atoms)[oxygens] 
               
-       
+
+    .. py:attribute:: bonds
+
+       :type: np.ndarray((NBONDS, 2), dtype=int)
+       :derived from: Molecule
+        
+       An array of 2d indices that specify the index of the bonded
+       atoms.
+    
     .. py:attribute:: atom_export_array
     
        :type: np.ndarray(NA, dtype=object) *array of dict*
@@ -176,9 +184,6 @@ class System(object):
         
         MoleculeArrayAttr('mol_export', 'export', np.object,
             default=lambda s: np.array([{} for i in range(s.n_mol)], dtype=np.object)),
-        
-        MoleculeListAttr('_mol_bonds', 'bonds', np.object,
-                         default=lambda s: [[] for i in range(s.n_mol)]),
 
         BondsAttr(),
         
@@ -536,30 +541,27 @@ class System(object):
         
         return Molecule.from_arrays(**kwargs)
         
-    def get_bond_array(self):
-        """Get the bonds between the atoms in the system.
+    def guess_bonds(self):
+        '''Guess the bonds between the molecules constituent of the system.
+        
+        '''
+        # Can contain intermolecular bonds, we don't want that
+        bonds = guess_bonds(self.r_array, self.type_array)
+        
+        # Cleaning -- as a requirement we want that the bond is
+        # between the same molecule
+        
+        # We make a map atom-to-molecule
+        mol_map = np.empty(self.n_atoms, dtype='int')
 
-        **Returns**
-        np.ndarray((NBONDS, 2), dtype=int)
-        
-        An array of 2d indices that specify the index of the bonded
-        atoms.
-        
-        .. warning:: The bond handling has to be considered experimental
 
-        """
-
-        bdlist = self._mol_bonds
-        cumulatives = []
+        for ind, (i, n)in enumerate(zip(self.mol_indices, self.mol_n_atoms)):
+            mol_map[i:i + n] = ind
         
-        for i, bd in enumerate(bdlist):
-            if isinstance(bd, list):
-                continue
-            if not(bd.shape[0] == 0):
-                # The indices should be offset
-                cumulatives.extend(bd + self.mol_indices[i])
+        bonds_mol = mol_map.take(bonds)
+        bonds_mask = bonds_mol[:, 0] == bonds_mol [:, 1]
         
-        return np.array(cumulatives, dtype=np.int)
+        self.bonds = bonds[bonds_mask]
         
     @property
     def n_bonds(self):
@@ -741,5 +743,3 @@ def merge_systems(sysa, sysb, bounding=0.2):
     
     return sysres
 
-def guess_bonds(s):
-    pass
