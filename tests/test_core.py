@@ -17,7 +17,7 @@ def test_molecule():
                     Atom("H", [-4.02, 2.49, 0.0]),
                     Atom("H", [-5.32, 1.98, 1.0])],[])
     
-def assert_allclose(a, b):
+def assert_npequal(a, b):
     assert np.array_equal(a, b), '\n{} != {}'.format(a, b)
 
 def _print_sysinfo(s):
@@ -80,8 +80,6 @@ def test_system():
     s2 = System.from_arrays(r_array=r_array, type_array=type_array,
                        mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
     
-
-    print 'bonds', s2._mol_bonds
     sub2 = subsystem_from_molecules(s2, np.array([0, 2]))
     assert sub2.n_mol == 2
     
@@ -107,8 +105,8 @@ def test_system_remove():
 
     s2.remove_atoms([0, 1])
     
-    assert_allclose(s2.bonds, np.array([[0, 1], [0, 2], [3, 4], [3, 5]]))
-    assert_allclose(s2.type_array, np.array(['O', 'H', 'H', 'O', 'H', 'H'], 'object'))
+    assert_npequal(s2.bonds, np.array([[0, 1], [0, 2], [3, 4], [3, 5]]))
+    assert_npequal(s2.type_array, np.array(['O', 'H', 'H', 'O', 'H', 'H'], 'object'))
 
 @attr('slow')
 def test_merge_system():
@@ -166,28 +164,28 @@ def test_bonds():
     # Adding bonds
     s = System.empty(2, 2*bz.n_atoms)
     s.add(bz)
-    assert_allclose(s.bonds, bz.bonds)
+    assert_npequal(s.bonds, bz.bonds)
     s.add(bz)
-    assert_allclose(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
+    assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
     
     # Reordering
     orig = np.array([[0, 1], [6, 8]])
     s.bonds = orig
     s.reorder_molecules([1, 0])
-    assert_allclose(s.bonds, np.array([[6, 7], [0, 2]]))
+    assert_npequal(s.bonds, np.array([[6, 7], [0, 2]]))
     
     # Selection
     ss = subsystem_from_molecules(s, [1])
-    assert_allclose(ss.bonds, np.array([[0, 1]]))
+    assert_npequal(ss.bonds, np.array([[0, 1]]))
     
     ss2 = System.from_arrays(**ss.__dict__)
     ss2.r_array += 10.0
     ms = merge_systems(ss, ss2)
-    assert_allclose(ms.bonds, np.array([[0, 1], [6, 7]]))
+    assert_npequal(ms.bonds, np.array([[0, 1], [6, 7]]))
     
     # From_arrays
     s = System.from_arrays(mol_indices=[0], **bz.__dict__)
-    assert_allclose(s.bonds, bz.bonds)
+    assert_npequal(s.bonds, bz.bonds)
     
 
     
@@ -200,25 +198,18 @@ def test_random():
     wat = cdb.get("molecule", 'gromacs.spce')
     
     s = random_lattice_box([na, cl, wat], [160, 160, 160], [4, 4, 4])
+    
     #display_system(s)
 
 
 def test_bond_guessing():
-    from chemlab.core.molecule import guess_bonds
     from chemlab.db import ChemlabDB, CirDB
     from chemlab.graphics import display_molecule
     from chemlab.io import datafile
-    
-    #mol = ChemlabDB().get('molecule', 'example.norbornene')
-    import time
-    #mol = CirDB().get('molecule', 'caffeine')
 
     mol = datafile('tests/data/3ZJE.pdb').read('molecule')
-    
-    t = time.time()
-    bonds = guess_bonds(mol.r_array, mol.type_array)
-    print 'elapsed', time.time() - t
-    mol.bonds = bonds
+    mol.guess_bonds()
+    assert mol.bonds.size > 0
     
     #display_molecule(mol)
     

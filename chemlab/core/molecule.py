@@ -370,7 +370,7 @@ class Molecule(object):
         
         
     def __repr__(self):
-        return "molecule({})".format(self._det_formula())
+        return "molecule({})".format(self.formula)
     
     def copy(self):
         '''Return a copy of the molecule instance
@@ -385,12 +385,18 @@ class Molecule(object):
             
         return cls.from_arrays(**kwargs)
         
-    def _det_formula(self):
+    def guess_bonds(self):
+        """Guess the molecular bonds by using covalent radii
+        information.
+
+        """
+        self.bonds = guess_bonds(self.r_array, self.type_array)
+        
+    @property
+    def formula(self):
         return make_formula(self.type_array)
 
-    formula = property(_det_formula)
-
-
+# Those functions have a separate life
 def guess_bonds(r_array, type_array):
     covalent_radii = cdb.get('data', 'covalentdict')
     MAXRADIUS = 0.3
