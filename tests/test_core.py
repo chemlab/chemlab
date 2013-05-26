@@ -56,12 +56,33 @@ def test_system():
     s = System.empty(4, 4*3)
     
     mols = []
+    
+    # Array to be compared
     for i in xrange(s.n_mol):
         wat.r_array += 0.1
+        
         s.add(wat)
         m  = wat.copy()
         mols.append(wat.copy())
         
+    assert_npequal(s.type_array, ['O', 'H', 'H'] * 4)
+    cmp_array = np.array([[-0.39899998,  0.349     ,  0.1       ],
+                          [-0.302     ,  0.349     ,  0.1       ],
+                          [-0.43200002,  0.298     ,  0.2       ],
+                          [-0.29899998,  0.449     ,  0.2       ],
+                          [-0.202     ,  0.449     ,  0.2       ],
+                          [-0.33200002,  0.398     ,  0.3       ],
+                          [-0.19899998,  0.549     ,  0.3       ],
+                          [-0.102     ,  0.549     ,  0.3       ],
+                          [-0.23200002,  0.498     ,  0.4       ],
+                          [-0.09899998,  0.649     ,  0.4       ],
+                          [-0.002     ,  0.649     ,  0.4       ],
+                          [-0.13200002,  0.598     ,  0.5       ]])
+
+    assert np.allclose(s.r_array, cmp_array), '{} != {}'.format(s.r_array, cmp_array)
+    assert_npequal(s.mol_indices, [0, 3, 6, 9])
+    assert_npequal(s.mol_n_atoms, [3, 3, 3, 3])
+    
     # Printing just to test if there aren't any exception    
     print "Init from Empty"
     print "*" * 72
