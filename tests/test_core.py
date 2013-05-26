@@ -3,9 +3,11 @@
 """
 from chemlab import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
+from chemlab.core import merge_systems
 from chemlab.core import crystal, random_lattice_box
 import numpy as np
 from nose.tools import eq_
+from nose.plugins.attrib import attr
 from chemlab.graphics import display_system
 def test_molecule():
     """Test initialization of the Molecule and Atom classes."""
@@ -16,9 +18,8 @@ def test_molecule():
                     Atom("H", [-5.32, 1.98, 1.0])],[])
     
 def assert_allclose(a, b):
-    mask = a == b
-    
-    assert np.all(mask), '\n{} != {}'.format(a, b)
+    assert np.array_equal(a, b), '\n{} != {}'.format(a, b)
+
 def _print_sysinfo(s):
     print "Atom Coordinates"
     print s.r_array
@@ -94,20 +95,27 @@ def test_system_remove():
         # 3 water molecules
     r_array = np.random.random((9, 3))
     type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
+    bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]])
+    
     mol_indices = [0, 3, 6]
     mol_n_atoms = [3, 3, 3]
-    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
-                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+    s2 = System.from_arrays(r_array=r_array,
+                            type_array=type_array,
+                            mol_indices=mol_indices,
+                            mol_n_atoms=mol_n_atoms,
+                            bonds=bonds)
 
     s2.remove_atoms([0, 1])
     
-    print s2.type_array
-    
+    assert_allclose(s2.bonds, np.array([[0, 1], [0, 2], [3, 4], [3, 5]]))
+    assert_allclose(s2.type_array, np.array(['O', 'H', 'H', 'O', 'H', 'H'], 'object'))
+
+@attr('slow')
 def test_merge_system():
     # take a protein
     from chemlab.io import datafile
     from chemlab.graphics import display_system
-    from chemlab.core import merge_systems
+
     from chemlab.db import ChemlabDB
     
     water = ChemlabDB().get("molecule", "example.water")
@@ -128,7 +136,7 @@ def test_merge_system():
     prot.r_array += 10
     s = merge_systems(s, prot, 0.5)
 
-    display_system(s)
+    display_system(s, 'ball-and-stick')
     
     
 def test_crystal():
@@ -172,6 +180,11 @@ def test_bonds():
     ss = subsystem_from_molecules(s, [1])
     assert_allclose(ss.bonds, np.array([[0, 1]]))
     
+    ss2 = System.from_arrays(**ss.__dict__)
+    ss2.r_array += 10.0
+    ms = merge_systems(ss, ss2)
+    assert_allclose(ms.bonds, np.array([[0, 1], [6, 7]]))
+    
     # From_arrays
     s = System.from_arrays(mol_indices=[0], **bz.__dict__)
     assert_allclose(s.bonds, bz.bonds)
@@ -187,8 +200,7 @@ def test_random():
     wat = cdb.get("molecule", 'gromacs.spce')
     
     s = random_lattice_box([na, cl, wat], [160, 160, 160], [4, 4, 4])
-    display_system(s)
-    #random_box([na, cl, wat], [16, 16, 130], [10, 10, 10], rmin=0.2)
+    #display_system(s)
 
 
 def test_bond_guessing():
@@ -208,7 +220,7 @@ def test_bond_guessing():
     print 'elapsed', time.time() - t
     mol.bonds = bonds
     
-    display_molecule(mol)
+    #display_molecule(mol)
     
     
     

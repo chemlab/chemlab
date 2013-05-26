@@ -29,21 +29,24 @@ def display_molecule(mol, style='ball-and-stick'):
     v.run()
 
 
-def display_system(sys):
+def display_system(sys, style='vdw'):
     '''Display the system *sys* with the default viewer.
 
     '''
     
-
     v = QtViewer()
 
     #v.add_post_processing(FXAAEffect)
     v.add_post_processing(SSAOEffect)    
     
-    sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
-                        backend='impostors')
-    
-
+    if style == 'vdw':
+        sr = v.add_renderer(AtomRenderer, sys.r_array, sys.type_array,
+                            backend='impostors')
+    if style == 'ball-and-stick':
+        sr = v.add_renderer(BallAndStickRenderer,
+                            sys.r_array,
+                            sys.type_array,
+                            sys.bonds)
     
     if sys.box_vectors is not None:
         v.add_renderer(BoxRenderer, sys.box_vectors)

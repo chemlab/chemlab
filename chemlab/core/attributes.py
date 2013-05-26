@@ -177,7 +177,7 @@ class BondsAttr(object):
             sys.bonds = arr
     
     def assign(self, sys, arr):
-        getattr(sys, self.name)[:] = arr
+        sys.bonds = arr
 
     def on_add_molecule(self, sys, mol):
         if sys.bonds.size == 0:
@@ -197,7 +197,29 @@ class BondsAttr(object):
             bond_mask[i] = is_start and is_end
         
         return getattr(sys, self.name)[bond_mask] - sys.mol_indices[index]
-    
+
+    def on_remove_molecules(self, sys, indices):
+        # As usual, we should get the mapping from the old to the new
+        # indices
+        prev_indices = np.arange(sys.n_atoms, dtype='int')
+        
+        at_indices = sys.mol_to_atom_indices(indices)
+        old_indices = np.delete(prev_indices, at_indices, axis=0)
+
+        # Remove the bonds related to the removed atoms
+        bond_mask = np.zeros(sys.n_bonds, 'bool')
+        for ai in at_indices:
+            has_bonds = (sys.bonds[:, 0] == ai) | (sys.bonds[:, 1] == ai)
+            bond_mask |= has_bonds
+
+        sys.bonds = np.delete(sys.bonds, bond_mask, axis=0)
+        
+        # Now, readjust all the indices
+        sys.bonds = -sys.bonds
+        for i, j in enumerate(old_indices):
+            sys.bonds[sys.bonds == -j] = i
+        
+        
     def on_empty(self, sys):
         # No idea how many bonds
         sys.bonds = np.zeros((0, 2), 'int')
@@ -222,40 +244,51 @@ class BondsAttr(object):
         # Nasty trick to ensure uniqueness
         sys.bonds = -sys.bonds
         for i, j in enumerate(new_ai):
-            sys.bonds[sys.bonds == -i] = j
+            sys.bonds[sys.bonds == -i] = j 
 
     def selection(self, sys, selection):
         # This is called when selecting some molecules
+        # Special case
+        if sys.bonds.size == 0:
+            return sys.bonds
         
         # Select which bonds we have to take
         bond_mask = np.zeros(sys.n_bonds, 'bool')
-        for i, (s, e) in enumerate(sys.bonds):
-            sel_ind_start = sys.mol_indices[selection]
-            sel_ind_end = sel_ind_start + sys.mol_n_atoms[selection]
-            
-            is_start =np.any((s >= sel_ind_start) & (s <= sel_ind_end))
-            is_end = np.any((e >= sel_ind_start) & (e <= sel_ind_end))
-            
-            bond_mask[i] = is_start and is_end
+        
+        #sel_ind_start = sys.mol_indices[selection]
+        #sel_ind_end = sel_ind_start + sys.mol_n_atoms[selection]
+        
+        # Reconstruct atom mask
+        atom_indices = sys.mol_to_atom_indices(selection)
+        mp = np.zeros(sys.n_atoms, 'bool')
+        mp[atom_indices] = True
+        
+        # Now, see which bonds have their atoms selected , we have to
+        # take this atoms and delete the others
+        bond_mask_2d = mp.take(sys.bonds)
+        bond_mask = bond_mask_2d[:, 0] & bond_mask_2d[:, 1]
+        new_b = np.copy(sys.bonds[bond_mask])
         
         # We have to change to the new atomic indices
         old_ai = np.arange(sys.n_atoms, dtype='int')
         size = sum(sys.mol_n_atoms[selection])
         new_ai = np.empty(size, 'int')
         
-        new_b = np.copy(sys.bonds[bond_mask])
-        
+
         offset = 0
         for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[selection],
                                          sys.mol_n_atoms[selection])):
             
             new_ai[offset: offset+o_n] = old_ai[o_i: o_i+o_n]
             offset += o_n
-            
-        # Nasty trick to ensure uniqueness
-        new_b = -new_b
-        for i, j in enumerate(new_ai):
-            new_b[new_b == -j] = i
+
+        # This maps the old indices to old indices in a fast way by
+        # using numpy
+        # http://stackoverflow.com/questions/3403973/fast-replacement-of-values-in-a-numpy-array
+        index_map = new_ai
+        mp = np.arange(sys.n_atoms)
+        mp[index_map] = np.arange(index_map.size)
+        new_b = mp.take(new_b)
         
         return new_b
 
@@ -265,6 +298,9 @@ class BondsAttr(object):
             return othersys.bonds + sys.n_atoms
         else:
             return np.concatenate((sys.bonds, othersys.bonds + sys.n_atoms))
+
+    def get(self, sys):
+        return sys.bonds
 
 class MArrayAttr(object):
     def __init__(self, name, fieldname, dtype, default=None):

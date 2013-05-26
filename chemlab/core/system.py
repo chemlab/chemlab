@@ -712,7 +712,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
         if sysa.box_vectors is not None:
             periodicity = sysa.box_vectors.diagonal()
         else:
-            periodicity = None
+            periodicity = False
 
         p = overlapping_points(sysb.r_array, sysa.r_array,
                                cutoff=bounding, periodic=periodicity)
