@@ -4,10 +4,10 @@ from chemlab.db.chemspiderdb import ChemSpiderDB
 from chemlab.graphics import display_molecule
 from chemlab.core import System
 
+from nose.tools import assert_raises
 def test_cir():
     db = CirDB()
     bz = db.get("molecule", "norbornene")
-    display_molecule(bz)
 
 def test_local():
     # Fetch some stuff from cirdb
@@ -30,7 +30,11 @@ def test_local():
     assert pre_string == post_string
     
 def test_chemspider():
-    db = ChemSpiderDB()
+    
+    try:
+        db = ChemSpiderDB()
+    except:
+        return
     
     name = 'fullerene'
     mol = db.get('molecule', name)

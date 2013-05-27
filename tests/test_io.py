@@ -88,11 +88,8 @@ def test_read_xtc():
     box = df.read('boxes')
 
 def test_read_cml():
-    from chemlab.graphics import display_molecule
     df = datafile('tests/data/mol.cml')
     mol = df.read("molecule")
-    
-    display_molecule(mol)
 
 def test_write_cml():
     df = datafile('tests/data/mol.cml')
