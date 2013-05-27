@@ -1,10 +1,10 @@
 language: python
 python:
-   - "2.7"
+  - "2.7"
 virtualenv:
-   system_site_packages: true
+  system_site_packages: true
 before_install:
-   - "sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl cython python-matplotlib"
+  - "sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl cython python-matplotlib"
 install:
-   - "python setup.py install"
-script: "nosetests -a '!slow' tests/test_core.py
+  - "python setup.py install"
+script: "nosetests -a '!slow' tests/test_core.py"
