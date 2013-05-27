@@ -186,7 +186,7 @@ class BondsAttr(object):
             sys.bonds = np.concatenate((sys.bonds,  mol.bonds.copy() + sys._at_counter))
 
     def on_get_molecule_entry(self, sys, index):
-        bond_mask = np.zeros(sys.n_bonds, 'bool')
+        bond_mask = np.zeros(sys.n_bonds, dtype='bool')
         for i, (s, e) in enumerate(sys.bonds):
             sel_ind_start = sys.mol_indices[index]
             sel_ind_end = sel_ind_start + sys.mol_n_atoms[index]
@@ -195,8 +195,8 @@ class BondsAttr(object):
             is_end = (e >= sel_ind_start) & (e <= sel_ind_end)
             
             bond_mask[i] = is_start and is_end
-        
-        return getattr(sys, self.name)[bond_mask] - sys.mol_indices[index]
+
+        return sys.bonds.take(bond_mask) - sys.mol_indices[index]
 
     def on_remove_molecules(self, sys, indices):
         # As usual, we should get the mapping from the old to the new

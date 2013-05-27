@@ -56,12 +56,13 @@ class AtomRenderer(AbstractRenderer):
         
         natoms = len(r_array)
         
-        self.radii = radii
+
         for i in range(natoms):
             radii.append(radii_map[type_array[i]])
             colorlist.append(color_scheme.get(type_array[i],
                                         color_scheme['Xx']))
-        
+        self.radii = radii        
+        self.colors = np.array(colorlist, dtype='uint8')
         if backend == 'polygons':
             self.sr = SphereRenderer(widget, r_array, radii, colorlist,
                                      shading = shading)
@@ -82,3 +83,6 @@ class AtomRenderer(AbstractRenderer):
         """
 
         self.sr.update_positions(r_array)
+    
+    def update_colors(self, cols):
+        self.sr.update_colors(cols)

@@ -157,7 +157,7 @@ class CylinderPicker(object):
                     continue
                     
                 outside_bottom = np.dot(new_point - cyl_origin, cyl_direction)
-                if outside_bottom < 0.0:
+                if outside_bottom > 0.0:
                     continue
                 
                 intersections.append(i)

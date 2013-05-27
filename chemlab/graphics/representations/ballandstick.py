@@ -4,10 +4,14 @@ import itertools
 from .state import SystemHiddenState, SystemSelectionState
 from ..renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
                          AtomRenderer, BondRenderer)
+from .. import colors
 from ..pickers import SpherePicker, CylinderPicker
 from ...db import ChemlabDB
+from ..postprocessing import GlowEffect
 
-vdw_radii = ChemlabDB().get('data', 'vdwdict')
+cdb = ChemlabDB()
+vdw_radii = cdb.get('data', 'vdwdict')
+elements = cdb.get('data', 'elements')
 
 class BallAndStickRepresentation(object):
     
@@ -28,15 +32,15 @@ class BallAndStickRepresentation(object):
                                                       system.type_array,
                                                       radii_map=radii_map)
         self.atom_radii = self.atom_renderer.radii
+        self.atom_colors = self.atom_renderer.colors
         
         self.bond_renderer = self.viewer.add_renderer(BondRenderer,
                                                       system.bonds, system.r_array,
                                                       system.type_array, style='impostors')
         self.bond_radii = self.bond_renderer.radii
         
-        # Highlighting
-        #self.atom_highlight = self.viewer.add_renderer(SphereImpostorRenderer)
-        #self.bond_highlight = self.viewer.add_renderer(CylinderImpostorRenderer) 
+        # For highlight, we'll see
+        self.viewer.add_post_processing(GlowEffect)
         
         # User controls
         self.atom_picker = SpherePicker(self.viewer.widget, system.r_array,
@@ -69,7 +73,14 @@ class BallAndStickRepresentation(object):
 
     def on_atom_selection_changed(self):
         # When selection state changes, the view update itself
+        
+        sel = self.selection_state.atom_selection
+        cols = self.atom_colors.copy()
+        cols[sel, -1] = 10
+        self.atom_renderer.update_colors(cols)
         print('atom_selected', self.selection_state.atom_selection)
+        
+        self.viewer.widget.update()
     
     def on_bond_selection_changed(self):
         # When selection state changes, the view update itself

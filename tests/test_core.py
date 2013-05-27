@@ -6,7 +6,7 @@ from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import merge_systems
 from chemlab.core import crystal, random_lattice_box
 import numpy as np
-from nose.tools import eq_
+from nose.tools import eq_, assert_equals
 from nose.plugins.attrib import attr
 from chemlab.graphics import display_system
 def test_molecule():
@@ -86,8 +86,15 @@ def test_system():
                           [-0.13200002,  0.598     ,  0.5       ]])
 
     assert np.allclose(s.r_array, cmp_array), '{} != {}'.format(s.r_array, cmp_array)
+    # Test mol indices
     assert_npequal(s.mol_indices, [0, 3, 6, 9])
+    
+    # Test mol n_atoms
     assert_npequal(s.mol_n_atoms, [3, 3, 3, 3])
+    
+    # Test get molecule entry
+    assert_npequal(s.molecules[0].type_array, ['O', 'H', 'H'])
+    
     
     # Printing just to test if there aren't any exception    
     print "Init from Empty"
@@ -214,7 +221,11 @@ def test_bonds():
     s = System.from_arrays(mol_indices=[0], **bz.__dict__)
     assert_npequal(s.bonds, bz.bonds)
     
+    # Get molecule entry
 
+    # Test the bonds when they're 0
+    s.bonds = np.array([])
+    assert_equals(s.get_derived_molecule_array('formula'), 'C6')
     
 def test_random():
     '''Testing random made box'''
