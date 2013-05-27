@@ -1,26 +1,14 @@
 chemlab - the python chemistry package you were waiting for
------------------------------------------------------------
+===========================================================
 
 [![Build Status](https://travis-ci.org/chemlab/chemlab.png?branch=master)](https://travis-ci.org/chemlab/chemlab)
 
-:Version:
-   0.2
-
-:Author:
-   Gabriele Lanaro
-   
-:Email:   
-   python-chemlab@googlegroups.com
-
-:Website:
-    http://chemlab.github.com/chemlab
-    
-:Docs:
-    http://chemlab.rtfd.org
-    
-:Github:
-    http://github.com/chemlab/chemlab
-
+- Version: 0.2
+- Author: Gabriele Lanaro
+- Email: python-chemlab@googlegroups.com
+- Website: http://chemlab.github.com/chemlab
+- Docs: http://chemlab.rtfd.org
+- Github: http://github.com/chemlab/chemlab
 
 chemlab is a python library and a set of utilities built to ease the
 life of the computational chemist. It takes inspiration from other
