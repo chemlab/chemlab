@@ -393,6 +393,10 @@ class Molecule(object):
         self.bonds = guess_bonds(self.r_array, self.type_array)
         
     @property
+    def n_bonds(self):
+        return len(self.bonds)
+        
+    @property
     def formula(self):
         return make_formula(self.type_array)
 

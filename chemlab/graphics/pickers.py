@@ -50,34 +50,45 @@ class SpherePicker(object):
         
         inters_mask = det_v >= 0
         intersections = (inters_mask).nonzero()[0]
-        distances = (b_v[inters_mask] + np.sqrt(det_v[inters_mask])) / 2.0
+        distances = (-b_v[inters_mask] - np.sqrt(det_v[inters_mask])) / 2.0
         
         # We need only the thing in front of us, that corresponts to
-        # negative distances. Probably we simply have the wrong
-        # direction intersection.
+        # positive distances.
+        dist_mask = distances > 0.0
         
-        dist_mask = distances < 0.0
+        # We correct this aspect to get an absolute distance
         distances = distances[dist_mask]
         intersections = intersections[dist_mask].tolist()
         
         if intersections:
             distances, intersections = zip(*sorted(zip(distances, intersections)))
-            return list(reversed(intersections))
+            return list(intersections), list(distances)
         else:
-            return intersections
+            return [], []
             
 class CylinderPicker(object):
 
     def __init__(self, widget, bounds, radii):
+        # Special case, empty array
         self.widget = widget
         self.bounds = bounds
         self.radii = radii
+        self.is_empty = (bounds.size == 0)
+        
+        if self.is_empty:
+            return
+        
         self.directions = bounds[:, 1, :] - bounds[:, 0, :]
         self.origins = bounds[:, 0, :]
+        
         # The center of the bounding sphere
         centers = 0.5 * (bounds[:, 1, :] + bounds[:, 0, :])
         # The radii of the bounding spheres
         radii = 0.5 * np.sqrt((self.directions**2).sum(axis=1))
+        
+        # Normalize the directions        
+        self.directions /= np.sqrt((self.directions**2).sum(axis=1))[:, np.newaxis]
+        
         self._bounding_sphere = SpherePicker(widget, centers, radii)
 
     def _origin_ray(self, x, y):
@@ -94,10 +105,14 @@ class CylinderPicker(object):
         return origin, direction
 
     def pick(self, x, y):
+        
+        if self.is_empty:
+            return [], []
+        
         origin, direction = self._origin_ray(x, y)
 
         # First, take only the things intersection with the bounding spheres
-        sph_intersections = self._bounding_sphere.pick(x, y)
+        sph_intersections, sph_distances = self._bounding_sphere.pick(x, y)
         
         # Now, do the proper intersection with the cylinders
         z_axis = np.array([0.0, 0.0, 1.0])
@@ -108,9 +123,11 @@ class CylinderPicker(object):
             # 1) Change frame of reference of the origin and direction
             # Rotation matrix
             cyl_direction = self.directions[i]
+            
+            normal=  np.cross(cyl_direction, z_axis)
             M = rotation_matrix(
-                angle_between_vectors(self.directions[i], z_axis),
-                np.cross(self.directions[i], z_axis))[:3, :3]
+                angle_between_vectors(cyl_direction, z_axis),
+                normal)[:3, :3].T
             
             cyl_origin = self.origins[i]
             origin_p = M.dot(origin - cyl_origin)
@@ -125,7 +142,7 @@ class CylinderPicker(object):
             b = 2.0 * origin_p.dot(direction_p)
             c = origin_p.dot(origin_p) - cyl_radius*cyl_radius
             det = b**2 - 4*a*c
-
+            
             if det >= 0.0:
                 # Hit
                 t = (-b - np.sqrt(det))/(2.0*a)
@@ -148,6 +165,6 @@ class CylinderPicker(object):
                 
         if intersections:
             distances, intersections = zip(*sorted(zip(distances, intersections)))
-            return list(intersections)
+            return list(intersections), list(distances)
         else:
-            return intersections
+            return [], []

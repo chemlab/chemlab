@@ -9,6 +9,7 @@ from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         WireframeRenderer, CylinderImpostorRenderer)
 from chemlab.graphics.colors import green, white, black, blue, purple, red
 from chemlab.graphics.uis import TextUI
+from chemlab.db import ChemlabDB
 import numpy as np
 import time
 
@@ -488,39 +489,32 @@ def test_pickers():
     from chemlab.graphics.pickers import SpherePicker, CylinderPicker
     from chemlab.core.molecule import guess_bonds
     from chemlab.io import datafile
-    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
-    mol = datafile('tests/data/benzene.mol').read('molecule')
-    
-    centers = [[0.0, 0.0, 0.0], [1.0, 0.0, 1.0]]
-    radii = np.array([1.0, 0.5])
-    colors = [[0, 255, 255, 100], [255, 255, 0, 100]]
+    #mol = datafile('tests/data/benzene.mol').read('molecule')
+    mol = ChemlabDB().get('molecule', 'example.norbornene')
     
     centers = mol.r_array
     radii = np.array([0.05]*mol.n_atoms)
     colors = np.array([[0, 255, 255, 255]]*mol.n_atoms)
+    bounds = mol.r_array.take(mol.bonds, axis=0)
     
-    bonds = guess_bonds(mol.r_array, mol.type_array)
-    print bonds
-    
-    bounds = np.empty((len(bonds), 2, 3))
-    bounds[:, 0, :] = centers.take(bonds[:, 0], axis=0)
-    bounds[:, 1, :] = centers.take(bonds[:, 1], axis=0)
-    
-    radii = np.array([0.05]*len(bonds))
-    colors = np.array([[0, 255, 255, 255]]*len(bonds))
+    b_radii = np.array([0.05]*mol.n_bonds)
+    b_colors = np.array([[0, 255, 255, 255]]*mol.n_bonds)
 
     v = QtViewer()
     #v.widget.camera.autozoom(mol.r_array)
-    #sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors, transparent=False)
-    cr = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii*1.2, colors, transparent=False)
+    cr = v.add_renderer(CylinderImpostorRenderer, bounds, b_radii, b_colors)
     
-    #sp = SpherePicker(v.widget, centers, radii)
-    cp = CylinderPicker(v.widget, bounds, radii)
+    sp = SpherePicker(v.widget, centers, radii*1.2)
+    cp = CylinderPicker(v.widget, bounds, b_radii)
     
     def on_click(evt):
         x, y = v.widget.screen_to_normalized(evt.x(), evt.y())
-        #print sp.pick(x, y)
-        print cp.pick(x, y)
+        a_i, a_d = sp.pick(x, y)
+        b_i, b_d = cp.pick(x, y)
+        print 'A', a_d
+        print 'B', b_d
+    
     v.widget.clicked.connect(on_click)
     
     v.run()
@@ -570,7 +564,8 @@ def test_molecular_viewer():
     
     #mol = datafile('tests/data/3ZJE.pdb').read('system')
     #mol = datafile('tests/data/naclwater.gro').read('system')
-    mol = datafile('/home/gabriele/projects/LiCl/interface/loafintjc-heat/equilibrium.gro').read('system')
+    mol.guess_bonds()
+    
     v = QtMolecularViewer(mol)
 
     v.widget.camera.autozoom(mol.r_array)
