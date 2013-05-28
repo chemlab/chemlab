@@ -1,15 +1,24 @@
+'''
+chemlab.core.system
+~~~~~~~~~~~~~~~~~~~
+
+Creating and manipulating the System class.
+'''
+from collections import Counter
+
 import numpy as np
+
 from .molecule import Atom, Molecule, guess_bonds
-from .attributes import NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr, MoleculeListAttr, BondsAttr
+from .attributes import (NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr,
+                         BondsAttr)
 from .serialization import json_to_data, data_to_json
 
-from collections import Counter
 from ..db import ChemlabDB
 cdb = ChemlabDB()
 masses = cdb.get("data", "massdict")
 
 from ..utils import overlapping_points
-from collections import namedtuple
+
 
 class MoleculeGenerator(object):
     def __init__(self, system):
@@ -21,9 +30,9 @@ class MoleculeGenerator(object):
             ret = []
             for i in ind:
                 ret.append(self.system.get_molecule(i))
-            
+
             return ret
-            
+
         if isinstance(key, int):
             return self.system.get_molecule(key)
 
@@ -38,119 +47,120 @@ class AtomGenerator(object):
             ret = []
             for i in ind:
                 ret.append(self.system.get_atom(i))
-            
+
             return ret
-            
+
         if isinstance(key, int):
             return self.system.get_atom(key)
-    
+
+
 class System(object):
     '''A data structure containing information of a set of *N* Molecules
     and *NA* Atoms.
-       
+
     **Parameters**
-    
+
     molecules: list of molecules
-       Molecules that constitute the System. The data **gets copied**    
+       Molecules that constitute the System. The data **gets copied**
        to the System, subsequent changes to the Molecule are not
        reflected in the System.
-    
+
     box_vectors: np.ndarray((3,3), dtype=float), optional
        You can specify a periodic box of another shape by giving 3 box vectors.
 
     The System class has attributes derived both from the Molecule and
     the Atom class.
-    
+
     .. py:attribute:: r_array
-       
+
        :type: np.ndarray((NA, 3), dtype=float)
        :derived from: Atom
-       
+
        Atomic coordinates.
-    
+
     .. py:attribute:: m_array
-        
+
        :type: np.ndarray(NA, dtype=float)
        :derived from: Atom
-       
+
        Atomic masses.
-    
+
     .. py:attribute:: type_array
-    
+
        :type: np.ndarray(NA, dtype=object) *array of str*
        :derived from: Atom
-    
+
        Array of  all the atomic symbols. It can be used to select
        certain atoms in a system.
 
        **Example**
-       
-       Suppose you have a box of water defined by the System *s*, to 
+
+       Suppose you have a box of water defined by the System *s*, to
        select all oxygen atoms you can use the numpy selection rules::
 
            >>> oxygens = s.type_array == 'O'
            # oxygens is an array of booleans of length NA where
            # each True corresponds to an oxygen atom i.e:
            # [True, False, False, True, False, False]
-       
+
        You can use the *oxygen* array to access other properties::
-    
-           >>> o_coordinates = s.r_array[oxygens] 
-           >>> o_indices = np.arange(s.n_atoms)[oxygens] 
-              
+
+           >>> o_coordinates = s.r_array[oxygens]
+           >>> o_indices = np.arange(s.n_atoms)[oxygens]
+
 
     .. py:attribute:: bonds
 
        :type: np.ndarray((NBONDS, 2), dtype=int)
        :derived from: Molecule
-        
+
        An array of 2d indices that specify the index of the bonded
        atoms.
-    
+
     .. py:attribute:: atom_export_array
-    
+
        :type: np.ndarray(NA, dtype=object) *array of dict*
        :derived from: Atom
-    
-    
+
+
     .. py:attribute:: mol_export
-    
+
        :type: np.ndarray(N, dtype=object) *array of dict*
-       :derived from: Molecule 
-       
+       :derived from: Molecule
+
        Export information relative to the molecule.
-    
+
     .. py:attribute:: box_vectors
-    
+
        :type: np.ndarray((3,3), dtype=float) or None
 
        Those are the three vectors that define of the periodic box of
        the system.
-    
+
        **Example**
-      
+
        To define an orthorombic box of size 3, 4, 5 nm::
-       
+
            >>> np.array([[3.0, 0.0, 0.0],  # Vector a
                          [0.0, 4.0, 0.0],  # Vector b
                          [0.0, 0.0, 5.0]]) # Vector c
 
     .. py:attribute:: n_mol
-       
+
        :type: int
 
        Number of molecules.
-    
+
     .. py:attribute:: n_atoms
-    
+
        :type: int
-       
+
        Number of atoms.
-    
+
     .. py:attribute:: mol_indices
-    
+
        :type: np.ndarray(N, dtype=int)
-    
+
        Gives the starting index for each molecule in the atomic
        arrays. For example, in a System comprised of 3 water
        molecules::
@@ -159,56 +169,50 @@ class System(object):
            [0, 3, 6]
            >>> s.type_array[0:3]
            ['O', 'H', 'H']
-    
-       This array is used internally to retrieve all the 
-       Molecule derived data. Do not modify unless you know what 
+
+       This array is used internally to retrieve all the
+       Molecule derived data. Do not modify unless you know what
        you're doing.
-    
+
     .. py:attribute:: mol_n_atoms
-         
+
        :type: np.ndarray(N, dtype=int)
-       
+
        Contains the number of atoms present in each molecule
-    
+
     '''
     attributes = [
         AtomicArrayAttr('type_array', 'type_array', np.object),
-        
         NDArrayAttr('r_array', 'r_array', np.float, 3),
-        
         AtomicArrayAttr('m_array', 'm_array',  np.float,
-            default=lambda s: np.array([masses[t] for t in s.type_array])),
-        
+                        default=lambda s: np.array([masses[t] for t in s.type_array])),
         AtomicArrayAttr('atom_export_array', 'atom_export_array', np.object,
             default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),
-        
         MoleculeArrayAttr('mol_export', 'export', np.object,
             default=lambda s: np.array([{} for i in range(s.n_mol)], dtype=np.object)),
-
         BondsAttr(),
-        
     ]
-    
+
     def __init__(self, molecules, box_vectors=None):
         n_mol = len(molecules)
         n_atoms = sum(m.n_atoms for m in molecules)
 
         # Initialize an empty system and fill it with molecules
         self._setup_empty(n_mol, n_atoms, box_vectors)
-        
+
         for mol in molecules:
             self.add(mol)
-        
+
     @classmethod
     def empty(cls, n_mol, n_atoms, box_vectors=None):
         '''Initialize an empty System containing *n_mol* Molecules and
         *n_atoms* Atoms. The molecules can be added by using the
         method :py:meth:`~chemlab.core.System.add`.
-        
+
         **Example**
-        
+
         How to initialize a system of 3 water molecules::
-        
+
             s = System.empty(3, 9)
             for i in range(3):
                 s.add(water)
@@ -217,7 +221,7 @@ class System(object):
         inst = cls.__new__(System)
         inst._setup_empty(n_mol, n_atoms, box_vectors)
         return inst
-        
+
     @classmethod
     def from_json(cls, string):
         """Create a System instance from a json string. Such strings
@@ -228,12 +232,12 @@ class System(object):
 
         kwargs = json_to_data(string)
         return cls.from_arrays(**kwargs)
-        
+
     def tojson(self):
         '''Serialize a System instance using json.
 
         .. seealso:: :py:meth:`chemlab.core.System.from_json`
-        
+
         '''
         return data_to_json(self.todict())
         
@@ -336,15 +340,14 @@ class System(object):
         
         if 'boxsize' in kwargs:
             raise Exception('boxsize is deprecated')
-        
-        
+
         box_vectors = kwargs.get('box_vectors', None)
 
         if box_vectors is not None:
             inst.box_vectors = np.array(box_vectors)
         else:
             inst.box_vectors = None
-        
+
         return inst
 
     def add(self, mol):
@@ -392,18 +395,18 @@ class System(object):
         # Shift the arrays
         for attr in self.attributes:
             attr.on_remove_molecules(self, indices)
-        
+
         # Now the hard part, change mol_indices and mol_n_atoms
         self.mol_n_atoms = np.delete(self.mol_n_atoms, indices)
-        
+
         size = len(self.mol_n_atoms)
         self.mol_indices = np.zeros(size, dtype=int)
-        for i,n in enumerate(self.mol_n_atoms[:-1]):
+        for i, n in enumerate(self.mol_n_atoms[:-1]):
             self.mol_indices[i+1] = self.mol_indices[i] + self.mol_n_atoms[i]
-        
+
         self.n_mol = len(self.mol_n_atoms)
         self.n_atoms = len(self.r_array)
-        
+
     def remove_atoms(self, indices):
         """Remove the atoms positioned at *indices*. The molecule
         containing the atom is removed as well.
@@ -413,7 +416,7 @@ class System(object):
         the first and last water molecules.
 
         **Parameters**
-        
+
         indices: np.ndarray((N,), dtype=int)
             Array of integers between 0 and System.n_atoms
 
@@ -421,7 +424,7 @@ class System(object):
 
         mol_indices = self.atom_to_molecule_indices(indices)
         self.remove_molecules(mol_indices)
-        
+
     def atom_to_molecule_indices(self, selection):
         '''Given the indices over atoms, return the indices over
         molecules. If an atom is selected, all the containing molecule
@@ -431,25 +434,24 @@ class System(object):
 
         selection: np.ndarray((N,), dtype=int) | np.ndarray((NATOMS,), dtype=book)
              Either an index array or a boolean selection array over the atoms
-        
+
         **Returns**
 
         np.ndarray((N,), dtype=int) an array of molecular indices.
 
         '''
         # Which atom belongs to which molecule
-        atomic_ids = _selection_to_index(selection)   
-    
+        atomic_ids = _selection_to_index(selection)
         molecule_ids = np.digitize(atomic_ids, self.mol_indices)-1
         molecule_ids = np.unique(molecule_ids)
         return molecule_ids
-        
+
     def mol_to_atom_indices(self, indices):
         '''Given the indices over molecules, return the indices over
         atoms.
-        
+
         **Parameters**
-        
+
         indices: np.ndarray((N,), dtype=int)
             Array of integers between 0 and System.n_mol
 
@@ -461,24 +463,24 @@ class System(object):
         '''
         rng = np.arange(self.n_atoms)
         ind = []
-        
+
         for i in indices:
             s = self.mol_indices[i]
             e = s + self.mol_n_atoms[i]
             ind.extend(rng[s:e])
-        
+
         return np.array(ind).flatten()
-            
+
     def walk(self):
         for i in range(self.n_mol):
             for j in range(self.mol_n_atoms[i]):
                 yield i, j, self.mol_indices[i]+j
-        
+
     def sort(self):
         '''
         Sort the molecules in the system according to their
         brute formula.
-        
+
         '''
         # We do have to sort by formula
         mol_formula = self.get_derived_molecule_array('formula')
@@ -487,11 +489,11 @@ class System(object):
         sorted_index = np.array(zip(*sorted_index)[0])
 
         self.reorder_molecules(sorted_index)
-        
+
     def reorder_molecules(self, new_order):
         """Reorder the molecules in the system according to
         *new_order*.
-        
+
         **Parameters**
 
         new_order: np.ndarray((NMOL,), dtype=int)
@@ -502,27 +504,26 @@ class System(object):
 
         old_indices = self.mol_indices.copy()
         old_n_atoms = self.mol_n_atoms.copy()
-        
+
         # Reorder the attributes
         for attr in self.attributes:
             attr.on_reorder_molecules(self, new_order)
 
         # Reorder the special arrays first
         offset = 0
-        for k,(o_i,o_n) in enumerate(zip(old_indices[new_order],
-                                         old_n_atoms[new_order])):
+        for k, (o_i, o_n) in enumerate(zip(old_indices[new_order],
+                                           old_n_atoms[new_order])):
             self.mol_indices[k] = offset
             self.mol_n_atoms[k] = o_n
             offset += o_n
-
 
     def get_derived_molecule_array(self, attribute):
         arr = []
         for i in range(self.n_mol):
             arr.append(getattr(self.get_molecule(i), attribute))
-        
+
         return np.array(arr)
-        
+
     def get_molecule(self, index):
         '''Get the Molecule instance corresponding to the molecule at
         *index*.
@@ -619,7 +620,7 @@ def subsystem_from_molecules(orig, selection):
     
     '''
     index = _selection_to_index(selection)
-        
+
     nmol = len(index)
     natom = np.sum(orig.mol_n_atoms[index])
     ret = System.empty(nmol, natom)
@@ -627,21 +628,21 @@ def subsystem_from_molecules(orig, selection):
     # Setting attributes
     for attr in orig.attributes:
         val = attr.selection(orig, index)
-        attr.from_array(ret, val) # assign ready-made array
-    
-    
+        attr.from_array(ret, val)  # assign ready-made array
+
     # Setting special arrays
     offset = 0
-    for k,(o_i,o_n) in enumerate(zip(orig.mol_indices[index],
+    for k, (o_i, o_n) in enumerate(zip(orig.mol_indices[index],
                                      orig.mol_n_atoms[index])):
         ret.mol_indices[k] = offset
         ret.mol_n_atoms[k] = o_n
         offset += o_n
 
     ret.box_vectors = orig.box_vectors
-    
+
     return ret
-    
+
+
 def subsystem_from_atoms(orig, selection):
     '''Generate a subsystem containing the atoms specified by
     *selection*. If an atom belongs to a molecule, the whole molecule is
@@ -671,12 +672,13 @@ def subsystem_from_atoms(orig, selection):
 
     '''
     # Which atom belongs to which molecule
-    atomic_ids = _selection_to_index(selection)    
-    
+    atomic_ids = _selection_to_index(selection)
+
     molecule_ids = np.digitize(atomic_ids, orig.mol_indices)-1
     molecule_ids = np.unique(molecule_ids)
 
     return subsystem_from_molecules(orig, molecule_ids)
+
 
 def _selection_to_index(selection):
     selection = np.array(selection)
@@ -684,12 +686,12 @@ def _selection_to_index(selection):
         index, = selection.nonzero()
     else:
         index = selection
-    
+
     if len(index) == 0:
         raise Exception('The selection you performed is void.')
     return index
-    
-    
+
+
 def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by merging *sysa* and *sysb*.
 
@@ -698,7 +700,7 @@ def merge_systems(sysa, sysb, bounding=0.2):
     is defined by the *bounding* parameter.
 
     **Parameters**
-    
+
     sysa: System
        First system
     sysb: System
@@ -718,7 +720,6 @@ def merge_systems(sysa, sysb, bounding=0.2):
 
         p = overlapping_points(sysb.r_array, sysa.r_array,
                                cutoff=bounding, periodic=periodicity)
-
 
         sel = np.ones(len(sysa.r_array), dtype=np.bool)
         sel[p] = False
@@ -742,4 +743,3 @@ def merge_systems(sysa, sysb, bounding=0.2):
     sysres.box_vectors = sysa.box_vectors
     
     return sysres
-

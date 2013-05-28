@@ -6,7 +6,7 @@ import numpy as np
 
 ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
                Extension('chemlab.utils.celllinkedlist',
-                        ['chemlab/utils/celllinkedlist.pyx']),
+                         ['chemlab/utils/celllinkedlist.pyx']),
                Extension('chemlab.utils.cdist',
                          ['chemlab/utils/cdist.pyx']),
                Extension('chemlab.graphics.renderers.utils', 
