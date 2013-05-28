@@ -9,22 +9,32 @@ import numpy as np
 from nose.tools import eq_, assert_equals
 from nose.plugins.attrib import attr
 from chemlab.graphics import display_system
-def test_molecule():
-    """Test initialization of the Molecule and Atom classes."""
-    # Default units for coordinates are Angstroms
-    
-    mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
-                    Atom("H", [-4.02, 2.49, 0.0]),
-                    Atom("H", [-5.32, 1.98, 1.0])],[])
-    
+
+
 def assert_npequal(a, b):
     assert np.array_equal(a, b), '\n{} != {}'.format(a, b)
+
 
 def assert_eqbonds(a, b):
     # compare bonds by sorting
     a = np.sort(np.sort(a, axis=0))
     b = np.sort(np.sort(b, axis=0))
     assert_npequal(a, b)
+
+
+def _make_water():
+    mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
+                    Atom("H", [-4.02, 2.49, 0.0]),
+                    Atom("H", [-5.32, 1.98, 1.0])],
+                   export={'hello': 1.0})
+    return mol
+
+
+class TestMolecule(object):
+    def test_init(self):
+        mol = _make_water()
+        assert_npequal(mol.type_array, ['O', 'H', 'H'])
+
 
 def _print_sysinfo(s):
     print "Atom Coordinates"
@@ -51,61 +61,65 @@ def _print_sysinfo(s):
     
     print s.atoms[0]
     print s.atoms[:]
-    
-def test_system():
-    wat = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
-                    Atom("H", [-4.02, 2.49, 0.0]),
-                    Atom("H", [-5.32, 1.98, 1.0])], export={'hello': 1.0})
 
+
+class TestSystem(object):
+    def _make_molecules(self):
+        wat = _make_water()
+        wat.r_array *= 0.1
+        # Initialization from empty
+        s = System.empty(4, 4*3)
+
+        mols = []
+        # Array to be compared
+        for _ in xrange(s.n_mol):
+            wat.r_array += 0.1
+            mols.append(wat)
+        return mols
+
+    def _assert_init(self, system):
+        assert_npequal(system.type_array, ['O', 'H', 'H',
+                                           'O', 'H', 'H',
+                                           'O', 'H', 'H',
+                                           'O', 'H', 'H',])
+
+        # Test mol indices
+        assert_npequal(system.mol_indices, [0, 3, 6, 9])
+    
+        # Test mol n_atoms
+        assert_npequal(system.mol_n_atoms, [3, 3, 3, 3])
+    
+        # Test get molecule entry
+        assert_npequal(system.molecules[0].type_array, ['O', 'H', 'H'])
+
+    def test_init(self):
+        mols = self._make_molecules()
+        system = System(mols)
+        self._assert_init(system)
+        
+    def test_from_empty(self):
+        mols = self._make_molecules()
+        system = System.empty(4, 4*3)
+        [system.add(mol) for mol in mols]
+        self._assert_init(system)
+
+def test_system():
+    # Initialize the system
+    wat = _make_water()
     wat.r_array *= 0.1
     # Initialization from empty
     s = System.empty(4, 4*3)
-    
+
     mols = []
-    
+
     # Array to be compared
-    for i in xrange(s.n_mol):
+    for _ in xrange(s.n_mol):
         wat.r_array += 0.1
-        
+
         s.add(wat)
         m  = wat.copy()
         mols.append(wat.copy())
-        
-    assert_npequal(s.type_array, ['O', 'H', 'H'] * 4)
-    cmp_array = np.array([[-0.39899998,  0.349     ,  0.1       ],
-                          [-0.302     ,  0.349     ,  0.1       ],
-                          [-0.43200002,  0.298     ,  0.2       ],
-                          [-0.29899998,  0.449     ,  0.2       ],
-                          [-0.202     ,  0.449     ,  0.2       ],
-                          [-0.33200002,  0.398     ,  0.3       ],
-                          [-0.19899998,  0.549     ,  0.3       ],
-                          [-0.102     ,  0.549     ,  0.3       ],
-                          [-0.23200002,  0.498     ,  0.4       ],
-                          [-0.09899998,  0.649     ,  0.4       ],
-                          [-0.002     ,  0.649     ,  0.4       ],
-                          [-0.13200002,  0.598     ,  0.5       ]])
 
-    assert np.allclose(s.r_array, cmp_array), '{} != {}'.format(s.r_array, cmp_array)
-    # Test mol indices
-    assert_npequal(s.mol_indices, [0, 3, 6, 9])
-    
-    # Test mol n_atoms
-    assert_npequal(s.mol_n_atoms, [3, 3, 3, 3])
-    
-    # Test get molecule entry
-    assert_npequal(s.molecules[0].type_array, ['O', 'H', 'H'])
-    
-    
-    # Printing just to test if there aren't any exception    
-    print "Init from Empty"
-    print "*" * 72
-    _print_sysinfo(s)
-    
-    print "Init Normal"
-    print "*" * 72
-    s = System(mols)
-    _print_sysinfo(s)
-    
     # 3 water molecules
     r_array = np.random.random((9, 3))
     type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']

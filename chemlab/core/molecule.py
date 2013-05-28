@@ -237,7 +237,7 @@ class Molecule(object):
     
     derived = ('formula',)
     
-    def __init__(self, atoms, export=None, bonds=None):
+    def __init__(self, atoms, bonds=None, export=None):
         self.n_atoms = len(atoms)
 
         
