@@ -348,6 +348,8 @@ class System(object):
         else:
             inst.box_vectors = None
 
+        inst.molecules = MoleculeGenerator(inst)
+        inst.atoms = AtomGenerator(inst)
         return inst
 
     def add(self, mol):

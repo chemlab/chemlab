@@ -22,6 +22,10 @@ def assert_eqbonds(a, b):
     assert_npequal(a, b)
 
 
+def assert_allclose(a, b):
+    assert np.allclose(a, b), '\n{} != {}'.format(a, b)
+
+
 def _make_water():
     mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
                     Atom("H", [-4.02, 2.49, 0.0]),
@@ -36,33 +40,6 @@ class TestMolecule(object):
         assert_npequal(mol.type_array, ['O', 'H', 'H'])
 
 
-def _print_sysinfo(s):
-    print "Atom Coordinates"
-    print s.r_array
-    
-    print "Atom Masses"
-    print s.m_array
-    
-    print "Atom Arrays"
-    print s.type_array
-    
-    print "Molecule Starting Indices"
-    print s.mol_indices
-    
-    print "Molecules' number of atoms"
-    print s.mol_n_atoms
-
-    print 'This an array with all center of masses'
-    print s.get_derived_molecule_array('center_of_mass')
-    
-    print 'Test Indexing of system.molecule'
-    print s.molecules[0]
-    print s.molecules[:], s.molecules[:-5]
-    
-    print s.atoms[0]
-    print s.atoms[:]
-
-
 class TestSystem(object):
     def _make_molecules(self):
         wat = _make_water()
@@ -74,7 +51,7 @@ class TestSystem(object):
         # Array to be compared
         for _ in xrange(s.n_mol):
             wat.r_array += 0.1
-            mols.append(wat)
+            mols.append(wat.copy())
         return mols
 
     def _assert_init(self, system):
@@ -83,6 +60,13 @@ class TestSystem(object):
                                            'O', 'H', 'H',
                                            'O', 'H', 'H',])
 
+        # Test atom coordinates
+        #print "Atom Coordinates"
+        #print s.r_array
+        
+        # Test atom masses
+        #print s.m_array
+        
         # Test mol indices
         assert_npequal(system.mol_indices, [0, 3, 6, 9])
     
@@ -91,6 +75,19 @@ class TestSystem(object):
     
         # Test get molecule entry
         assert_npequal(system.molecules[0].type_array, ['O', 'H', 'H'])
+
+        # Test derived property -- center of mass
+        assert_allclose(system.get_derived_molecule_array('center_of_mass'),
+                        [[-1.00621917, 0.05572538, 0.02237967],
+                         [-0.73978867, 0.07251013, 0.03916442],
+                         [-0.47335818, 0.08929488, 0.05594917],
+                         [-0.20692768, 0.10607963, 0.07273392]])
+
+        #print 'Test Indexing of system.molecule'
+        #print s.molecules[0]
+        #print s.molecules[:], s.molecules[:-5]
+        #print s.atoms[0]
+        #print s.atoms[:]
 
     def test_init(self):
         mols = self._make_molecules()
@@ -103,42 +100,33 @@ class TestSystem(object):
         [system.add(mol) for mol in mols]
         self._assert_init(system)
 
-def test_system():
-    # Initialize the system
-    wat = _make_water()
-    wat.r_array *= 0.1
-    # Initialization from empty
-    s = System.empty(4, 4*3)
-
-    mols = []
-
-    # Array to be compared
-    for _ in xrange(s.n_mol):
-        wat.r_array += 0.1
-
-        s.add(wat)
-        m  = wat.copy()
-        mols.append(wat.copy())
-
-    # 3 water molecules
-    r_array = np.random.random((9, 3))
-    type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
-    mol_indices = [0, 3, 6]
-    mol_n_atoms = [3, 3, 3]
-    s2 = System.from_arrays(r_array=r_array, type_array=type_array,
-                       mol_indices=mol_indices, mol_n_atoms=mol_n_atoms)
+    def test_from_arrays(self):
+        mols = self._make_molecules()
+        r_array = np.concatenate([m.r_array for m in mols])
+        type_array = np.concatenate([m.type_array for m in mols])
+        mol_indices = [0, 3, 6, 9]
+        system = System.from_arrays(r_array=r_array,
+                                    type_array=type_array,
+                                    mol_indices=mol_indices)
+        self._assert_init(system)
     
-    sub2 = subsystem_from_molecules(s2, np.array([0, 2]))
-    assert sub2.n_mol == 2
-    
-    
-    sub = subsystem_from_atoms(s2, np.array([True, True, False,
-                                             False, False, False,
-                                             False, False, False]))
-    assert sub.n_mol == 1
+    def test_subsystem_from_molecules(self):
+        mols = self._make_molecules()
+        system = System(mols)
+        subsystem = subsystem_from_molecules(system, np.array([0, 2]))
+        assert_equals(subsystem.n_mol, 2)
+
+    def test_subsystem_from_atoms(self):
+        mols = self._make_molecules()
+        system = System(mols)
+        sub = subsystem_from_atoms(system, np.array([True, True, False,
+                                                     False, False, False,
+                                                     False, False, False]))
+        assert_equals(sub.n_mol, 1)
+
 
 def test_system_remove():
-        # 3 water molecules
+    # 3 water molecules
     r_array = np.random.random((9, 3))
     type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
     bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]])
