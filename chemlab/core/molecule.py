@@ -240,25 +240,24 @@ class Molecule(object):
     def __init__(self, atoms, bonds=None, export=None):
         self.n_atoms = len(atoms)
 
-        
         for attr in self.attributes:
             setattr(self, attr.name,
-                    np.array([getattr(a, attr.fieldname) for a in atoms], dtype=attr.dtype))
+                    np.array([getattr(a, attr.fieldname)
+                              for a in atoms], dtype=attr.dtype))
             # Example:
             # self.r_array = np.array([a.r for a in atoms], dtype=np.float64)
-        
+
         # Extra data for exporting reasons
         if export:
             self.export = export
         else:
             self.export = {}
-        
+
         if bonds is None:
-            self.bonds = np.array([], dtype=object)
+            self.bonds = np.array([], dtype='int')
         else:
-            self.bonds = np.array(bonds, dtype=object)
-        
-        
+            self.bonds = np.array(bonds, dtype='int')
+
     def move_to(self, r):
         '''Translate the molecule to a new position *r*.
         '''

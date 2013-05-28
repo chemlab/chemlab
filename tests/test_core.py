@@ -30,6 +30,7 @@ def _make_water():
     mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
                     Atom("H", [-4.02, 2.49, 0.0]),
                     Atom("H", [-5.32, 1.98, 1.0])],
+                   bonds=[[0, 1], [0, 2]],
                    export={'hello': 1.0})
     return mol
 
@@ -83,6 +84,12 @@ class TestSystem(object):
                          [-0.47335818, 0.08929488, 0.05594917],
                          [-0.20692768, 0.10607963, 0.07273392]])
 
+        # Test bonds
+        assert_eqbonds(system.bonds, [[0, 1], [0, 2],
+                                      [3, 4], [3, 5],
+                                      [6, 7], [6, 8],
+                                      [9, 10], [9, 11]])
+        
         #print 'Test Indexing of system.molecule'
         #print s.molecules[0]
         #print s.molecules[:], s.molecules[:-5]
@@ -105,9 +112,13 @@ class TestSystem(object):
         r_array = np.concatenate([m.r_array for m in mols])
         type_array = np.concatenate([m.type_array for m in mols])
         mol_indices = [0, 3, 6, 9]
+        bonds = np.concatenate([m.bonds + 3*i for i, m in enumerate(mols)])
+        
         system = System.from_arrays(r_array=r_array,
                                     type_array=type_array,
-                                    mol_indices=mol_indices)
+                                    mol_indices=mol_indices,
+                                    bonds=bonds)
+        
         self._assert_init(system)
     
     def test_subsystem_from_molecules(self):
@@ -124,7 +135,20 @@ class TestSystem(object):
                                                      False, False, False]))
         assert_equals(sub.n_mol, 1)
 
-
+    def test_remove_atoms(self):
+        # This will remove the first and last molecules
+        mols = self._make_molecules()
+        system = System(mols)        
+        system.remove_atoms([0, 1, 11])
+        
+        assert_eqbonds(system.bonds,
+                       [[0, 1], [0, 2],
+                        [3, 4], [3, 5]])
+        assert_npequal(system.type_array,
+                       np.array(['O', 'H', 'H', 'O', 'H', 'H'],
+                                dtype='object'))
+        
+        
 def test_system_remove():
     # 3 water molecules
     r_array = np.random.random((9, 3))
