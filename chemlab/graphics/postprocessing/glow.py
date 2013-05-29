@@ -200,7 +200,7 @@ class GlowEffect(object):
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
+            print("Problem")
             return False
 
         glBindFramebuffer(GL_FRAMEBUFFER, self.glow2_fb)
@@ -221,5 +221,5 @@ class GlowEffect(object):
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
+            print("Problem")
             return False

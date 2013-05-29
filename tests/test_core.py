@@ -1,7 +1,7 @@
 """Test core types like Molecule and Atom.
 
 """
-from chemlab import Molecule, Atom
+from chemlab.core import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import merge_systems
 from chemlab.core import crystal, random_lattice_box
@@ -50,7 +50,7 @@ class TestSystem(object):
 
         mols = []
         # Array to be compared
-        for _ in xrange(s.n_mol):
+        for _ in range(s.n_mol):
             wat.r_array += 0.1
             mols.append(wat.copy())
         return mols
@@ -262,6 +262,7 @@ def test_bond_guessing():
     from chemlab.io import datafile
 
     mol = datafile('tests/data/3ZJE.pdb').read('molecule')
+    print(mol.r_array)
     mol.guess_bonds()
     assert mol.bonds.size > 0
 
@@ -310,22 +311,22 @@ def test_extending():
     s = MySystem([na, cl])
 
     na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
-    print na_atom.copy()
+    print(na_atom.copy())
 
-    print s.v_array
+    print(s.v_array)
 
     # Try to adapt
     orig_s = s.astype(System)
     s = orig_s.astype(MySystem) # We lost the v information by converting back and forth
 
-    print orig_s, s
-    print s.v_array
+    print(orig_s, s)
+    print(s.v_array)
 
     # Adapt for molecule and atoms
-    print type(na.astype(Molecule))
+    print(type(na.astype(Molecule)))
 
     na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
-    print type(na_atom.astype(Atom))
+    print(type(na_atom.astype(Atom)))
 
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])

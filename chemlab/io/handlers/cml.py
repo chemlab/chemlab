@@ -82,5 +82,5 @@ class CmlIO(IOHandler):
                 bd.attrib = dict(atomRefs2='a{}  a{}'.format(i, j),
                                  order='1')
                 
-            self.fd.write(ET.tostring(x_mol))
+            self.fd.write(str(ET.tostring(x_mol)))
     

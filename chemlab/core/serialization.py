@@ -10,7 +10,7 @@ def isnamedtuple(obj):
            and callable(obj._asdict)
 
 def serialize(data):
-    if data is None or isinstance(data, (bool, int, long, float, basestring)):
+    if data is None or isinstance(data, (bool, int, float, str)):
         return data
     if isinstance(data, list):
         return [serialize(val) for val in data]
@@ -23,8 +23,8 @@ def serialize(data):
             "fields": list(data._fields),
             "values": [serialize(getattr(data, f)) for f in data._fields]}}
     if isinstance(data, dict):
-        if all(isinstance(k, basestring) for k in data):
-            return {k: serialize(v) for k, v in data.iteritems()}
+        if all(isinstance(k, str) for k in data):
+            return {k: serialize(v) for k, v in data.items()}
         return {"py/dict": [[serialize(k), serialize(v)] for k, v in data.iteritems()]}
     if isinstance(data, tuple):
         return {"py/tuple": [serialize(val) for val in data]}

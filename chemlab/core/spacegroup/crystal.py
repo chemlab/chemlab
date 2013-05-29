@@ -236,5 +236,5 @@ def crystal(positions, molecules, group,
 # Self test
 if __name__ == '__main__':
     import doctest
-    print 'doctest: ', doctest.testmod()
+    #print 'doctest: ', doctest.testmod()
     

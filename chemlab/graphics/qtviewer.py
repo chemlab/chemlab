@@ -28,7 +28,6 @@ class FpsDraw(object):
         self.cur = time.time()
         elapsed = self.cur - self.prev
         self.prev = self.cur
-        print 1/elapsed
 
 
 class QtViewer(QMainWindow):

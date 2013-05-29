@@ -3,9 +3,8 @@
 '''
 from .base import EntryNotFound, AbstractDB
 from ..libs import cirpy
-from StringIO import StringIO
 
-
+from io import BytesIO
 
 class CirDB(AbstractDB):
     """Get 3D structure of arbitrary molecules given a string
@@ -31,7 +30,7 @@ class CirDB(AbstractDB):
         if feature == "molecule":
             result = cirpy.resolve(key, "sdf", get3d=True)
             if result:
-                fd = StringIO(result)
+                fd = BytesIO(result.encode('utf-8'))
                 return MolIO(fd).read("molecule")
                 
             else:

@@ -38,20 +38,20 @@ def test_chemspider():
     
     name = 'fullerene'
     mol = db.get('molecule', name)
-    print db.get('inchi', name)
-    print db.get('molecularformula', name)
-    print db.get('imageurl', name)
-    print db.get('smiles', name)
-    print db.get('averagemass', name)
-    print db.get('nominalmass', name)
-    print db.get('molecularweight', name)
-    print db.get('inchikey', name)
-    print db.get('molecularformula', name)
-    print db.get('alogp', name)
-    print db.get('xlogp', name)
-    print db.get('image', name)
-    print db.get('mol2d', name)
-    print db.get('commonname', name)
+    print((db.get('inchi', name)))
+    print((db.get('molecularformula', name)))
+    print((db.get('imageurl', name)))
+    print((db.get('smiles', name)))
+    print((db.get('averagemass', name)))
+    print((db.get('nominalmass', name)))
+    print((db.get('molecularweight', name)))
+    print((db.get('inchikey', name)))
+    print((db.get('molecularformula', name)))
+    print((db.get('alogp', name)))
+    print((db.get('xlogp', name)))
+    print((db.get('image', name)))
+    print((db.get('mol2d', name)))
+    print((db.get('commonname', name)))
 
 def test_toxnet():
     from chemlab.db.toxnetdb import ToxNetDB
@@ -60,8 +60,8 @@ def test_toxnet():
     testcompounds = ['methane', 'ethane', 'propane', 'butane',
                      'sodium chloride']
     for c in testcompounds:
-        print 'Melting point', c, db.get('melting point', c)
-        print 'Boiling point', c, db.get('boiling point', c)
+        print(('Melting point', c, db.get('melting point', c)))
+        print(('Boiling point', c, db.get('boiling point', c)))
 
     
     #db.get('boiling point', 'merda')

@@ -72,7 +72,7 @@ def cellpar_to_cell(cellpar, ab_normal=(0,0,1), a_direction=None):
 
     # Express va, vb and vc in the X,Y,Z-system
     alpha, beta, gamma = 90., 90., 90.
-    if isinstance(cellpar, (int, long, float)):
+    if isinstance(cellpar, (int, float)):
         a = b = c = cellpar
     elif len(cellpar) == 1:
         a = b = c = cellpar[0]
@@ -109,5 +109,5 @@ def metric_from_cell(cell):
 
 if __name__ == '__main__':
     import doctest
-    print 'doctest: ', doctest.testmod()
+    #print 'doctest: ', doctest.testmod()
 
