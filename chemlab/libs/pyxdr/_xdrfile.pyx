@@ -29,7 +29,7 @@ cdef class XTCReader:
     
     def __init__(self,path):
         cdef int rc
-        path = bytes(path, 'utf-8') # Python 3
+        path = path.encode('utf-8') # Python 3
         
         rc = _xdrfile.read_xtc_natoms(path, &self.natoms)
         if rc != 0:

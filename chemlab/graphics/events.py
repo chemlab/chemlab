@@ -31,3 +31,6 @@ class Model(object):
     
     def __init__(self):
         self._callbacks = {}
+
+# Applying metaclass in a python2/python3 compatible fashion
+Model = EventMeta('Model', (Model,), {})
