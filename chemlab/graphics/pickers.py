@@ -84,12 +84,13 @@ class CylinderPicker(object):
         # The center of the bounding sphere
         centers = 0.5 * (bounds[:, 1, :] + bounds[:, 0, :])
         # The radii of the bounding spheres
-        radii = 0.5 * np.sqrt((self.directions**2).sum(axis=1))
+        sph_radii = 0.5 * np.sqrt((self.directions**2).sum(axis=1)) + radii
         
+        self.lengths = np.sqrt((self.directions**2).sum(axis=1))
         # Normalize the directions        
-        self.directions /= np.sqrt((self.directions**2).sum(axis=1))[:, np.newaxis]
+        self.directions /= self.lengths[:, np.newaxis]
         
-        self._bounding_sphere = SpherePicker(widget, centers, radii)
+        self._bounding_sphere = SpherePicker(widget, centers, sph_radii)
 
     def _origin_ray(self, x, y):
         # X and Y are normalized coordinates
@@ -123,24 +124,23 @@ class CylinderPicker(object):
             # 1) Change frame of reference of the origin and direction
             # Rotation matrix
             cyl_direction = self.directions[i]
+            cyl_length = self.lengths[i]
             
-            normal=  np.cross(cyl_direction, z_axis)
-            M = rotation_matrix(
-                angle_between_vectors(cyl_direction, z_axis),
-                normal)[:3, :3].T
+            angle = angle_between_vectors(cyl_direction, z_axis)
+            normal = np.cross(cyl_direction, z_axis)
+            M = rotation_matrix(angle, normal)[:3, :3].T
             
             cyl_origin = self.origins[i]
             origin_p = M.dot(origin - cyl_origin)
             direction_p = M.dot(direction)
-            
-            origin_p[-1] = 0.0
-            direction_p[-1] = 0.0
+
             # 2) Intersection between ray and z-aligned cylinder
             cyl_radius = self.radii[i]
             
-            a = direction_p.dot(direction_p)
-            b = 2.0 * origin_p.dot(direction_p)
-            c = origin_p.dot(origin_p) - cyl_radius*cyl_radius
+
+            a = direction_p[:2].dot(direction_p[:2])
+            b = 2.0 * origin_p[:2].dot(direction_p[:2])
+            c = origin_p[:2].dot(origin_p[:2]) - cyl_radius*cyl_radius
             det = b**2 - 4*a*c
             
             if det >= 0.0:
@@ -150,14 +150,16 @@ class CylinderPicker(object):
                 new_point = origin + t * direction
                 # Now, need to check if the intersection point is
                 # outside of the caps
-                end_cyl = cyl_origin + cyl_direction
+                end_cyl = cyl_origin + cyl_direction * cyl_length
                 
-                outside_top = np.dot(new_point - end_cyl, -cyl_direction)
-                if outside_top < 0.0:
+                outside_top = np.dot(new_point - end_cyl, cyl_direction)
+                if outside_top > 0.0:
+                    # Discard
                     continue
-                    
+                
                 outside_bottom = np.dot(new_point - cyl_origin, cyl_direction)
-                if outside_bottom > 0.0:
+                if outside_bottom < 0.0:
+                    # Discard
                     continue
                 
                 intersections.append(i)
