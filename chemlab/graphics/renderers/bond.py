@@ -45,6 +45,9 @@ class BondRenderer(AbstractRenderer):
                                  default_atom_map['Xx']))
 
         self.radii = radii
+        self.colors_a = np.array(colors_a, 'uint8')
+        self.colors_b = np.array(colors_b, 'uint8')
+        
         if style == 'cylinders':
             self.cr1 = CylinderRenderer(widget, bounds_a, radii, colors_a)
             self.cr2 = CylinderRenderer(widget, bounds_b, radii, colors_b)
@@ -60,6 +63,7 @@ class BondRenderer(AbstractRenderer):
                                                 colors_b, shading=shading)
         else:
             raise Exception("Available backends: cylinders, lines")
+    
     def _compute_bounds(self, r_array, bonds):
         starts = r_array[bonds[:,0]]
         ends = r_array[bonds[:,1]]
@@ -83,3 +87,10 @@ class BondRenderer(AbstractRenderer):
         bounds_a, bounds_b = self._compute_bounds(r_array, self.bonds)
         self.cr1.update_bounds(bounds_a)
         self.cr2.update_bounds(bounds_b)
+
+    def update_colors(self, colors_a, colors_b):
+        self.colors_a = np.array(colors_a, 'uint8')
+        self.colors_b = np.array(colors_b, 'uint8')
+        
+        self.cr1.update_colors(self.colors_a)
+        self.cr2.update_colors(self.colors_b)

@@ -38,6 +38,7 @@ class BallAndStickRepresentation(object):
                                                       system.bonds, system.r_array,
                                                       system.type_array, style='impostors')
         self.bond_radii = self.bond_renderer.radii
+        self.bond_colors = self.bond_renderer.colors_a, self.bond_renderer.colors_b
         
         # For highlight, we'll see
         self.viewer.add_post_processing(GlowEffect)
@@ -76,16 +77,23 @@ class BallAndStickRepresentation(object):
         
         sel = self.selection_state.atom_selection
         cols = self.atom_colors.copy()
-        cols[sel, -1] = 10
+        cols[sel, -1] = 50
         self.atom_renderer.update_colors(cols)
-        print('atom_selected', self.selection_state.atom_selection)
-        
         self.viewer.widget.update()
     
     def on_bond_selection_changed(self):
         # When selection state changes, the view update itself
         print('bond_selected', self.selection_state.bond_selection)
-
+        sel = self.selection_state.bond_selection
+        cols_a, cols_b = self.bond_colors
+        cols_a = cols_a.copy()
+        cols_b = cols_b.copy()
+        
+        cols_a[sel, -1] = 50
+        cols_b[sel, -1] = 50
+        
+        self.bond_renderer.update_colors(cols_a, cols_b)
+        
     def on_click(self, x, y):
         # This is basically our controller
         x, y = self.viewer.widget.screen_to_normalized(x, y)
