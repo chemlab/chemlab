@@ -3,43 +3,12 @@ from OpenGL.GL import (shaders,
                        glUseProgram, GL_FALSE, GLfloat, GL_TRUE)
 from ctypes import POINTER
 
-from ..shaders import set_uniform
+from ..shaders import set_uniform, compileShader
 import numpy as np
 import pkgutil
 
-from OpenGL.GL import *
 
-def compileShader( source, shaderType ):
-    """Compile shader source of given type
-    
-    source -- GLSL source-code for the shader
-    shaderType -- GLenum GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, etc,
-    
-    returns GLuint compiled shader reference
-    raises RuntimeError when a compilation failure occurs
-    """
-    if isinstance(source, str):
-        source = [source]
-    elif isinstance(source, bytes):
-        source = [source.decode('utf-8')]
-    
-    shader = glCreateShader(shaderType)
-    glShaderSource(shader, source)
-    glCompileShader(shader)
-    result = glGetShaderiv(shader, GL_COMPILE_STATUS)
-    
-    if not(result):
-        # TODO: this will be wrong if the user has 
-        # disabled traditional unpacking array support.
-        raise RuntimeError(
-            """Shader compile failure (%s): %s"""%(
-                result,
-                glGetShaderInfoLog( shader ),
-            ),
-            source,
-            shaderType,
-        )
-    return shader
+
 
 class AbstractRenderer(object):
     '''AbstractRenderer is the standard interface for renderers. Each
