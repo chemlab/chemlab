@@ -168,19 +168,21 @@ def test_cylinder_impostor_renderer():
     #radii = np.random.rand(n)/10.0
     #colors = np.array([blue] * n)
 
-    import time
     v = QtViewer()
-    t0 = time.time()
-    ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)
-    #ar = v.add_renderer(CylinderRenderer, bounds, radii* 2.0, colors)
+    ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)    
     sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 0], radii, colors)
     sr = v.add_renderer(SphereImpostorRenderer, bounds[:, 1], radii, colors)
-    print time.time() - t0
-
-    #ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
-    #ar.update_bounds(bounds)
-
     v.run()
+    
+    # Test updates
+    ar.update_radii([0.1])
+    bounds[0,0] -= 1.0
+    ar.update_bounds(bounds)
+    ar.update_colors([green])
+    v.run()
+    
+    # Test emptiness
+    ar.change_attributes([], [], [])
 
 
 def test_bond_renderer():

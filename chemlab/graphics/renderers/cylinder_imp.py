@@ -7,32 +7,54 @@ from OpenGL.GL import *
 import numpy as np
 
 class CylinderImpostorRenderer(ShaderBaseRenderer):
-    """
+    """Render pixel-perfect cylinders by using raytraced impostors.
+    
+    This method provide a very fast way to render cylinders by using
+    an advanced shader program. It should be the preferred way to
+    render cylinders.
 
     """
-    def __init__(self, viewer, bounds, radii, colors, shading='phong'):
+    
+    def __init__(self, widget, bounds, radii, colors, shading='phong'):
         vert = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                               "cylinderimp.vert")
         frag = pkgutil.get_data("chemlab.graphics.renderers.shaders",
                                                 "cylinderimp.frag")
         
-        super(CylinderImpostorRenderer, self).__init__(viewer, vert, frag)
-        # We need to do it first for 1 cylinder
-        self.bounds = bounds
-        self.radii = radii
-        self.colors = colors
-        self.n_cylinders = len(bounds)
+        super(CylinderImpostorRenderer, self).__init__(widget, vert, frag)
         self.shading = shading
-        
         self.ldir = np.array([0.0, 0.0, 10.0, 1.0])
+        self.widget = widget
 
+        self.change_attributes(bounds, radii, colors)
+        self.widget.update()
+
+    def change_attributes(self, bounds, radii, colors):
+        """Reinitialize the buffers, to accomodate the new
+        attributes. This is used to change the number of cylinders to
+        be displayed.
+
+        """
+        
+        self.n_cylinders = len(bounds)
+        self.is_empty = True if self.n_cylinders == 0 else False
+        
+        if self.is_empty:
+            self.bounds = bounds
+            self.radii = radii
+            self.colors = colors
+            return # Do nothing
+        
         # We pass the starting position 8 times, and each of these has
         # a mapping to the bounding box corner.
-        vertices = np.repeat(bounds[:, 0], 36, axis=0).astype('float32')
-        directions = np.repeat(bounds[:, 1] - bounds[:, 0],
-                               36, axis=0).astype('float32')
-        colors = np.repeat(colors, 36, axis=0).astype('uint8')
-        radii = np.repeat(radii, 36, axis=0).astype('float32')
+        self.bounds = np.array(bounds, dtype='float32')
+        vertices, directions = self._gen_bounds(self.bounds) 
+        
+        self.radii = np.array(radii, dtype='float32')
+        prim_radii = self._gen_radii(self.radii)
+
+        self.colors = np.array(colors, dtype='uint8')
+        prim_colors = self._gen_colors(self.colors)
         
         local = np.array([
            # First face -- front
@@ -97,8 +119,8 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self._directions_vbo = VertexBuffer(directions, GL_DYNAMIC_DRAW)
         
         self._local_vbo = VertexBuffer(local,GL_DYNAMIC_DRAW)
-        self._color_vbo = VertexBuffer(colors, GL_DYNAMIC_DRAW)
-        self._radii_vbo = VertexBuffer(radii, GL_DYNAMIC_DRAW)
+        self._color_vbo = VertexBuffer(prim_colors, GL_DYNAMIC_DRAW)
+        self._radii_vbo = VertexBuffer(prim_radii, GL_DYNAMIC_DRAW)
 
     def setup_shader(self):
         glUseProgram(self.shader)
@@ -126,9 +148,11 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
                'toon': 1}[self.shading]
         
         set_uniform(self.shader, 'shading_type', '1i', shd)
-
         
     def draw(self):
+        if self.is_empty:
+            return # Do nothing
+
         self.setup_shader()
         
         local_attr = glGetAttribLocation(self.shader,
@@ -168,12 +192,41 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glUseProgram(0)
+
         
-    def update_bounds(self, bounds):
+    def _gen_bounds(self, bounds):
         vertices = np.repeat(bounds[:, 0], 36, axis=0).astype('float32')
         directions = np.repeat(bounds[:, 1] - bounds[:, 0],
                                36, axis=0).astype('float32')
-
-        self._verts_vbo = VertexBuffer(vertices,GL_DYNAMIC_DRAW)
-        self._directions_vbo = VertexBuffer(directions, GL_DYNAMIC_DRAW)
+        return vertices, directions
         
+    def _gen_radii(self, radii):
+        return np.repeat(radii, 36, axis=0).astype('float32')
+        
+    def _gen_colors(self, colors):
+        return np.repeat(colors, 36, axis=0).astype('uint8')
+        
+    def update_bounds(self, bounds):
+        '''Update the bounds inplace'''
+        self.bounds = np.array(bounds, dtype='float32')
+        vertices, directions = self._gen_bounds(self.bounds) 
+        
+        self._verts_vbo.set_data(vertices)
+        self._directions_vbo.set_data(directions)
+        self.widget.update()
+        
+    def update_radii(self, radii):
+        '''Update the radii inplace'''
+        self.radii = np.array(radii, dtype='float32')
+        prim_radii = self._gen_radii(self.radii)
+        
+        self._radii_vbo.set_data(prim_radii)
+        self.widget.update()
+
+    def update_colors(self, colors):
+        '''Update the colors inplace'''
+        self.colors = np.array(colors, dtype='uint8')
+        prim_colors = self._gen_colors(self.colors)
+        
+        self._color_vbo.set_data(prim_colors)
+        self.widget.update()
