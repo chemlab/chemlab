@@ -13,7 +13,7 @@ import numpy.linalg as LA
 import os
 from random import uniform
 from ..transformations import normalized
-from ..shaders import set_uniform
+from ..shaders import set_uniform, compileShader
 
 class SSAOEffect(object):
     
@@ -27,8 +27,8 @@ class SSAOEffect(object):
         frag = open(os.path.join(curdir, 'shaders', 'ssao.frag')).read()        
         
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         
         self.ssao_program = shaders.compileProgram(vertex, fragment)
 
@@ -37,8 +37,8 @@ class SSAOEffect(object):
         frag = open(os.path.join(curdir, 'shaders', 'ssao_blur.frag')).read()        
         
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         self.blur_program = shaders.compileProgram(vertex, fragment)
         
         # # Create the framebuffer for the scene to draw on
@@ -107,10 +107,10 @@ class SSAOEffect(object):
         
         glUseProgram(self.ssao_program)
         
-        qd_id = glGetUniformLocation(self.ssao_program, "quad_texture")
-        normal_id = glGetUniformLocation(self.ssao_program, "normal_texture")
-        depth_id = glGetUniformLocation(self.ssao_program, "depth_texture")
-        noise_id = glGetUniformLocation(self.ssao_program, "noise_texture")
+        qd_id = glGetUniformLocation(self.ssao_program, b"quad_texture")
+        normal_id = glGetUniformLocation(self.ssao_program, b"normal_texture")
+        depth_id = glGetUniformLocation(self.ssao_program, b"depth_texture")
+        noise_id = glGetUniformLocation(self.ssao_program, b"noise_texture")
         
         proj = self.widget.camera.projection
         i_proj = LA.inv(proj)
@@ -142,21 +142,21 @@ class SSAOEffect(object):
         glUniform1i(noise_id, 3)
 
         # Set up the random kernel
-        random_id = glGetUniformLocation(self.ssao_program, "random_kernel")
+        random_id = glGetUniformLocation(self.ssao_program, b"random_kernel")
         glUniform3fv(random_id, self.kernel_size, self.kernel)
         
-        kernel_size_id = glGetUniformLocation(self.ssao_program, "kernel_size")
+        kernel_size_id = glGetUniformLocation(self.ssao_program, b"kernel_size")
         glUniform1i(kernel_size_id, self.kernel_size)
         
         kernel_radius_id = glGetUniformLocation(self.ssao_program,
-                                                "kernel_radius")
+                                                b"kernel_radius")
         glUniform1f(kernel_radius_id, self.kernel_radius)
         ssao_power_id = glGetUniformLocation(self.ssao_program,
-                                                "ssao_power")
+                                                b"ssao_power")
         glUniform1f(ssao_power_id, self.ssao_power)
         
         # Set resolution
-        res_id = glGetUniformLocation(self.ssao_program, "resolution")
+        res_id = glGetUniformLocation(self.ssao_program, b"resolution")
         glUniform2f(res_id, self.widget.width(), self.widget.height())
 
         self.render_quad()
@@ -171,10 +171,10 @@ class SSAOEffect(object):
 
         self.ssao_texture.bind()
         
-        qd_id = glGetUniformLocation(self.blur_program, "quad_texture")
+        qd_id = glGetUniformLocation(self.blur_program, b"quad_texture")
         glUniform1i(qd_id, 0)
         
-        res_id = glGetUniformLocation(self.blur_program, "resolution")
+        res_id = glGetUniformLocation(self.blur_program, b"resolution")
         glUniform2f(res_id, self.widget.width(), self.widget.height())
         
         self.render_quad()
