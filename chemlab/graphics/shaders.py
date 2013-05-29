@@ -2,7 +2,7 @@ from OpenGL.GL import *
 import numpy as np
 
 def set_uniform(prog, uni, typ, value):
-    location = glGetUniformLocation(prog, uni)
+    location = glGetUniformLocation(prog, uni.encode('utf-8'))
     if typ == '1f':
         glUniform1f(location, value)
     elif typ == '3f':

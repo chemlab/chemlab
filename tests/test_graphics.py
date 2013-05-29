@@ -142,7 +142,7 @@ def test_cylinder_renderer():
     import time
     t0 = time.time()
     ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
-    print time.time() - t0
+    print(time.time() - t0)
 
     #ar.update_bounds(bounds)
 
@@ -286,8 +286,8 @@ def test_unproject():
         x, y = 2*float(x)/w - 1.0, 1.0 - 2*float(y)/h
 
         start =  v.widget.camera.unproject(x,y,-1.0)
-        print x,y, 0.0
-        print start
+        print(x,y, 0.0)
+        print(start)
         vectors[1] = [0.0, 0.0, 0.0]
         vectors[0] = start
 
@@ -515,8 +515,8 @@ def test_pickers():
         x, y = v.widget.screen_to_normalized(evt.x(), evt.y())
         a_i, a_d = sp.pick(x, y)
         b_i, b_d = cp.pick(x, y)
-        print 'A', a_d
-        print 'B', b_d
+        print('A', a_d)
+        print('B', b_d)
 
     v.widget.clicked.connect(on_click)
 
@@ -577,7 +577,7 @@ def test_molecular_viewer():
         if len(v.representation.selection) == 2:
             i, j = v.representation.selection
             distsq = ((mol.r_array[j] - mol.r_array[i])**2).sum()
-            print 'distance between', i, j, np.sqrt(distsq)
+            print('distance between', i, j, np.sqrt(distsq))
 
     def select_all_atoms():
         which = v.representation.selection[0]

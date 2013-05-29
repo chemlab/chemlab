@@ -47,15 +47,7 @@ class AtomRenderer(AbstractRenderer):
                  shading='phong'):
         radii = []
         colorlist = []
-        
-        color_scheme = color_scheme.copy()
-        # Making the guy case_insensitive
-        for k,v in color_scheme.items():
-            color_scheme[k.lower()] = v
-            color_scheme[k.upper()] = v
-        
         natoms = len(r_array)
-        
 
         for i in range(natoms):
             radii.append(radii_map[type_array[i]])

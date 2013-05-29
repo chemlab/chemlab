@@ -131,9 +131,9 @@ class Sphere(object):
         dtheta = 2*np.pi/self.meridians
         
         self.vertices.append(tip)
-        for j in xrange(1, self.parallels):
+        for j in range(1, self.parallels):
             point_z = self.radius*np.cos(dphi*j)
-            for i in xrange(self.meridians+1):
+            for i in range(self.meridians+1):
                 point_x = np.sin(dphi*j)*np.cos(i*dtheta)*self.radius
                 point_y = np.sin(dphi*j)*np.sin(i*dtheta)*self.radius
                 self.vertices.append(np.array([point_x, point_y, point_z]))
@@ -156,15 +156,15 @@ class Sphere(object):
         m = self.meridians
         
         # Cap of the sphere
-        cap_i = [np.array([0, 1, 2]) + np.array([0, 1, 1])*i for i in xrange(m)] # Up to the last point minus 1
+        cap_i = [np.array([0, 1, 2]) + np.array([0, 1, 1])*i for i in range(m)] # Up to the last point minus 1
         cap_i = np.array(cap_i).flatten()
         indexed = cap_i
         
         # Body of the sphere
-        for k in xrange(self.parallels-2):
+        for k in range(self.parallels-2):
             offset = 1 + k*(m+1)
             body_0 = offset + np.array([0, m+1, 1, 1, m + 1, m + 2]) # first two triangles
-            body_i = np.concatenate([body_0 + i for i in xrange(m)])
+            body_i = np.concatenate([body_0 + i for i in range(m)])
             indexed = np.concatenate((indexed, body_i))
         
         # Bottom of the sphere
@@ -173,7 +173,7 @@ class Sphere(object):
         last = len(self.vertices) - 1
         bot_i = [np.array([last, 1 + offset, 2 + offset]) +
                  np.array([0, 1, 1])*i for i
-                 in xrange(m)]
+                 in range(m)]
         indexed = np.concatenate((indexed, np.array(bot_i).flatten()))
         self.tri_vertex = self.vertices[indexed].flatten()
         self.tri_normals = self.normals[indexed].flatten()
