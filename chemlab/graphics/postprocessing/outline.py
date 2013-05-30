@@ -1,7 +1,7 @@
 '''Outline effect'''
 
 from ..textures import Texture
-from ..shaders import set_uniform
+from ..shaders import set_uniform, compileShader
 
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
@@ -18,8 +18,8 @@ class OutlineEffect(object):
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
         frag = open(os.path.join(curdir, 'shaders', 'outline.frag')).read()        
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         
         if kind not in ['depthnormal', 'depthonly', 'normalonly']:
             raise Exception('The kind of outline should be choosen between depthnormal, depthonly and normalonly')
@@ -43,13 +43,13 @@ class OutlineEffect(object):
         set_uniform(self.quad_program, 'inv_projection', 'mat4fv',
                     inv_projection)
         
-        normal_id = glGetUniformLocation(self.quad_program, "s_norm")
+        normal_id = glGetUniformLocation(self.quad_program, b"s_norm")
         glUniform1i(normal_id, 0)        
         
-        depth_id = glGetUniformLocation(self.quad_program, "s_depth")
+        depth_id = glGetUniformLocation(self.quad_program, b"s_depth")
         glUniform1i(depth_id, 1)
 
-        color_id = glGetUniformLocation(self.quad_program, "s_color")
+        color_id = glGetUniformLocation(self.quad_program, b"s_color")
         glUniform1i(color_id, 2)
         
         # Setting up the texture
@@ -63,7 +63,7 @@ class OutlineEffect(object):
         texturedict['color'].bind()
         
         # Set resolution
-        res_id = glGetUniformLocation(self.quad_program, "texcoordOffset")
+        res_id = glGetUniformLocation(self.quad_program, b"texcoordOffset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
 
         # # Let's render a quad
