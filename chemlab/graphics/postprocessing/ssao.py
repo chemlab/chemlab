@@ -1,7 +1,3 @@
-'''
-Screen space ambient occlusion
-'''
-
 from ..textures import Texture
 
 from OpenGL.GL import *
