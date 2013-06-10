@@ -162,7 +162,7 @@ You'll get a representation like this:
 
 This representation doesn't really show how the molecule surface
 features, plus it looks dull and plasticky. We can add the SSAO
- post-processing effect to improve its visual quality.
+post-processing effect to improve its visual quality.
 
 `Screen space ambient occlusion (SSAO)
 <http://en.wikipedia.org/wiki/Screen_space_ambient_occlusion>`_ is a
