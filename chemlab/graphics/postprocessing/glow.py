@@ -1,22 +1,24 @@
-'''Glow effect
-
-'''
-from ..textures import Texture
+import os
+import numpy as np
+import numpy.linalg as LA
+from random import uniform
 
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
-import numpy as np
-import numpy.linalg as LA
-import os
-from random import uniform
 from ..transformations import normalized
 from ..shaders import set_uniform, compileShader
+from ..textures import Texture
 
 class GlowEffect(object):
+    """Enhance objects with a glowing effect.
+
     
+    """
+
     def __init__(self, widget):
+        
         self.widget = widget
         curdir = os.path.dirname(__file__)
 

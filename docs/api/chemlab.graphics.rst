@@ -40,7 +40,13 @@ Renderers and UIs
 .. toctree::
     chemlab.graphics.uis
     
-Low level widgets		  
+Post Processing Effects
+-----------------------
+
+.. toctree::
+    chemlab.graphics.postprocessing
+
+Low level widgets
 -----------------
 
 The QChemlabWidget class
