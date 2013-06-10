@@ -20,11 +20,12 @@ features to it::
 >>> from chemlab.graphics import QtViewer
 >>> v = QtViewer()
 
-now let's define a molecule. We can use the `moldb` module to get a
+now let's define a molecule. We can use the `chemlab.db` module to get a
 water template.
 
->>> from chemlab.graphics.renderers import SphereRenderer
->>> from chemlab.data.moldb import water
+>>> from chemlab.graphics.renderers import AtomRenderer
+>>> from chemlab.db  import ChemlabDB
+>>> water = ChemlabDB().get('molecule', 'example.water')
 >>> ar = v.add_renderer(AtomRenderer, water.r_array, water.type_array)
 >>> v.run()
 
@@ -42,7 +43,7 @@ is represented as a sphere. There are also a set of viewing controls:
 
 
 In a similar fashion it is possible to display other features, such as
-boxes, arrows, lines, etc.  It is useful to notice that with
+boxes, cylinders, lines, etc.  It is useful to notice that with
 ``Viewer.add_renderer`` we are not passing an *instance* of the renderer, but
 we're passing the renderer *class* and its respective constructor
 arguments. The method ``Viewer.add_renderer`` returns the actual
@@ -118,7 +119,7 @@ example by defining an update function that rotates our triangle::
       
       tr.update_vertices(vertices)
       tr.update_normals(normals)
-      v.widget.repaint()
+      v.widget.update()
    
   v.schedule(update, 10)
   v.run()
