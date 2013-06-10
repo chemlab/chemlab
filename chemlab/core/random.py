@@ -4,7 +4,7 @@ from .system import System
 
 def meshgrid2(*arrs):
     arrs = tuple(arrs)  #edit
-    lens = map(len, arrs)
+    lens = list(map(len, arrs))
     dim = len(arrs)
 
     sz = 1

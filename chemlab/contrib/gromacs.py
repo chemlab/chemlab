@@ -46,7 +46,8 @@ def energy(args, output=None):
     for i,e in enumerate(ens):
         if e not in quants:
             match = difflib.get_close_matches(e, quants)
-            print 'Quantity %s not present, taking close match: %s' % (e, match[0])
+            print('Quantity %s not present, taking close match: %s'
+                  % (e, match[0]))
             ens[i] = match[0]
     
     toplot = []

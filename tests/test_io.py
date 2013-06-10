@@ -71,7 +71,7 @@ def test_read_xyz():
     df = datafile('/tmp/t.xyz', mode="w")
     df.write('molecule', mol1)
     
-    df = datafile('/tmp/t.xyz', mode="r")
+    df = datafile('/tmp/t.xyz', mode="rb")
     mol2 = df.read('molecule')
     
     assert np.allclose(mol1.r_array, mol2.r_array)

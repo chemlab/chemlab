@@ -142,8 +142,8 @@ class EdrIO(IOHandler):
             prop = up.unpack_string()
             unit = up.unpack_string()
             
-            props.append(prop)
-            units.append(unit)
+            props.append(prop.decode('utf-8'))
+            units.append(unit.decode('utf-8'))
 
     def _unpack_eheader(self):
         up = self.up

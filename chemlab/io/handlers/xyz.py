@@ -23,7 +23,7 @@ class XyzIO(IOHandler):
     def read(self, feature):
         self.check_feature(feature, "read")
         
-        lines = self.fd.readlines()
+        lines = [line.decode('utf-8') for line in self.fd.readlines()]
         
         num = int(lines[0])
         title = lines[1]

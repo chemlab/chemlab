@@ -488,7 +488,7 @@ class System(object):
         mol_formula = self.get_derived_molecule_array('formula')
         sorted_index = sorted(enumerate(mol_formula),
                               key=lambda x: x[1])
-        sorted_index = np.array(zip(*sorted_index)[0])
+        sorted_index = np.array(list(zip(*sorted_index))[0])
 
         self.reorder_molecules(sorted_index)
 

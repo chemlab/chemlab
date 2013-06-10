@@ -42,14 +42,13 @@ def add_default_handler(ioclass, format, extension=None):
 
     """
     if format in _handler_map:
-        print "Warning: format %s already present."%format
+        print("Warning: format {} already present.".format(format))
 
     _handler_map[format] = ioclass
         
     if extension in _extensions_map:
-        print("Warning: extension %s already handled by %s handler."
-              %
-              (extension, _extensions_map[extension]))
+        print("Warning: extension {} already handled by {} handler."
+              .format(extension, _extensions_map[extension]))
             
     _extensions_map[extension] = format
 
@@ -57,7 +56,7 @@ def add_default_handler(ioclass, format, extension=None):
 for h in _default_handlers:
     add_default_handler(*h)
 
-def datafile(filename, mode="r", format=None):
+def datafile(filename, mode="rb", format=None):
     """Initialize the appropriate
     :py:class:`~chemlab.io.iohandler.IOHandler` for a given file
     extension or file format.

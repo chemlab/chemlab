@@ -156,12 +156,12 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
         self.setup_shader()
         
         local_attr = glGetAttribLocation(self.shader,
-                                         "vert_local_coordinate")
+                                         b"vert_local_coordinate")
         cylinder_axis_attr = glGetAttribLocation(self.shader,
-                                               "cylinder_axis")
+                                               b"cylinder_axis")
 
         radius_attr = glGetAttribLocation(self.shader,
-                                          "cylinder_radius")
+                                          b"cylinder_radius")
 
         glEnableVertexAttribArray(local_attr)        
         glEnableVertexAttribArray(cylinder_axis_attr)

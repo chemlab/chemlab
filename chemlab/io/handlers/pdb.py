@@ -35,7 +35,8 @@ class PdbIO(IOHandler):
     can_write = []
     
     def __init__(self, fd):
-        self.lines = fd.readlines()
+        self.lines = [line.decode('utf-8') for line in fd.readlines()]
+
         self.atoms = []        
         self.atom_res = []
         
@@ -86,7 +87,8 @@ class PdbIO(IOHandler):
 
         
         for key, group in groupby(enumerate(self.atom_res), lambda x: x[1]):
-            first_element = group.next()
+            group = iter(group)
+            first_element = next(group)
             mol_indices.append(first_element[0])
             mol_names.append(first_element[1])
         

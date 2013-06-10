@@ -115,5 +115,5 @@ class NoEffect(object):
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
+            print("Problem")
             return False

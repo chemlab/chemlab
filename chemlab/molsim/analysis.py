@@ -67,7 +67,6 @@ def rdf_multi(frames_a, frames_b, sel_a, sel_b,
     
     volume = 0.0
     for i in range(nframes):
-        print "Frame", i
         bins, hist_f = rdf(frames_a[i][sel_a], frames_b[i][sel_b],
                            periodic=periodic[i], cutoff=rmax,
                            normalize=False, binsize=binsize)

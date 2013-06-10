@@ -51,6 +51,7 @@ class GromacsIO(IOHandler):
     def read(self, feature):
         if feature == 'system':
             lines = self.fd.readlines()
+            lines = [line.decode('utf-8') for line in lines]
             return parse_gro_lines(lines)
 
     def write(self, feature, sys):
@@ -148,7 +149,7 @@ def write_gro(sys, fd):
 
     at_n = 0
     # Residue Number
-    for i in xrange(sys.n_mol):
+    for i in range(sys.n_mol):
         res_n = i + 1
 
         try:
@@ -157,7 +158,7 @@ def write_gro(sys, fd):
             raise Exception('Gromacs exporter need the'
                             'residue name as groname')
 
-        for j in xrange(sys.mol_n_atoms[i]):
+        for j in range(sys.mol_n_atoms[i]):
             offset = sys.mol_indices[i]
 
             try:

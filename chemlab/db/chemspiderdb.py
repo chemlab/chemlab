@@ -1,10 +1,16 @@
 '''ChemSpider database
 '''
+import os
+import sys
+from io import BytesIO
+
 from .base import EntryNotFound, AbstractDB
 from ..libs import chemspipy
-from StringIO import StringIO
-import ConfigParser, os
-import sys
+try:
+    import configparser
+except:
+    import ConfigParser as configparser
+
 
 class ChemSpiderDB(AbstractDB):
     """Retrieve data from the online `Chemspider
@@ -83,14 +89,14 @@ class ChemSpiderDB(AbstractDB):
     """
     def __init__(self, token=None):
         if not token:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             userconfig = os.path.expanduser('~/.chemlabrc')
             
             config.read([userconfig])
             try:
                 token = config.get('chemspider', 'token')
                 chemspipy.TOKEN = token
-            except ConfigParser.NoSectionError:
+            except configparser.NoSectionError:
                 lines = ('',
                          '-'*70,
                          'You need to write your chemspider token in order to use the database.',
@@ -118,8 +124,10 @@ class ChemSpiderDB(AbstractDB):
         
         if feature == "molecule":
             sdf = result.mol3d
-            fd = StringIO(sdf)
+            
+            fd = BytesIO(sdf.encode('utf-8'))
             return MolIO(fd).read("molecule")
+            
         elif feature == 'inchi':
             return result.inchi
         elif feature == 'imageurl':

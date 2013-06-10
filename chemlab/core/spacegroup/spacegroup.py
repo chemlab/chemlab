@@ -546,22 +546,24 @@ def _read_datafile_entry(spg, no, symbol, setting, f):
     spg._centrosymmetric = bool(int(f.readline().split()[1]))
     # primitive vectors
     f.readline()
-    spg._scaled_primitive_cell = np.array([map(float, f.readline().split()) 
-                                           for i in range(3)], 
-                                          dtype=np.float)
+    spg._scaled_primitive_cell = np.array([
+        list(map(float, f.readline().split())) 
+        for i in range(3)],
+        dtype='float')
+    
     # primitive reciprocal vectors
     f.readline()
-    spg._reciprocal_cell = np.array([map(int, f.readline().split()) 
+    spg._reciprocal_cell = np.array([list(map(int, f.readline().split())) 
                                         for i in range(3)],
                                        dtype=np.int)
     # subtranslations
     spg._nsubtrans = int(f.readline().split()[0])
-    spg._subtrans = np.array([map(float, f.readline().split()) 
+    spg._subtrans = np.array([list(map(float, f.readline().split())) 
                               for i in range(spg._nsubtrans)],
                              dtype=np.float)
     # symmetry operations
     nsym = int(f.readline().split()[0])
-    symop = np.array([map(float, f.readline().split()) for i in range(nsym)],
+    symop = np.array([list(map(float, f.readline().split())) for i in range(nsym)],
                      dtype=np.float)
     spg._nsymop = nsym
     spg._rotations = np.array(symop[:,:9].reshape((nsym,3,3)), dtype=np.int)
@@ -571,7 +573,7 @@ def _read_datafile_entry(spg, no, symbol, setting, f):
 def _read_datafile(spg, spacegroup, setting, f):
     if isinstance(spacegroup, int):
         pass
-    elif isinstance(spacegroup, basestring):
+    elif isinstance(spacegroup, str):
         #spacegroup = ' '.join(spacegroup.strip().split())
         spacegroup = format_symbol(spacegroup)
     else:
@@ -583,7 +585,7 @@ def _read_datafile(spg, spacegroup, setting, f):
         _setting = int(line2.strip().split()[1])
         _no = int(_no)
         if ((isinstance(spacegroup, int) and _no == spacegroup) or
-            (isinstance(spacegroup, basestring) and 
+            (isinstance(spacegroup, str) and 
              _symbol == spacegroup)) and _setting == setting:
             _read_datafile_entry(spg, _no, _symbol, _setting, f)
             break
@@ -707,4 +709,4 @@ if __name__ == '__main__':
     import spacegroup
 
     import doctest
-    print 'doctest: ', doctest.testmod()
+    print('doctest: ', doctest.testmod())

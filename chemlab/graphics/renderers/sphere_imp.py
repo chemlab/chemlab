@@ -85,12 +85,9 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             glDepthMask(GL_FALSE)
         
-        at_mapping = glGetAttribLocation(self.shader,
-                                         "at_mapping")
-        at_sphere_center = glGetAttribLocation(self.shader,
-                                               "at_sphere_center")
-        at_sphere_radius = glGetAttribLocation(self.shader,
-                                               "at_sphere_radius")
+        at_mapping = glGetAttribLocation(self.shader, b"at_mapping")
+        at_sphere_center = glGetAttribLocation(self.shader, b"at_sphere_center")
+        at_sphere_radius = glGetAttribLocation(self.shader, b"at_sphere_radius")
         
         glEnableVertexAttribArray(at_mapping)        
         glEnableVertexAttribArray(at_sphere_center)

@@ -28,7 +28,9 @@ cdef class XTCReader:
         self.close()
     
     def __init__(self,path):
-        cdef int rc        
+        cdef int rc
+        path = path.encode('utf-8') # Python 3
+        
         rc = _xdrfile.read_xtc_natoms(path, &self.natoms)
         if rc != 0:
             raise XDRError('could not open %r' % path, rc)

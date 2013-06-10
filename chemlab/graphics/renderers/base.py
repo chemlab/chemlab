@@ -3,9 +3,11 @@ from OpenGL.GL import (shaders,
                        glUseProgram, GL_FALSE, GLfloat, GL_TRUE)
 from ctypes import POINTER
 
-from ..shaders import set_uniform
+from ..shaders import set_uniform, compileShader
 import numpy as np
 import pkgutil
+
+
 
 
 class AbstractRenderer(object):
@@ -80,10 +82,10 @@ class ShaderBaseRenderer(AbstractRenderer):
         raise NotImplementedError()
         
     def compile_shader(self):
-        vertex = shaders.compileShader(self.VERTEX_SHADER,
-                                       GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(self.FRAGMENT_SHADER,
-                                         GL_FRAGMENT_SHADER)
+        vertex = compileShader(self.VERTEX_SHADER,
+                               GL_VERTEX_SHADER)
+        fragment = compileShader(self.FRAGMENT_SHADER,
+                                 GL_FRAGMENT_SHADER)
         
         self.shader = shaders.compileProgram(vertex, fragment)
         

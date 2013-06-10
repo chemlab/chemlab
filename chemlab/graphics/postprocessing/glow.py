@@ -1,22 +1,24 @@
-'''Glow effect
-
-'''
-from ..textures import Texture
+import os
+import numpy as np
+import numpy.linalg as LA
+from random import uniform
 
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
-import numpy as np
-import numpy.linalg as LA
-import os
-from random import uniform
 from ..transformations import normalized
-from ..shaders import set_uniform
+from ..shaders import set_uniform, compileShader
+from ..textures import Texture
 
 class GlowEffect(object):
+    """Enhance objects with a glowing effect.
+
     
+    """
+
     def __init__(self, widget):
+        
         self.widget = widget
         curdir = os.path.dirname(__file__)
 
@@ -25,8 +27,8 @@ class GlowEffect(object):
         frag = open(os.path.join(curdir, 'shaders', 'glow1.frag')).read()        
         
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         
         self.glow1_program = shaders.compileProgram(vertex, fragment)
 
@@ -35,8 +37,8 @@ class GlowEffect(object):
         frag = open(os.path.join(curdir, 'shaders', 'glow2.frag')).read()        
         
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         self.glow2_program = shaders.compileProgram(vertex, fragment)
 
 
@@ -45,8 +47,8 @@ class GlowEffect(object):
         frag = open(os.path.join(curdir, 'shaders', 'glow3.frag')).read()        
         
         # Compile  shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         self.blend_program = shaders.compileProgram(vertex, fragment)
         
         # Intermediate framebuffer
@@ -77,7 +79,7 @@ class GlowEffect(object):
         glUseProgram(self.glow1_program)
         
         # Blur the result
-        qd_id = glGetUniformLocation(self.glow1_program, "s_color")
+        qd_id = glGetUniformLocation(self.glow1_program, b"s_color")
         self.texture = textures['color']
         
         # Setting up the textures
@@ -86,7 +88,7 @@ class GlowEffect(object):
         glUniform1i(qd_id, 0)
         
         # Set resolution
-        res_id = glGetUniformLocation(self.glow1_program, "offset")
+        res_id = glGetUniformLocation(self.glow1_program, b"offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
         
 
@@ -105,13 +107,13 @@ class GlowEffect(object):
         glActiveTexture(GL_TEXTURE0)
         self.glow_texture.bind()
         
-        qd_id = glGetUniformLocation(self.glow2_program, "s_color")
+        qd_id = glGetUniformLocation(self.glow2_program, b"s_color")
         glUniform1i(qd_id, 0)
         
-        res_id = glGetUniformLocation(self.glow2_program, "offset")
+        res_id = glGetUniformLocation(self.glow2_program, b"offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
-        glUniform1i(glGetUniformLocation(self.glow2_program, "horizontal"), 0)
-        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), self.radius)        
+        glUniform1i(glGetUniformLocation(self.glow2_program, b"horizontal"), 0)
+        glUniform1f(glGetUniformLocation(self.glow2_program, b"radius"), self.radius)        
         
         self.render_quad()
         
@@ -125,12 +127,12 @@ class GlowEffect(object):
         glActiveTexture(GL_TEXTURE0)
         self.glow2_texture.bind()
         
-        qd_id = glGetUniformLocation(self.glow2_program, "s_color")
+        qd_id = glGetUniformLocation(self.glow2_program, b"s_color")
         glUniform1i(qd_id, 0)
-        res_id = glGetUniformLocation(self.glow2_program, "offset")
+        res_id = glGetUniformLocation(self.glow2_program, b"offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
-        glUniform1i(glGetUniformLocation(self.glow2_program, "horizontal"), 1)
-        glUniform1f(glGetUniformLocation(self.glow2_program, "radius"), self.radius) 
+        glUniform1i(glGetUniformLocation(self.glow2_program, b"horizontal"), 1)
+        glUniform1f(glGetUniformLocation(self.glow2_program, b"radius"), self.radius) 
         self.render_quad()
         
         # Blending!!
@@ -147,10 +149,10 @@ class GlowEffect(object):
         self.glow_texture.bind()
 
         
-        glUniform1i(glGetUniformLocation(self.blend_program, "s_color1"), 0)
-        glUniform1i(glGetUniformLocation(self.blend_program, "s_color2"), 1)
+        glUniform1i(glGetUniformLocation(self.blend_program, b"s_color1"), 0)
+        glUniform1i(glGetUniformLocation(self.blend_program, b"s_color2"), 1)
 
-        res_id = glGetUniformLocation(self.blend_program, "offset")
+        res_id = glGetUniformLocation(self.blend_program, b"offset")
         glUniform2f(res_id, 1.0/self.widget.width(), 1.0/self.widget.height())
         
         self.render_quad()
@@ -200,7 +202,7 @@ class GlowEffect(object):
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
+            print("Problem")
             return False
 
         glBindFramebuffer(GL_FRAMEBUFFER, self.glow2_fb)
@@ -221,5 +223,5 @@ class GlowEffect(object):
         
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
             != GL_FRAMEBUFFER_COMPLETE):
-            print "Problem"
+            print("Problem")
             return False

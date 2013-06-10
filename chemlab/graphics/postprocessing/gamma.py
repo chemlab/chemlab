@@ -7,6 +7,7 @@ from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
 from ..textures import Texture
+from ..shaders import compileShader
 from .base import AbstractEffect
 
 class GammaCorrectionEffect(AbstractEffect):
@@ -34,8 +35,8 @@ class GammaCorrectionEffect(AbstractEffect):
         frag = open(os.path.join(curdir, 'shaders', 'gamma.frag')).read()        
         
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         self.gamma = gamma
         self.quad_program = shaders.compileProgram(vertex, fragment)
 
@@ -47,7 +48,7 @@ class GammaCorrectionEffect(AbstractEffect):
         
         glUseProgram(self.quad_program)
         
-        qd_id = glGetUniformLocation(self.quad_program, "rendered_texture")
+        qd_id = glGetUniformLocation(self.quad_program, b"rendered_texture")
         # Setting up the texture
         glActiveTexture(GL_TEXTURE0)
         textures['color'].bind()
@@ -55,9 +56,9 @@ class GammaCorrectionEffect(AbstractEffect):
         glUniform1i(qd_id, 0)
         
         # Set resolution
-        glUniform2f(glGetUniformLocation(self.quad_program, 'resolution'), self.widget.width(), self.widget.height())
+        glUniform2f(glGetUniformLocation(self.quad_program, b'resolution'), self.widget.width(), self.widget.height())
         # Set gamma value
-        glUniform1f(glGetUniformLocation(self.quad_program, 'gamma'), self.gamma)
+        glUniform1f(glGetUniformLocation(self.quad_program, b'gamma'), self.gamma)
         
         # Let's render a quad
         quad_data = np.array([-1.0, -1.0, 0.0,

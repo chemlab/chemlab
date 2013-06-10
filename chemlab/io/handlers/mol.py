@@ -23,7 +23,7 @@ class MolIO(IOHandler):
         self.check_feature(feature, "read")
         
         if feature == 'molecule':
-            string = self.fd.read()
+            string = self.fd.read().decode('utf-8')
             return parse_mol_string(string)
         
 def parse_mol_string(string):
