@@ -20,11 +20,12 @@ features to it::
 >>> from chemlab.graphics import QtViewer
 >>> v = QtViewer()
 
-now let's define a molecule. We can use the `moldb` module to get a
+now let's define a molecule. We can use the `chemlab.db` module to get a
 water template.
 
->>> from chemlab.graphics.renderers import SphereRenderer
->>> from chemlab.data.moldb import water
+>>> from chemlab.graphics.renderers import AtomRenderer
+>>> from chemlab.db  import ChemlabDB
+>>> water = ChemlabDB().get('molecule', 'example.water')
 >>> ar = v.add_renderer(AtomRenderer, water.r_array, water.type_array)
 >>> v.run()
 
