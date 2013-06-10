@@ -18,6 +18,9 @@ class FXAAEffect(AbstractEffect):
     The parameters *span_max*, *reduce_mul*, *reduce_min* are
     tweakable even if it is suggested to keep them at their default value.
 
+    .. image:: /_static/fxaa_on_off.png
+       :width: 800px
+    
     '''
     def __init__(self, widget, span_max = 4.0, reduce_mul=1/8.0, reduce_min=1/128.0):
         self.widget = widget

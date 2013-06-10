@@ -14,6 +14,29 @@ from ..textures import Texture
 class GlowEffect(object):
     """Enhance objects with a glowing effect.
 
+    This effect can be used to illuminate objects like they were small
+    lightbulbs. It can be used for example to implement selection or
+    special effects. To setup the illumination strength you can use
+    the color alpha value. If the alpha value is zero, the
+    illumination will be maximum, if the alpha is 255 no illumination
+    will take place. If you change this value at runtime, the glowing
+    will change accordingly.
+    
+    For example, if you're using a
+    :py:class:`~chemlab.graphics.renderers.SphereImpostorRenderer`, to
+    illuminate the sphere you have to setup the color like this::
+
+      # Setup positions and radii
+      
+      # Set the alpha value to 0 for max illumination
+      colors = np.array([[0, 0, 0, 255, 0]], 'uint8') 
+      
+      v.add_renderer(positions, radii, colors)
+
+
+    .. image:: /_static/glow_on_off.png
+        :width: 800px
+    
     
     """
 

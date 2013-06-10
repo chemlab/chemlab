@@ -328,15 +328,15 @@ def test_noeffect():
 def test_fxaa():
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = np.array([colors.orange, colors.blue, colors.forest_green])
+    colors_ = np.array([colors.orange, colors.blue, colors.forest_green])
 
 
     vectors = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],
                         [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-    colors = [colors.blue, colors.orange, colors.orange, colors.orange]
+    colors_ = [colors.blue, colors.orange, colors.orange, colors.orange]
 
     v = QtViewer()
-    ar = v.add_renderer(LineRenderer, vectors, colors)
+    ar = v.add_renderer(LineRenderer, vectors, colors_)
 
     #sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
 
