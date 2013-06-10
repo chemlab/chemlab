@@ -119,7 +119,7 @@ example by defining an update function that rotates our triangle::
       
       tr.update_vertices(vertices)
       tr.update_normals(normals)
-      v.widget.repaint()
+      v.widget.update()
    
   v.schedule(update, 10)
   v.run()
