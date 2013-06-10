@@ -1,7 +1,7 @@
 from io import BytesIO
 
 from .base import AbstractDB, EntryNotFound
-from ..io.handlers import PdbIO
+
 
 # Python 2-3 compatibility
 try:
@@ -10,7 +10,6 @@ try:
 except ImportError:
     from urllib import quote_plus
     from urllib2 import urlopen
-
 
 
 class RcsbDB(AbstractDB):
@@ -31,6 +30,7 @@ class RcsbDB(AbstractDB):
     """
 
     def get(self, feature, key):
+        from ..io.handlers import PdbIO # Here to avoid circular import
         
         if feature == 'molecule':
             url = 'http://www.rcsb.org/pdb/files/%s.pdb' % key
