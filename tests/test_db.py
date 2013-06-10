@@ -1,6 +1,9 @@
 from chemlab.db.cirdb import CirDB
 from chemlab.db.local import LocalDB
 from chemlab.db.chemspiderdb import ChemSpiderDB
+from chemlab.db import RcsbDB
+from chemlab.db.base import EntryNotFound
+
 from chemlab.graphics import display_molecule
 from chemlab.core import System
 
@@ -28,6 +31,20 @@ def test_local():
     post_string = db.get('system', 'norbornene-3').tojson()
     
     assert pre_string == post_string
+    
+    
+def test_rcsb():
+    db = RcsbDB()
+    
+    # Test for failure
+    with assert_raises(EntryNotFound):
+        mol = db.get('molecule', 'nonexistent')
+        
+    mol = db.get('molecule', '3ZJE')
+    assert mol.n_atoms == 5697
+
+
+
     
 def test_chemspider():
     
