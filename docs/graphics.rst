@@ -43,7 +43,7 @@ is represented as a sphere. There are also a set of viewing controls:
 
 
 In a similar fashion it is possible to display other features, such as
-boxes, arrows, lines, etc.  It is useful to notice that with
+boxes, cylinders, lines, etc.  It is useful to notice that with
 ``Viewer.add_renderer`` we are not passing an *instance* of the renderer, but
 we're passing the renderer *class* and its respective constructor
 arguments. The method ``Viewer.add_renderer`` returns the actual
