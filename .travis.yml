@@ -16,7 +16,6 @@ before_install:
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
 
 install:
-  - "python -c 'import numpy'"
   - "pip install -U --use-mirrors cython"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors numpy scipy pyopengl nose matplotlib; fi"
   - "python setup.py build_ext --inplace"
