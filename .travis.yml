@@ -11,11 +11,13 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - "sudo apt-get update"
-  - "sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl python-matplotlib"
-  - "sudo apt-get install -qq python3-numpy python3-scipy python3-pyside"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl python-matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get install -qq python3-numpy python3-scipy python3-pyside; fi"
 
 install:
-  - "pip install -U --use-mirrors cython pyopengl nose numpy matplotlib"
+  - "python -c 'import numpy'"
+  - "pip install -U --use-mirrors cython"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors pyopengl nose matplotlib; fi"
   - "python setup.py build_ext --inplace"
   - "python setup.py install"
 
