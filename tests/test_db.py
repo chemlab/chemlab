@@ -1,21 +1,24 @@
-from chemlab.db.cirdb import CirDB
-from chemlab.db.local import LocalDB
-from chemlab.db.chemspiderdb import ChemSpiderDB
+from chemlab.db import CirDB
+from chemlab.db import LocalDB
+from chemlab.db import ChemSpiderDB
 from chemlab.db import RcsbDB
+from chemlab.db import ChemlabDB
 from chemlab.db.base import EntryNotFound
 
 from chemlab.graphics import display_molecule
 from chemlab.core import System
 
 from nose.tools import assert_raises
+from nose.plugins.attrib import attr
+
+@attr('slow')
 def test_cir():
     db = CirDB()
     bz = db.get("molecule", "norbornene")
 
 def test_local():
-    # Fetch some stuff from cirdb
-    db = CirDB()
-    bz = db.get("molecule", "norbornene")
+    db = ChemlabDB()
+    bz = db.get("molecule", "example.norbornene")
 
     pre_string = bz.tojson()
     db = LocalDB("/tmp/testdb/")
