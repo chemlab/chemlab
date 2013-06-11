@@ -19,7 +19,7 @@ The classes responsible for the I/O are subclasses of
 file-like object as the first argument and they work all in the same
 way, here is an example of GroHandler::
 
-  from chemlab.io import GroIO
+  from chemlab.io.handlers import GroIO
   
   fd = open('waterbox.gro')
   infile = GroIO(fd)
