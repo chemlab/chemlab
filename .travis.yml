@@ -17,7 +17,9 @@ before_install:
 
 install:
   - "pip install -U --use-mirrors cython"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors numpy scipy pyopengl nose matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors numpy; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors scipy; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then pip install -U --use-mirrors pyopengl nose matplotlib; fi"
   - "python setup.py build_ext --inplace"
   - "python setup.py install"
 
