@@ -4,9 +4,6 @@ python:
   - "2.7"
   - "3.3"
 
-env:
-  - NUMPY_VERSION=1.7.1 ONLY_EGG_INFO=false
-
 virtualenv:
   system_site_packages: true
 
@@ -18,7 +15,7 @@ before_install:
   - "sudo apt-get install -qq python3-numpy python3-scipy python3-pyside"
 
 install:
-  - "pip install -U --use-mirrors cython pyopengl nose matplotlib"
+  - "pip install -U --use-mirrors cython pyopengl nose numpy matplotlib"
   - "python setup.py build_ext --inplace"
   - "python setup.py install"
 
