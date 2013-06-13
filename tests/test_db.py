@@ -45,9 +45,6 @@ def test_rcsb():
         
     mol = db.get('molecule', '3ZJE')
     assert mol.n_atoms == 5697
-
-
-
     
 def test_chemspider():
     

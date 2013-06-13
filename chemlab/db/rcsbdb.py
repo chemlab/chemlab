@@ -37,10 +37,11 @@ class RcsbDB(AbstractDB):
             result = urlopen(url)
             print(result.getcode())
             pdbtext = result.read()
-            if pdbtext.startswith('<!DOCTYPE'):
+            if pdbtext.startswith(b'<!DOCTYPE'):
                 raise EntryNotFound()
             
-            fd = BytesIO(pdbtext.encode('utf-8'))
+            fd = BytesIO(pdbtext)
+            
             return PdbIO(fd).read('molecule')
             
         else:
