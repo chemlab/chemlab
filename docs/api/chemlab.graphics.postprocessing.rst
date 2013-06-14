@@ -19,6 +19,13 @@ GlowEffect
 .. autoclass:: chemlab.graphics.postprocessing.GlowEffect
     :members:
 
+NoEffect
+--------
+
+.. autoclass:: chemlab.graphics.postprocessing.NoEffect
+    :members:
+       
+
 OutlineEffect
 -------------
 

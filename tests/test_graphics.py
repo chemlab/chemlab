@@ -22,9 +22,11 @@ from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
 from chemlab.graphics.postprocessing import (SSAOEffect,
                                              FXAAEffect,
                                              GammaCorrectionEffect,
-                                             OutlineEffect, GlowEffect)
+                                             OutlineEffect, GlowEffect, NoEffect)
 
+cdb = ChemlabDB()
 
+    
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
     vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
@@ -317,9 +319,9 @@ def test_noeffect():
     v = QtViewer()
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = np.array([colors.orange, colors.blue, colors.forest_green])
+    colors_ = np.array([colors.orange, colors.blue, colors.forest_green])
 
-    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
+    sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors_)
 
     v.widget.post_processing.append(NoEffect(v.widget))
 
@@ -376,7 +378,7 @@ def test_gamma():
     v.run()
 
 def test_outline():
-    cdb = ChemlabDB()
+
     mol = cdb.get('molecule', 'example.norbornene')
 
     mol = datafile('tests/data/3ZJE.pdb').read('system')
@@ -421,10 +423,32 @@ def test_glow():
     timer.start(10)
     v.run()
 
-def test_topng():
+from OpenGL.GL import *
+
+import os
+
+def test_offline():
     # Api for PNG saving
-    pass
+    v = QtViewer()
+    mol = cdb.get('molecule', 'example.norbornene')
+    sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors', shading='toon')
+    v.add_post_processing(SSAOEffect, kernel_size=128)
+    v.add_post_processing(FXAAEffect)
+    ne = v.add_post_processing(NoEffect)
     
+    v.widget.camera.autozoom(mol.r_array)
+    
+    def dump():
+        image = v.widget.toimage(2048, 2048)
+        image.save("/tmp/hello.png")
+        os.system("eog /tmp/hello.png")        
+        
+    from PySide.QtCore import Qt
+    v.key_actions[Qt.Key_A] = dump
+    
+    v.run()
+    
+
 def test_multiple_post_processing():
     v = QtViewer()
     cdb = ChemlabDB()
