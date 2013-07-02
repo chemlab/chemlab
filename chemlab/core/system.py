@@ -92,6 +92,13 @@ class System(object):
 
        Array of  all the atomic symbols. It can be used to select
        certain atoms in a system.
+    
+    .. py:attribute:: charge_array
+
+       :type: np.ndarray(N, dtype=float)
+       :derived from: Atom
+    
+       Array of the charges present on the atoms.
 
        **Example**
 
@@ -186,6 +193,8 @@ class System(object):
         NDArrayAttr('r_array', 'r_array', np.float, 3),
         AtomicArrayAttr('m_array', 'm_array',  np.float,
                         default=lambda s: np.array([masses[t] for t in s.type_array])),
+        AtomicArrayAttr('charge_array', 'charge_array',  np.float,
+                        default=lambda s: np.zeros(len(s.type_array), np.float)),
         AtomicArrayAttr('atom_export_array', 'atom_export_array', np.object,
             default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),
         MoleculeArrayAttr('mol_export', 'export', np.object,

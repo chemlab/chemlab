@@ -68,6 +68,12 @@ class TestSystem(object):
         # Test atom masses
         #print s.m_array
 
+        # Test charges
+        assert_allclose(system.charge_array, [0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0])
+        
         # Test mol indices
         assert_npequal(system.mol_indices, [0, 3, 6, 9])
 
