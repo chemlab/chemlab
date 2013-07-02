@@ -11,6 +11,25 @@ import numpy as np
 import os
 
 class OutlineEffect(object):
+    """Add a black, cartoon-like outline.
+
+    This effect analyzes each point to be drawn and check if it's at a
+    point of discontinuity, either because there's a change in surface normal
+    (an edge) or because there's a change in depth (a step). You can
+    customize the effect by applyning just the normal or the depth test.
+
+    .. image:: /_static/outline_on_off.png
+        :width: 800px
+    
+    **Parameters**
+
+    kind: 'depthnormal' | 'depthonly' | 'normalonly'
+    
+        Set the edge-determination test to both depth and normal
+        discontinuity or either one of the two.
+
+    """
+
     
     def __init__(self, widget, kind='depthnormal'):
         self.widget = widget

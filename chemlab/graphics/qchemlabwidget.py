@@ -3,6 +3,8 @@ from __future__ import division
 import numpy as np
 import time
 
+from PIL import Image as pil_Image
+
 from PySide import QtCore, QtGui
 from PySide.QtCore import  Qt
 from PySide.QtOpenGL import QGLWidget
@@ -310,6 +312,35 @@ class QChemlabWidget(QGLWidget):
 
                 self.update()
 
+    def toimage(self, width=None, height=None):
+        '''Return an dump of the current scene as a PIL Image'''
+        from .postprocessing import NoEffect
+        effect = NoEffect(self)
+        
+        self.post_processing.append(effect)
+        oldwidth, oldheight = self.width(), self.height()
+        
+        self.initializeGL()
+        
+        if None not in (width, height):
+            self.resize(width, height)
+            self.resizeGL(width, height)
+        else:
+            width = self.width()
+            height = self.height()
+        
+        self.paintGL()
+        self.post_processing.remove(effect)
+        coltex = effect.texture
+        coltex.bind()
+        glActiveTexture(GL_TEXTURE0)
+        data = glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE)
+        image = pil_Image.frombuffer('RGBA', (width, height), data, 'raw', 'RGBA', 0, -1)
+        
+        self.resize(oldwidth, oldheight)
+        self.resizeGL(oldwidth, oldheight)
+        
+        return image
 
 def create_color_texture(fb, width, height):
     texture = Texture(GL_TEXTURE_2D, width, height, GL_RGBA, GL_RGBA,

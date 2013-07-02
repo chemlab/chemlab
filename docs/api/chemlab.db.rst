@@ -32,3 +32,8 @@ LocalDB
 .. autoclass:: chemlab.db.LocalDB
     :members:
 
+RcsbDB
+------
+
+.. autoclass:: chemlab.db.RcsbDB
+    :members:

@@ -75,6 +75,8 @@ class QtViewer(QMainWindow):
         self.resize(1000, 800)
         self.widget = widget
         
+        self.key_actions = {}
+        
     def run(self):
         '''Display the QtViewer
 
@@ -138,7 +140,8 @@ class QtViewer(QMainWindow):
             except for the *widget* argument.
         
         .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer`
-
+        .. seealso:: :docs:`api/chemlab.graphics.renderers`
+        
         **Return**
 
         The istantiated renderer. You should keep the return value to
@@ -167,9 +170,30 @@ class QtViewer(QMainWindow):
         return ui
         
     def add_post_processing(self, klass, *args, **kwargs):
-        ui = klass(self.widget, *args, **kwargs)
-        self.widget.post_processing.append(ui)
-        return ui
+        '''Add a post processing effect to the current scene.
+        
+        The usage is as following::
+        
+            from chemlab.graphics import QtViewer
+            from chemlab.graphics.postprocessing import SSAOEffect
+            
+            v = QtViewer()
+            effect = v.add_post_processing(SSAOEffect)
+        
+        .. seealso:: :docs:`api/chemlab.graphics.postprocessing`
+        
+        **Return**
+        
+        an instance of :py:class:`~chemlab.graphics.postprocessing.base.AbstractEffect`
+        
+        '''
+        pp = klass(self.widget, *args, **kwargs)
+        self.widget.post_processing.append(pp)
+        return pp
+        
+    def remove_post_processing(self, pp):
+        '''Remove a post processing effect'''
+        self.widget.post_processing.remove(pp)
         
     # Events
     def keyPressEvent(self, evt):
@@ -192,7 +216,11 @@ class QtViewer(QMainWindow):
             self.widget.camera.mouse_zoom(0.1)
         if evt.key() == Qt.Key_Minus:
             self.widget.camera.mouse_zoom(-0.1)
-
+        else:
+            action = self.key_actions.get(evt.key(), None)
+            if action:
+                action()
+        
         self.widget.repaint()
 
 if __name__ == '__main__':

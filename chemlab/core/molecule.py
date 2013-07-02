@@ -202,7 +202,8 @@ class Molecule(object):
 
        :type: np.ndarray((NBONDS,2), dtype=int)
     
-       A list containing the indices of the atoms connected by a bond. Example: ``[[0 1] [0 2] [3 4]]``
+       A list containing the indices of the atoms connected by a bond.
+       Example: ``[[0 1] [0 2] [3 4]]``
     
     .. py:attribute:: mass
        

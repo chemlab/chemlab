@@ -20,11 +20,12 @@ features to it::
 >>> from chemlab.graphics import QtViewer
 >>> v = QtViewer()
 
-now let's define a molecule. We can use the `moldb` module to get a
+now let's define a molecule. We can use the `chemlab.db` module to get a
 water template.
 
->>> from chemlab.graphics.renderers import SphereRenderer
->>> from chemlab.data.moldb import water
+>>> from chemlab.graphics.renderers import AtomRenderer
+>>> from chemlab.db  import ChemlabDB
+>>> water = ChemlabDB().get('molecule', 'example.water')
 >>> ar = v.add_renderer(AtomRenderer, water.r_array, water.type_array)
 >>> v.run()
 
@@ -42,7 +43,7 @@ is represented as a sphere. There are also a set of viewing controls:
 
 
 In a similar fashion it is possible to display other features, such as
-boxes, arrows, lines, etc.  It is useful to notice that with
+boxes, cylinders, lines, etc.  It is useful to notice that with
 ``Viewer.add_renderer`` we are not passing an *instance* of the renderer, but
 we're passing the renderer *class* and its respective constructor
 arguments. The method ``Viewer.add_renderer`` returns the actual
@@ -118,7 +119,7 @@ example by defining an update function that rotates our triangle::
       
       tr.update_vertices(vertices)
       tr.update_normals(normals)
-      v.widget.repaint()
+      v.widget.update()
    
   v.schedule(update, 10)
   v.run()
@@ -127,6 +128,96 @@ On this ground we can develop a TetrahedronRenderer based on our
 TriangleRenderer. To do that we first need to understand how a
 tetrahedron is made, and how can we define the vertices that make the
 tetrahedron.
+
+Post Processing Effects
+-----------------------
+
+.. versionadded:: 0.3
+
+Post processing effects are a great way to increase the visual quality
+of your representations. Those effects are applied after the scene is
+rendered and they can be applied one after each other to achieve a
+combination of effects.
+
+Applying a post processing effect is extremely easy. Let's see we are
+viewing a big molecule with lots of pockets, such as a protein. Grab
+the protein `3ZJE
+<https://github.com/chemlab/chemlab-testdata/raw/master/3ZJE.pdb>`_ ,
+load it into chemlab and display it using a simple Van der Waals
+representation::
+
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import AtomRenderer
+    from chemlab.io import datafile
+
+    protein = datafile("3ZJE.pdb").read("molecule")
+    v = QtViewer()
+    v.add_renderer(AtomRenderer, protein.r_array, protein.type_array)
+    v.run()
+
+You'll get a representation like this:
+
+.. image:: /_static/ssao_off.png
+    :width: 600px
+
+This representation doesn't really show how the molecule surface
+features, plus it looks dull and plasticky. We can add the SSAO
+post-processing effect to improve its visual quality.
+
+`Screen space ambient occlusion (SSAO)
+<http://en.wikipedia.org/wiki/Screen_space_ambient_occlusion>`_ is a
+very powerful technique used by numerous videogames to make the
+illumination much more realistic, by darkening the more occluded areas
+of the objects, such as pockets.
+
+Chemlab implements this effect in the
+:py:class:`~chemlab.graphics.postprocessing.SSAOEffect` class. To
+apply it to the scene it's sufficient to add this simple line::
+
+  from chemlab.graphics.postprocessing import SSAOEffect
+  
+  v.add_post_processing(SSAOEffect)
+  v.run() 
+
+What you'll get is this, with a much-improved visual quality:
+
+.. image:: /_static/ssao_on.png
+    :width: 600px
+
+Post processing effects can be customized with some arguments. The
+SSAO effect may have a dirty look, you can fix that by changing the
+parameter kernel_size, defaulted to 32, with a max value of 128::
+
+  v.add_post_processing(SSAOEffect, kernel_size=128)
+
+This will improve the visual quality at the cost of decreased
+performance. To see all the options available take look at the api
+documentation :doc:`api/chemlab.graphics.postprocessing`.
+
+Post processing effects can also be stacked on top of each other. If
+your computer is powerful enough, you can load your scene with a stack
+of effects that will be applied in turn::
+
+  from chemlab.graphics.postprocessing import SSAOEffect
+  from chemlab.graphics.postprocessing import OutlineEffect  
+  from chemlab.graphics.postprocessing import FXAAEffect
+  from chemlab.graphics.postprocessing import GammaCorrectionEffect
+  
+  v.add_post_processing(SSAOEffect) # better illumination
+  v.add_post_processing(OutlineEffect) # black outlines
+  v.add_post_processing(FXAAEffect) # fast antialiasing
+  v.add_post_processing(GammaCorrectionEffect) # color correction
+  
+  v.run()
+
+.. image:: /_static/multi_effects.png
+    :width: 600px
+
+Unfortunately on ATI cards with open source drivers you can't apply
+multiple post processing effects. I'm investigating the issue, but
+this can be potentially due to a bug in the drivers.
+
+.. seealso:: :doc:`api/chemlab.graphics.postprocessing`
 
 Tutorial: TetrahedronRenderer
 -----------------------------

@@ -1,15 +1,25 @@
-'''
-A post processing effect that does nothing
-'''
-from ..textures import Texture
+import numpy as np
+import os
+
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 from OpenGL.arrays import vbo
 
-import numpy as np
-import os
+from .base import AbstractEffect
 
-class NoEffect(object):
+from ..textures import Texture
+from ..shaders import compileShader
+
+
+class NoEffect(AbstractEffect):
+    '''Re-render the object without implementing any effect.
+
+    This renderer serves as an example, and can be used to access the
+    textures used for the rendering through the *texture*
+    attribute.
+
+    This texture can be used to dump the image being rendered.
+    '''
     
     def __init__(self, widget):
         self.widget = widget
@@ -18,33 +28,20 @@ class NoEffect(object):
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
         frag = open(os.path.join(curdir, 'shaders', 'noeffect.frag')).read()        
         # Compile quad shader
-        vertex = shaders.compileShader(vert, GL_VERTEX_SHADER)
-        fragment = shaders.compileShader(frag, GL_FRAGMENT_SHADER)
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
         
         self.quad_program = shaders.compileProgram(vertex, fragment)
-
-        # Create the framebuffer
-        self.fb = glGenFramebuffers(1)
+        self.texture = None
         
-        # This will create the texture and setup at the correct resolution
-        self.on_resize()
+    def render(self, fb, textures):
+        # Save the texture to be used from outside
+        self.texture = textures['color']
         
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
-        glViewport(0, 0, self.widget.width(), self.widget.height())
-        
-    def pre_render(self):
-        glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
-        glViewport(0, 0, self.widget.width(), self.widget.height())
-        
-    def post_render(self):
-        # We need to render to a quad
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
-        glViewport(0, 0, self.widget.width(), self.widget.height()) # ??
+        glBindFramebuffer(GL_FRAMEBUFFER, fb)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        
         glUseProgram(self.quad_program)
-        
         qd_id = glGetUniformLocation(self.quad_program, "quad_texture")
         
         # Setting up the texture
@@ -78,42 +75,4 @@ class NoEffect(object):
         vboquad.unbind()
         glDisableClientState(GL_VERTEX_ARRAY)
 
-    def on_resize(self):
-        self.texture = Texture(GL_TEXTURE_2D, self.widget.width(),
-                               self.widget.height(), GL_RGB, GL_RGB,
-                               GL_UNSIGNED_BYTE)
-        
-        # Set some parameters
-        self.texture.set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        self.texture.set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR)        
 
-        # Create a texture for z buffer
-        self.depth_texture = Texture(GL_TEXTURE_2D,
-                                     self.widget.width(),
-                                     self.widget.height(),
-                                     GL_DEPTH_COMPONENT24,
-                                     GL_DEPTH_COMPONENT, GL_FLOAT)
-        
-        self.depth_texture.set_parameter(GL_TEXTURE_MAG_FILTER,
-                                         GL_NEAREST)
-        self.depth_texture.set_parameter(GL_TEXTURE_MIN_FILTER,
-                                         GL_LINEAR) 
-        
-        
-        #glTexImage2D(GL_TEXTURE_2D , 0,GL_DEPTH_COMPONENT24, 1024,
-        # 768, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-        
-        glBindFramebuffer(GL_FRAMEBUFFER, self.fb)
-        glViewport(0, 0, self.widget.width(), self.widget.height())
-        
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                             self.texture.id, 0)
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                             self.depth_texture.id, 0);
-
-        #glDrawBuffers(1, np.array([GL_COLOR_ATTACHMENT0], dtype='uint32'))
-        
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
-            != GL_FRAMEBUFFER_COMPLETE):
-            print("Problem")
-            return False

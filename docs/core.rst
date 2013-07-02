@@ -73,6 +73,52 @@ not reflected in the Molecule and viceversa. Even if it may look a bit
 unnatural, this approach limits side effects making the code more
 predictable and easy to follow.
 
+Bonds between atoms can be set or retrieved by using the
+:py:class:`~chemlab.core.Molecule.bonds` attribute. It's a array of
+integers of dimensions ``(nbonds, 2)`` where the integer value
+corresponds to the atomic indices::
+
+    >>> from chemlab.db import ChemlabDB
+    >>> water = ChemlabDB().get('molecule', 'example.water')
+    >>> water.bonds    
+    array([[0, 1],
+           [0, 2]])    
+
+By using the `numpy.take`_ function it's very easy to extract
+properties relative to the bonds. `numpy.take`_ lets you index an
+array using another array as a sorce of indices, for example, we can
+extract the bonds extrema in this way::
+
+    >>> import numpy as np
+    >>> np.take(water.type_array, n.bonds)
+    array([['O', 'H'],
+           ['O', 'H']], dtype=object)
+
+If the array is not flat (like r_array), you can also specify the
+indexing axis, the following snippet can be used to retrieve the bond
+distances::
+
+    # With water.bonds[:, 0] we take an array with the indices of the 
+    # first element of the bond. And we use numpy.take to use this array
+    # to index r_array. We index along the axis 0, along this axis
+    # the elements are 3D vectors.
+    >>> bond_starts = np.take(water.r_array, water.bonds[:, 0], axis=0)
+    >>> bond_ends = np.take(water.r_array, water.bonds[:, 1], axis=0) 
+    >>> bond_vectors = bond_ends - bond_starts
+    
+    # We sum the squares along the axis 1, this is equivalent of doint
+    # x**2 + y**2 + z**2 for each row of the bond_vectors array
+    >>> distances = np.sqrt((bond_vectors**2).sum(axis=1))
+    >>> print(distances)
+    [ 0.1         0.09999803]
+
+Sometimes you don't want to manually input the bonds, but want to have
+them automatically generated. In this case you may use the
+:py:meth:`chemlab.core.Molecule.guess_bonds` method.
+
+
+.. _numpy.take: http://docs.scipy.org/doc/numpy/reference/generated/numpy.take.html
+
 Systems
 -------
  
@@ -132,6 +178,14 @@ Preallocating and adding molecules is a pretty fast way to build a
 `System`, but the fastest way (in terms of processing time) is to
 build the system by passing ready-made arrays, this is done by using
 :py:meth:`chemlab.core.System.from_arrays`.
+
+Most of the :py:class:`chemlab.core.Molecule` array attributes are
+still present in :py:class:`chemlab.core.System`, including
+:py:attr:`System.bonds`, bonds between molecules are currently not
+supported and setting them will result in an unexpected behaviour.
+There is also a :py:meth:`chemlab.core.System.guess_bonds` method to
+automatically set the intramolecular bonds.
+
 
 Building Systems
 ................

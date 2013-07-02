@@ -1,18 +1,24 @@
-from chemlab.db.cirdb import CirDB
-from chemlab.db.local import LocalDB
-from chemlab.db.chemspiderdb import ChemSpiderDB
+from chemlab.db import CirDB
+from chemlab.db import LocalDB
+from chemlab.db import ChemSpiderDB
+from chemlab.db import RcsbDB
+from chemlab.db import ChemlabDB
+from chemlab.db.base import EntryNotFound
+
 from chemlab.graphics import display_molecule
 from chemlab.core import System
 
 from nose.tools import assert_raises
+from nose.plugins.attrib import attr
+
+@attr('slow')
 def test_cir():
     db = CirDB()
     bz = db.get("molecule", "norbornene")
 
 def test_local():
-    # Fetch some stuff from cirdb
-    db = CirDB()
-    bz = db.get("molecule", "norbornene")
+    db = ChemlabDB()
+    bz = db.get("molecule", "example.norbornene")
 
     pre_string = bz.tojson()
     db = LocalDB("/tmp/testdb/")
@@ -28,6 +34,17 @@ def test_local():
     post_string = db.get('system', 'norbornene-3').tojson()
     
     assert pre_string == post_string
+    
+    
+def test_rcsb():
+    db = RcsbDB()
+    
+    # Test for failure
+    with assert_raises(EntryNotFound):
+        mol = db.get('molecule', 'nonexistent')
+        
+    mol = db.get('molecule', '3ZJE')
+    assert mol.n_atoms == 5697
     
 def test_chemspider():
     
