@@ -82,6 +82,7 @@ def datafile(filename, mode="rb", format=None):
     """
 
     if format is None:
+        filename = os.path.expanduser(filename)
         base, ext = os.path.splitext(filename)
             
         if ext in _extensions_map:
