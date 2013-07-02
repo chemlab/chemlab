@@ -1,29 +1,35 @@
 '''Tests for the graphics harnessing'''
+import time
+import numpy as np
+from collections import defaultdict
+
 from chemlab.core import Atom, Molecule
 from chemlab.graphics.qtviewer import QtViewer
-from chemlab.graphics.colors import orange, blue, forest_green
+from chemlab.graphics import colors
+
 from chemlab.graphics.renderers import (TriangleRenderer, SphereRenderer,
                                         SphereImpostorRenderer, PointRenderer,
                                         AtomRenderer, BoxRenderer, LineRenderer,
                                         CylinderRenderer, BondRenderer, BallAndStickRenderer,
                                         WireframeRenderer, CylinderImpostorRenderer)
-from chemlab.graphics.colors import green, white, black, blue, purple, red
+
 from chemlab.graphics.uis import TextUI
-from chemlab.db import ChemlabDB
-import numpy as np
-import time
+
+from chemlab.db import ChemlabDB, CirDB
+from chemlab.io import datafile
 
 from chemlab.graphics.qttrajectory import QtTrajectoryViewer, format_time
-from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect, GammaCorrectionEffect
-from chemlab.graphics.postprocessing.outline import OutlineEffect
+from chemlab.graphics.postprocessing import (SSAOEffect,
+                                             FXAAEffect,
+                                             GammaCorrectionEffect,
+                                             OutlineEffect, GlowEffect)
+
 
 def test_triangle_renderer():
     '''To see if we're able to render a triangle'''
     vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
     normals = [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]
-
-    blue = [[0, 255, 255, 255]]
-    colors = blue * 3
+    colors = [colors.blue]* 3
 
     v = QtViewer()
     tr = v.add_renderer(TriangleRenderer, vertices, normals, colors, shading='toon')
@@ -32,9 +38,7 @@ def test_triangle_renderer():
 def test_point_renderer():
     '''To see if we're able to render a triangle'''
     vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
-    blue = [[0, 255, 255, 255]]
-
-    colors = blue * 3
+    colors = [colors.blue] * 3
 
     v = QtViewer()
     tr = v.add_renderer(PointRenderer, vertices, colors)
@@ -45,10 +49,7 @@ def test_point_fog():
 
     NPOINTS = 10000
     vertices = (np.random.random((NPOINTS, 3))-0.5)*3
-    #vertices = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]]
-    blue = [[0, 255, 0, 125]]
-
-    colors = blue * NPOINTS
+    colors = [colors.blue] * NPOINTS
 
     v = QtViewer()
 
@@ -81,7 +82,7 @@ def test_sphere_imp_renderer():
     '''To see if we can render a sphere'''
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = np.array([orange, blue, forest_green])
+    colors = np.array([colors.orange, colors.blue, colors.forest_green])
 
     v = QtViewer()
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
@@ -117,7 +118,7 @@ def test_box_renderer():
 def test_line_renderer():
     vectors = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],
                         [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-    colors = [blue, orange, orange, orange]
+    colors = [colors.blue, colors.orange, colors.orange, colors.orange]
 
     v = QtViewer()
     ar = v.add_renderer(LineRenderer, vectors, colors)
@@ -129,7 +130,7 @@ def test_cylinder_renderer():
                        [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]],
                        [[1.0, 0.0, 0.0], [1.0, 0.0, 1.0]]])
     radii = np.array([0.5, 0.3, 0.3])
-    colors = np.array([blue, orange, green])
+    colors = np.array([colors.blue, colors.orange, colors.green])
 
     # Test for speed
     # random bounds
@@ -139,7 +140,6 @@ def test_cylinder_renderer():
     #colors = np.array([blue] * n)
 
     v = QtViewer()
-    import time
     t0 = time.time()
     ar = v.add_renderer(CylinderRenderer, bounds, radii, colors)
     print(time.time() - t0)
@@ -149,24 +149,22 @@ def test_cylinder_renderer():
     v.run()
 
 def test_cylinder_impostor_renderer():
-    from chemlab.graphics.renderers import CylinderImpostorRenderer
-
     bounds = np.array([[[-1.0, 0.0, 0.0], [-1.0, 1.0, 0.0]],
                        [[1.0, 0.0, 0.0], [1.0, 3.0, 0.0]],
                        [[1.0, 0.0, 0.0], [1.0, 0.0, 1.0]]])
     radii = np.array([0.5, 0.3, 0.3])
-    colors = np.array([blue, orange, green])
+    colors = np.array([colors.blue, colors.orange, colors.green])
 
     bounds = np.array([[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
     radii = np.array([0.2])
-    colors = np.array([blue])
+    colors = np.array([colors.blue])
 
     # Test for speed
     # random bounds
     #n = 50000
     #bounds = np.random.rand(n, 2, 3) * 10
     #radii = np.random.rand(n)/10.0
-    #colors = np.array([blue] * n)
+    #colors = np.array([colors.blue] * n)
 
     v = QtViewer()
     ar = v.add_renderer(CylinderImpostorRenderer, bounds, radii, colors)    
@@ -178,7 +176,7 @@ def test_cylinder_impostor_renderer():
     ar.update_radii([0.1])
     bounds[0,0] -= 1.0
     ar.update_bounds(bounds)
-    ar.update_colors([green])
+    ar.update_colors([colors.green])
     v.run()
     
     # Test emptiness
@@ -186,12 +184,8 @@ def test_cylinder_impostor_renderer():
 
 
 def test_bond_renderer():
-
-    from chemlab.db.cirdb import CirDB
-    from collections import defaultdict
-
     v = QtViewer()
-    v.widget.background_color = black
+    v.widget.background_color = colors.black
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
@@ -212,36 +206,20 @@ def test_bond_renderer():
 
 
 def test_ball_and_stick_renderer():
-    from collections import defaultdict
-    from chemlab.io import datafile
-    from chemlab.db.cirdb import CirDB
+
 
     v = QtViewer()
     v.add_post_processing(SSAOEffect, kernel_radius = 0.15)
-
-    #v.widget.background_color = black
-    #mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
-    #                Atom("H", [-0.402, 0.249, 0.0]),
-    #                Atom("H", [-0.532, 0.198, 0.10])])
-
-    #mol.bonds = np.array([[0, 1],[0, 2]])
-
-    #mol = CirDB().get("molecule", "moronic acid")
+    
     mol = datafile('tests/data/3ZJE.pdb').read('molecule')
     mol.bonds = find_bonds(mol)
 
     ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, mol.bonds)
-
-
-    # Try without bonds
     # ar2 = v.add_renderer(BallAndStickRenderer, mol.r_array + 0.5, mol.type_array, np.array([]))
 
     v.run()
 
 def test_wireframe_renderer():
-    from collections import defaultdict
-    from chemlab.db.cirdb import CirDB
-
     v = QtViewer()
     #v.widget.background_color = black
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
@@ -276,7 +254,7 @@ def test_unproject():
     v = QtViewer()
 
     vectors = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-    colors = [blue, blue]
+    colors = [colors.blue, colors.blue]
     ar = v.add_renderer(LineRenderer, vectors, colors)
 
     def mouse_move(evt):
@@ -303,7 +281,6 @@ def find_bonds(sys):
 
 
 def test_traj_viewer():
-    from chemlab.io import datafile
     tv = QtTrajectoryViewer()
 
     s = datafile('tests/data/water.gro').read('system')
@@ -327,7 +304,7 @@ def test_camera_autozoom():
     mol = Molecule([Atom("O", [-0.499, 0.249, 0.0]),
                     Atom("H", [-0.402, 0.249, 0.0]),
                     Atom("H", [-0.532, 0.198, 0.10])])
-    from chemlab.io import datafile
+    
     s = datafile('tests/data/3ZJE.pdb').read('system')
 
     # To add some interaction to it
@@ -337,11 +314,10 @@ def test_camera_autozoom():
     v.run()
 
 def test_noeffect():
-    from chemlab.graphics.postprocessing import NoEffect
     v = QtViewer()
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = np.array([orange, blue, forest_green])
+    colors = np.array([colors.orange, colors.blue, colors.forest_green])
 
     sr = v.add_renderer(SphereImpostorRenderer, centers, radii, colors)
 
@@ -350,15 +326,14 @@ def test_noeffect():
     v.run()
 
 def test_fxaa():
-    from chemlab.graphics.postprocessing.fxaa import FXAAEffect
     centers = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
     radii = [0.5, 0.1, 0.5]
-    colors = np.array([orange, blue, forest_green])
+    colors = np.array([colors.orange, colors.blue, colors.forest_green])
 
 
     vectors = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0],
                         [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-    colors = [blue, orange, orange, orange]
+    colors = [colors.blue, colors.orange, colors.orange, colors.orange]
 
     v = QtViewer()
     ar = v.add_renderer(LineRenderer, vectors, colors)
@@ -371,30 +346,21 @@ def test_fxaa():
     v.run()
 
 def test_ssao():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-
     cdb = ChemlabDB()
-
-    mol = cdb.get('molecule', 'example.norbornene')
-
     mol = datafile('tests/data/3ZJE.pdb').read('system')
     v = QtViewer()
 
-
     v.widget.camera.autozoom(mol.r_array)
-    v.widget.post_processing.append(SSAOEffect(v.widget, kernel_size=16, kernel_radius=3.0, ssao_power=2.7))
+    v.widget.post_processing.append(SSAOEffect(v.widget, kernel_size=16,
+                                               kernel_radius=3.0, ssao_power=2.7))
     sr = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, 'impostors')
     #ar = v.add_renderer(BallAndStickRenderer, mol.r_array, mol.type_array, [])
+    v.widget.camera.orbit_y(90)
 
     v.run()
 
 
 def test_gamma():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-    from chemlab.graphics.postprocessing.outline import OutlineEffect
-
     cdb = ChemlabDB()
 
     mol = datafile('tests/data/3ZJE.pdb').read('system')
@@ -410,10 +376,6 @@ def test_gamma():
     v.run()
 
 def test_outline():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-    from chemlab.graphics.postprocessing.outline import OutlineEffect
-
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
 
@@ -433,17 +395,12 @@ def test_outline():
     v.run()
 
 def test_glow():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-    from chemlab.graphics.postprocessing.glow import GlowEffect
     from PySide import QtCore
-
+    
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
-    #mol = datafile('tests/data/3ZJE.pdb').read('system')
-
+    
     v = QtViewer()
-
     colors = np.array([(255, 0, 0, 255)]*mol.n_atoms)
     colors[0][3] = 0
 
@@ -462,15 +419,13 @@ def test_glow():
     timer = QtCore.QTimer()
     timer.timeout.connect(changeglow)
     timer.start(10)
-    #v.add_post_processing(SSAOEffect, ssao_power = 5.0)
-    #v.add_post_processing(FXAAEffect)
-    #v.add_post_processing(GammaCorrectionEffect)
     v.run()
 
+def test_topng():
+    # Api for PNG saving
+    pass
+    
 def test_multiple_post_processing():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-
     v = QtViewer()
     cdb = ChemlabDB()
     mol = cdb.get('molecule', 'example.norbornene')
@@ -491,7 +446,6 @@ def test_multiple_post_processing():
 def test_pickers():
     from chemlab.graphics.pickers import SpherePicker, CylinderPicker
     from chemlab.core.molecule import guess_bonds
-    from chemlab.io import datafile
     #mol = datafile('tests/data/benzene.mol').read('molecule')
     mol = ChemlabDB().get('molecule', 'example.water')
 
@@ -523,10 +477,6 @@ def test_pickers():
     v.run()
 
 def test_toon_shading():
-
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-    from chemlab.graphics import colors
     from chemlab.core.molecule import guess_bonds
 
     cdb = ChemlabDB()
@@ -558,9 +508,6 @@ def test_toon_shading():
 # Tests for the molecular viewer
 def test_molecular_viewer():
     from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.io import datafile
-
     cdb = ChemlabDB()
 
     mol = cdb.get('molecule', 'example.norbornene')
@@ -570,7 +517,7 @@ def test_molecular_viewer():
     mol.guess_bonds()
 
     v = QtMolecularViewer(mol)
-
+    v.widget.background_color = colors.black
     v.widget.camera.autozoom(mol.r_array)
 
     def on_action1():

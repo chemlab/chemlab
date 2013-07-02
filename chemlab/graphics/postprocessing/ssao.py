@@ -1,7 +1,3 @@
-'''
-Screen space ambient occlusion
-'''
-
 from ..textures import Texture
 
 from OpenGL.GL import *
@@ -16,6 +12,41 @@ from ..transformations import normalized
 from ..shaders import set_uniform, compileShader
 
 class SSAOEffect(object):
+    """Screen space ambient occlusion.
+
+    This effect greatly enhances the perception of the shape of the
+    molecules. More occluded areas (pockets) are darkened to produce a
+    more realistic illumination. For each pixel to draw, the algorithm
+    randomly samples its neighbourhood to determine how occluded is
+    the point. The effect can be tweaked to increase the darkening,
+    the accuracy and the sensibility to small pockets.
+
+    .. image:: ../_static/ssao_on_off.png
+        :width: 800px
+    
+    **Parameters**
+    
+    kernel_size: int (min 1 max 128), default 32
+    
+        The number of random samples used to determine if an area is
+        occluded. At small values the performance is good and the
+        quality is bad, at high value is the opposite is true.
+    
+    kernel_radius: float, default 2.0
+
+        The maximum distances of the sampling neighbours. It should be
+        comparable with the pocket size you intend to see. At small
+        values it's smoother but will darken just small pockets, at
+        high values will reveal bigger pockets but the result would be
+        more rough.
+    
+    ssao_power: float, default 2.0
+
+       Elevate the darkening effect to a certain power. This will make
+       the dark areas darker for a more dramatic effect.
+
+    """
+
     
     def __init__(self, widget, kernel_size=32, kernel_radius=2.0, ssao_power=2.0):
         self.widget = widget
