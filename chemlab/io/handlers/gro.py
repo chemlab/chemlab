@@ -1,6 +1,7 @@
 import numpy as np
 
-from .base import IOHandler
+from .base import IOHandler, FeatureNotAvailable
+
 from .gro_map import gro_to_cl
 
 from ...core.system import System
@@ -49,12 +50,16 @@ class GromacsIO(IOHandler):
     can_write = ['system']
 
     def read(self, feature):
+        super(GromacsIO, self).read(feature)
+        
         if feature == 'system':
             lines = self.fd.readlines()
             lines = [line.decode('utf-8') for line in lines]
             return parse_gro_lines(lines)
 
     def write(self, feature, sys):
+        super(GromacsIO, self).write(feature, sys)
+        
         if feature == 'system':
             write_gro(sys, self.fd)
 

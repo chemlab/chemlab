@@ -1,5 +1,8 @@
 import difflib
 
+class FeatureNotAvailable(Exception):
+    pass
+
 class IOHandler(object):
     """Generic base class for file readers and writers.
 
@@ -82,7 +85,8 @@ class IOHandler(object):
                        return geom
         
         """
-
+        if 'w' not in self.fd.mode and 'x' not in self.fd.mode:
+            raise Exception("The file is not opened in writing mode. If you're using datafile, add the 'w' option.\ndatafile(filename, 'w')")
         
         self.check_feature(feature, "write")
         
@@ -106,9 +110,9 @@ class IOHandler(object):
             
         if feature not in features:
             matches = difflib.get_close_matches(feature, features)
-            raise ValueError("Feature %s not present in %s. Close matches: %s"
-                             % (feature, str(type(self).__name__),
-                                str(matches)))
+            raise FeatureNotAvailable("Feature %s not present in %s. Close matches: %s"
+                                      % (feature, str(type(self).__name__),
+                                         str(matches)))
 
 def make_ionotavailable(name, msg, can_read = [], can_write = []):
     def read(self, feature):

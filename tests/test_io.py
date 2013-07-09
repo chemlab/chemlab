@@ -3,6 +3,8 @@ from chemlab.io import datafile, add_default_handler
 
 from chemlab.io.handlers import GromacsIO
 from chemlab.io.handlers import EdrIO
+from nose.tools import assert_raises
+
 import numpy as np
     
 def test_datafile():
@@ -45,6 +47,10 @@ def test_write_gromacs():
     
     df = datafile('/tmp/dummy.gro', mode="w")
     df.write('system', sys)
+    
+    with assert_raises(Exception):
+        df = datafile('/tmp/dummy.gro')
+        df.write('system', sys)
     
     df = datafile('/tmp/dummy.gro')
     sread = df.read('system')
