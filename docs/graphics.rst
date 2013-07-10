@@ -394,3 +394,102 @@ To demostrate let's draw a grid of 125 tetrahedra::
 If you had any problem with the tutorial or you want to implement
 other kind of renderers don't exitate to contact me. The full code of
 this tutorial is in `chemlab/examples/tetrahedra_tutorial.py`.
+
+Offline Rendering
+-----------------
+
+.. versionadded:: 0.3
+
+With chemlab you can produce renderings programmatically without
+having to display anything or tinkering with the user interface. This 
+feature comes pretty useful when generating reports.
+
+Let's say you want to make a showcase rendering of different chemical
+compounds. We'll take an example::
+
+    from chemlab.db import ChemlabDB
+    cdb = ChemlabDB()
+    
+    norb = cdb.get("molecule", "example.norbornene")
+
+We want to do the rendering of this molecule using a space fill
+representation::
+
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import AtomRenderer
+    
+    v = QtViewer()
+    atom_rend = v.add_renderer(AtomRenderer, norb.r_array, norb.type_array)
+    
+Now, you can programmatically manipulate the camera to adjust to the
+right zoom level. You can, for instance, use the
+:meth:`chemlab.graphics.camera.Camera.autozoom` method to automatically
+adjust the scene, but you are free to use any other method present in the
+:class:`~chemlab.graphics.camera.Camera` API::
+
+    v.widget.camera.autozoom(norb.r_array)
+    
+    v.run()
+
+.. image:: /_static/norb_step1.png
+
+At this point, you can experiment with different effects, in this case
+we'll add SSAO and anti aliasing to improve the visual quality and
+make it a little bit smoother::
+
+    from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect
+    
+    v.add_post_processing(SSAOEffect, kernel_size=128, kernel_radius=1.0)
+    v.add_post_processing(FXAAEffect)
+    
+    v.run()
+
+.. image:: /_static/norb_step2.png
+
+To actually save the image you can now use the
+:py:meth:`chemlab.graphics.QChemlabWidget.toimage` method::
+      
+    img = v.widget.toimage(800, 800)
+    img.save("norb.png")
+ 
+Once we've got the sample molecule up and running it's very easy to
+automatize the process to produce images of different molecules::
+
+    from chemlab.db import CirDB
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import AtomRenderer
+    from chemlab.graphics.postprocessing import FXAAEffect, SSAOEffect
+     
+    # A series of compounds to display
+    compounds = ["methane", "ethane", "propane", "butane"]
+     
+    db = CirDB()
+     
+    # Prepare the viewer
+    v = QtViewer()
+    v.add_post_processing(SSAOEffect, kernel_size=128, kernel_radius=1.0)
+    v.add_post_processing(FXAAEffect)
+     
+    for compound in compounds:
+        mol = db.get("molecule", compound)
+        rend = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array)
+        
+        v.widget.camera.autozoom(mol.r_array)
+        # Give some extra zoom
+        v.widget.camera.mouse_zoom(1.0)
+        
+        v.widget.toimage(300, 300).save(compound + '.png')
+        
+        # Cleanup
+        v.remove_renderer(rend)
+
+.. image:: /_static/offline_rendering/methane.png
+	   
+.. image:: /_static/offline_rendering/ethane.png	   
+
+.. image:: /_static/offline_rendering/propane.png	   
+	   
+.. image:: /_static/offline_rendering/butane.png	   
+
+This example is stored in the ``chemlab/examples/offline_rendering.py`` file.
+ 

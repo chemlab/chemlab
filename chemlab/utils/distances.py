@@ -64,6 +64,8 @@ def distance_matrix(coords_a, coords_b, cutoff,
        linked list method.
 
     """
+    coords_a = np.array(coords_a)
+    coords_b = np.array(coords_b)
     if method=="simple":
         if periodic is not False:
             return distance_array(coords_a, coords_b, cutoff=cutoff,

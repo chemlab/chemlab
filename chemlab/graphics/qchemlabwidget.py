@@ -313,7 +313,37 @@ class QChemlabWidget(QGLWidget):
                 self.update()
 
     def toimage(self, width=None, height=None):
-        '''Return an dump of the current scene as a PIL Image'''
+        '''Return the current scene as a PIL Image.
+
+        **Example**
+        
+        You can build your molecular viewer as usual and dump an image
+        at any resolution supported by the video card (up to the
+        memory limits)::
+
+            v = QtViewer()
+        
+            # Add the renderers
+            v.add_renderer(...)
+        
+            # Add post processing effects
+            v.add_post_processing(...)
+        
+            # Move the camera
+            v.widget.camera.autozoom(...)
+            v.widget.camera.orbit_x(...)
+            v.widget.camera.orbit_y(...)
+        
+            # Save the image
+            image = v.widget.toimage(1024, 768)
+            image.save("mol.png")
+
+        
+        .. seealso::
+
+            https://pillow.readthedocs.org/en/latest/PIL.html#module-PIL.Image
+        
+        '''
         from .postprocessing import NoEffect
         effect = NoEffect(self)
         
