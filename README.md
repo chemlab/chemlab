@@ -1,8 +1,8 @@
-[![Stories in Ready](http://badge.waffle.io/chemlab/chemlab.png)](http://waffle.io/chemlab/chemlab)  
+
 chemlab - the python chemistry package you were waiting for
 ===========================================================
 
-[![Build Status](https://travis-ci.org/chemlab/chemlab.png?branch=master)](https://travis-ci.org/chemlab/chemlab) [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)
+[![Build Status](https://travis-ci.org/chemlab/chemlab.png?branch=master)](https://travis-ci.org/chemlab/chemlab) [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)[![Stories in Ready](http://badge.waffle.io/chemlab/chemlab.png)](http://waffle.io/chemlab/chemlab)  
 
 - Version: 0.2
 - Author: Gabriele Lanaro
