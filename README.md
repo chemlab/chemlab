@@ -1,3 +1,4 @@
+[![Stories in Ready](http://badge.waffle.io/chemlab/chemlab.png)](http://waffle.io/chemlab/chemlab)  
 chemlab - the python chemistry package you were waiting for
 ===========================================================
 
