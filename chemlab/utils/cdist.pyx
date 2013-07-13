@@ -35,7 +35,7 @@ def distance_array(arr_a, arr_b, double[:] period, double cutoff):
 
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef inline double minimum_image_distance(double[:] a,double[:] b, double[:] periodic):
+cdef inline double minimum_image_distance(double[:] a,double[:] b, double[:] periodic) nogil:
     cdef double d[3]
     cdef double a_can, b_can 
     
