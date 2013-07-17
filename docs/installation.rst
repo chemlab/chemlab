@@ -2,18 +2,19 @@
 Installation and Quickstart
 ===========================
 
-chemlab is currently tested on Ubuntu 13.04 and python 2.7. First
-install the dependencies::
+chemlab is currently tested on Ubuntu 13.04 and python 2.7, it should
+work on 3.3 too. First install the dependencies::
 
     $ sudo apt-get install python-numpy python-scipy python-matplotlib python-pyside python-opengl cython 
 
 `Download
-<https://pypi.python.org/packages/source/c/chemlab/chemlab-0.2.tar.gz>`_
+<https://pypi.python.org/packages/source/c/chemlab/chemlab-0.3.tar.gz>`_
 unpack and install chemlab from the setup.py included in the package::
 
-    $ wget https://pypi.python.org/packages/source/c/chemlab/chemlab-0.2.tar.gz
-    $ tar xvzf chemlab-0.2.tar.gz
-    $ cd chemlab-0.2
+    $ wget https://pypi.python.org/packages/source/c/chemlab/chemlab-0.3.tar.gz
+    $ tar xvzf chemlab-0.3.tar.gz
+    $ cd chemlab-0.3
+    $ sudo python setup.py build_ext --inplace
     $ sudo python setup.py install
 
 Test the newly installed package by typing::
