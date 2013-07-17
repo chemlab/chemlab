@@ -296,6 +296,8 @@ class BondsAttr(object):
         # Need to add an offset when concatenating
         if sys.bonds.size == 0:
             return othersys.bonds + sys.n_atoms
+        if othersys.bonds.size == 0:
+            return sys.bonds.copy()
         else:
             return np.concatenate((sys.bonds, othersys.bonds + sys.n_atoms))
 
