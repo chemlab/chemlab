@@ -4,7 +4,7 @@ chemlab - the python chemistry package you were waiting for
 
 [![Build Status](https://travis-ci.org/chemlab/chemlab.png?branch=master)](https://travis-ci.org/chemlab/chemlab) [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)[![Stories in Ready](http://badge.waffle.io/chemlab/chemlab.png)](http://waffle.io/chemlab/chemlab)  
 
-- Version: 0.2
+- Version: 0.3
 - Author: Gabriele Lanaro
 - Email: python-chemlab@googlegroups.com
 - Website: http://chemlab.github.com/chemlab

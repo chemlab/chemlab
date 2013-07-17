@@ -70,11 +70,12 @@ this way they provide the maximum flexibility required to build
 efficient opengl routines. Renderers may be subclass other renderers
 as well as use other renderers.
 
-A very useful renderer is TriangleRenderer, used to render efficiently
-a list of triangles, it constitutes a base for writing other
-renderers. TriangleRenderer works basically like this, you pass the
-vertices, normals and colors of the triangle and it will display a
-triangle in the world::
+A very useful renderer is
+:py:class:`~chemlab.graphics.renderers.TriangleRenderer`, used to
+render efficiently a list of triangles, it constitutes a basis for
+writing other renderers. TriangleRenderer works like this:
+you pass the vertices, normals and colors of the triangles and it will
+display a set of triangles in the world::
 
     from chemlab.graphics import QtViewer
     from chemlab.graphics.renderers import TriangleRenderer
@@ -92,8 +93,8 @@ triangle in the world::
 .. image:: _static/graphics_triangle.png
 	   :width: 600px
 		   
-If you pass 6 vertices/normals/colors, he will display 2 triangles and
-so on. As a sidenote, he is very efficient and in fact
+If you pass 6 vertices/normals/colors, it will display 2 triangles and
+so on. As a sidenote, it is very efficient and in fact
 :py:class:`chemlab.graphics.renderers.TriangleRenderer` is used as a
 backend for a lot of other renderers such as
 :py:class:`~chemlab.graphics.renderers.SphereRenderer` and
@@ -156,15 +157,14 @@ You'll get a representation like this:
 .. image:: /_static/ssao_off.png
     :width: 600px
 
-This representation doesn't really show how the molecule surface
-features, plus it looks dull and plasticky. We can add the SSAO
-post-processing effect to improve its visual quality.
+This representation doesn't really show the molecule surface
+features, plus it looks dull and plasticky. We can add the screen space ambient occlusion effect to improve its visual quality.
 
 `Screen space ambient occlusion (SSAO)
 <http://en.wikipedia.org/wiki/Screen_space_ambient_occlusion>`_ is a
 very powerful technique used by numerous videogames to make the
 illumination much more realistic, by darkening the more occluded areas
-of the objects, such as pockets.
+of the objects, such as pockets and surface features.
 
 Chemlab implements this effect in the
 :py:class:`~chemlab.graphics.postprocessing.SSAOEffect` class. To
@@ -180,9 +180,9 @@ What you'll get is this, with a much-improved visual quality:
 .. image:: /_static/ssao_on.png
     :width: 600px
 
-Post processing effects can be customized with some arguments. The
+Post processing effects can be customized with arguments. The
 SSAO effect may have a dirty look, you can fix that by changing the
-parameter kernel_size, defaulted to 32, with a max value of 128::
+parameter kernel_size, which default to 32, with a max value of 128::
 
   v.add_post_processing(SSAOEffect, kernel_size=128)
 
@@ -209,7 +209,7 @@ of effects that will be applied in turn::
 .. image:: /_static/multi_effects.png
     :width: 600px
 
-Unfortunately on ATI cards with open source drivers you can't apply
+Unfortunately on ATI cards with open source drivers can't apply
 multiple post processing effects. I'm investigating the issue, but
 this can be potentially due to a bug in the drivers.
 
