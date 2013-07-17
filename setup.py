@@ -29,6 +29,7 @@ setup(
     include_dirs = [np.get_include()],
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
+                    'chemlab.graphics.postprocessing.shaders': ['*.vert', '*.frag'],
                     'chemlab.resources' : ["*"],
                     'chemlab.db.localdb.data' : ['*'],
                     'chemlab.db.localdb.molecule' : ['*'],
