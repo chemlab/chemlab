@@ -18,16 +18,17 @@ def test_read_pdb():
     s = df.read('system')
     
 def test_write_pdb():
-    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'grotype': 'OW'}),
-                      Atom('H', [0.1, 0.0, 0.0], export={'grotype': 'HW1'}),
-                      Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
+    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'type': 'O'}),
+                      Atom('H', [0.1, 0.0, 0.0], export={'type': 'H'}),
+                      Atom('H', [-0.03333, 0.09428, 0.0], export={'type': 'H'})],
                       export={'groname': 'SOL'})
 
     sys = System.empty(200, 3*200, box_vectors = np.eye(3) * 2.0)
     for i in range(200):
+        water.r_array += 0.1
         sys.add(water.copy())
     
-    df = datafile('/tmp/dummy.gro', mode="w")
+    df = datafile('/tmp/dummy.pdb', mode="w")
     df.write("system", sys)
     
 def test_read_gromacs():
