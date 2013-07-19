@@ -1,5 +1,6 @@
 from ...core import Atom, Molecule, System
 from .base import IOHandler
+from io import BytesIO
 from itertools import groupby
 import numpy as np
 from ...db import ChemlabDB
@@ -38,22 +39,31 @@ class PdbIO(IOHandler):
     
     def __init__(self, fd):
         self.fd = fd
-        if ('r' in fd.mode):
-            try:
-                self.lines = [line.decode('utf-8') for line in fd.readlines()]
-            except FileNotFoundError:
-                return
-            self.atoms = []        
-            self.atom_res = []
-            for line in self.lines:
-                self.handle_line(line)
-        self.set_header()
-        self.set_title()
-        self.set_expdta()
+
+        # Fix for BytesIO which doesn't have 'mode'
+        if isinstance(fd, BytesIO):
+            if fd.tell() == 0:
+                fd.mode = 'w'
+            else:
+                fd.mode = 'r'
+            
+        
+
         
         resname = None
         
     def read(self, feature):
+        self.lines = [line.decode('utf-8') for line in self.fd.readlines()]
+        self.atoms = []        
+        self.atom_res = []
+        
+        for line in self.lines:
+            self.handle_line(line)
+            
+        self.set_header()
+        self.set_title()
+        self.set_expdta()
+            
         if feature == 'molecule':
             return self.get_molecule()
         if feature == 'system':
@@ -114,6 +124,10 @@ class PdbIO(IOHandler):
         return m
         
     def write(self, feature, sys):
+        self.set_header()
+        self.set_title()
+        self.set_expdta()
+
         if feature == 'system':
             write_pdb(sys, self.fd,self.header,self.title,self.expdta)
         return
