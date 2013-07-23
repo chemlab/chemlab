@@ -6,6 +6,12 @@
 Welcome to chemlab's documentation!
 ===================================
 
+:Author:
+   Gabriele Lanaro
+   
+:Contributors:
+   Yotam Y. Avital
+
 :Webpage:
    https://chemlab.github.com/chemlab
  
