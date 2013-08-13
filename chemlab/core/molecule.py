@@ -249,8 +249,11 @@ class Molecule(object):
                   MArrayAttr('charge_array', 'charge', object, default=lambda mol: np.zeros(mol.n_atoms, np.float)),
                   ]
     
-    fields = [MField('export', object, default=lambda mol: {}),
-              MField('bonds', object, default=lambda mol: np.array([], dtype=object))]
+    fields = [
+        MField('export', object, default=lambda mol: {}),
+        MField('bonds', object, default=lambda mol: np.array([], dtype=object)),
+        MField('bond_orders', int, default=lambda mol: np.array([1]*(len(mol.bonds))))
+    ]
     
     derived = ('formula',)
     
@@ -281,8 +284,16 @@ class Molecule(object):
         dx = r - self.r_array[0]
         self.r_array += dx
 
-            
+    @property
+    def bonds(self):
+        # We need 
+        return self._bonds
         
+    @bonds.setter
+    def bonds(self, value):
+        self.bond_orders = np.ones(len(value), dtype='int')
+        self._bonds = value
+    
     @classmethod
     def from_arrays(cls, **kwargs):
         '''Create a Molecule from a set of Atom-derived arrays. 

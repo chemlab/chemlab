@@ -174,6 +174,7 @@ class BondsAttr(object):
         if arr is None:
             self.on_empty(sys)
         else:
+            sys._bonds = arr
             sys.bonds = arr
 
     def assign(self, sys, arr):
@@ -185,8 +186,10 @@ class BondsAttr(object):
         else:
             sys.bonds = np.concatenate((sys.bonds,
                                         mol.bonds.copy() + sys._at_counter))
-
-    def on_get_molecule_entry(self, sys, index):
+    
+    # TODO: this is an hack to access this outside...
+    @staticmethod
+    def get_molecule_bonds(sys, index):
         bond_mask = np.zeros(sys.n_bonds, dtype='bool')
         for i, (s, e) in enumerate(sys.bonds):
             sel_ind_start = sys.mol_indices[index]
@@ -196,7 +199,11 @@ class BondsAttr(object):
             is_end = (e >= sel_ind_start) & (e <= sel_ind_end)
 
             bond_mask[i] = is_start and is_end
-
+        
+        return bond_mask
+            
+    def on_get_molecule_entry(self, sys, index):
+        bond_mask = BondsAttr.get_molecule_bonds(sys, index)
         return sys.bonds.take(bond_mask) - sys.mol_indices[index]
 
     def on_remove_molecules(self, sys, indices):
@@ -222,6 +229,7 @@ class BondsAttr(object):
 
     def on_empty(self, sys):
         # No idea how many bonds
+        sys._bonds = np.zeros((0, 2), 'int')
         sys.bonds = np.zeros((0, 2), 'int')
 
     def on_reorder_molecules(self, sys, new_order):
@@ -305,6 +313,62 @@ class BondsAttr(object):
         return sys.bonds
 
 
+class BondOrderAttr(object):
+    def __init__(self):
+        self.name = 'bond_orders'
+        self.fieldname = 'bond_orders'
+
+    def from_array(self, sys, arr):
+        if arr is None:
+            sys.bond_orders = np.array([1] * len(sys.bonds))
+        else:
+            sys.bond_orders = arr
+
+    def assign(self, sys, arr):
+        sys.bond_orders = arr
+
+    def on_add_molecule(self, sys, mol):
+        #print 'Sys bonds, orders',sys.bonds, sys.bond_orders
+        #print 'Mol bonds orders',mol.bonds,  mol.bond_orders
+
+
+        if sys.bonds.size == 0:
+            sys.bond_orders = mol.bond_orders.copy()
+        if mol.bonds.size == 0:
+            pass
+        else:
+            # We assume that BondAttr.on_add_molecules was called
+            # first... OMG THIS IS SO UGLY
+            sys.bond_orders[-mol.n_bonds:] = mol.bond_orders
+
+    def on_get_molecule_entry(self, sys, index):
+        bond_mask = BondsAttr.get_molecule_bonds(sys, index)
+        return sys.bond_orders.take(bond_mask)
+
+    def on_remove_molecules(self, sys, indices):
+        pass
+
+    def on_empty(self, sys):
+        sys.bond_orders = np.array([1] * len(sys.bonds))
+
+    def on_reorder_molecules(self, sys, new_order):
+        pass
+        
+    def selection(self, sys, selection):
+        pass
+
+    def concatenate(self, sys, othersys):
+        # Need to add an offset when concatenating
+        if sys.bond_orders.size == 0:
+            return othersys.bond_orders.copy()
+        if othersys.bonds.size == 0:
+            return sys.bond_orders.copy()
+        else:
+            return np.concatenate((sys.bond_orders, othersys.bond_orders))
+
+    def get(self, sys):
+        pass
+        
 class MArrayAttr(object):
     def __init__(self, name, fieldname, dtype, default=None):
         self.name = name
@@ -330,3 +394,4 @@ class MField(object):
 
     def set(self, at, value):
         setattr(at, self.name, value)
+

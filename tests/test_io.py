@@ -18,9 +18,9 @@ def test_read_pdb():
     s = df.read('system')
     
 def test_write_pdb():
-    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'type': 'O'}),
-                      Atom('H', [0.1, 0.0, 0.0], export={'type': 'H'}),
-                      Atom('H', [-0.03333, 0.09428, 0.0], export={'type': 'H'})],
+    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'pdb.type': 'O'}),
+                      Atom('H', [0.1, 0.0, 0.0], export={'pdb.type': 'H'}),
+                      Atom('H', [-0.03333, 0.09428, 0.0], export={'pdb.type': 'H'})],
                       export={'groname': 'SOL'})
 
     sys = System.empty(200, 3*200, box_vectors = np.eye(3) * 2.0)
