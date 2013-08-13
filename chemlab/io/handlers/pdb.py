@@ -47,9 +47,6 @@ class PdbIO(IOHandler):
             else:
                 fd.mode = 'r'
             
-        
-
-        
         resname = None
         
     def read(self, feature):
@@ -76,25 +73,30 @@ class PdbIO(IOHandler):
             self.handle_ATOM(line)
 
     def handle_ATOM(self, line):
+        export = {}
+        
         serial = int(line[6:12])
         name = line[12:16]
         
         resname = line[17:20]
+        export['pdb.resname'] = resname
+        
         x = float(line[31:38])
         y = float(line[39:46])
         z = float(line[47:54])
         
         # Standard residues just contain the following atoms
         # C, N, H, S and the first is the type
-        
-        # Normalized type        
         type = name[0:2].lstrip()
-        i = u_symbols.index(type.upper())
-        type = symbols[i]
+        export['pdb.type'] = type
+        
+        # Normalized type                
+        atom_type = line[76:78].lstrip()
+        atom_type = symbols[u_symbols.index(atom_type.upper())]
         
         self.atom_res.append(resname)
         # Angstrom to nanometer
-        self.atoms.append(Atom(type, [x/10.0, y/10.0, z/10.0]))
+        self.atoms.append(Atom(atom_type, [x/10.0, y/10.0, z/10.0]))
         
     def get_system(self):
         r_array = np.array([a.r for a in self.atoms])
@@ -130,7 +132,8 @@ class PdbIO(IOHandler):
 
         if feature == 'system':
             write_pdb(sys, self.fd,self.header,self.title,self.expdta)
-        return
+        elif feature == 'molecule':
+            write_pdb(sys, self.fd,self.header,self.title,self.expdta)
 
     def set_header(self,msg=None,date=None,code=None):
         # Called to set the header of the file. Callend upon init to 
@@ -245,17 +248,17 @@ def write_pdb(sys,fd,header,title,expdta):
         for j in range (sys.mol_n_atoms[i]):
             #Atom name. 
             try:
-                at_name = sys.atom_export_array[offset+j]['type']
+                at_name = sys.atom_export_array[offset+j]['pdb.type']
             except KeyError:
                 raise Exception('Atom type not provided')
             #Group name
             try:
-                het_name = sys.atom_export_array[offset+j]['het_name']
+                het_name = sys.atom_export_array[offset+j]['pdb.het_name']
             except KeyError:
                 het_name = at_name
             # Charge
             try:
-                charge = sys.atom_export_array[offset+j]['charge']
+                charge = sys.charge_array
             except KeyError:
                 charge = 0
             #Coordinates
