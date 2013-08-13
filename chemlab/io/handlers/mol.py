@@ -55,7 +55,7 @@ def parse_mol_string(string):
     
     mol = Molecule.from_arrays(r_array = np.array(coords)/10, # To nm
                                type_array = np.array(types))
-    mol.bonds =  np.array(bonds) - 1 # TODO Ugly ugly ugly
-    
+    mol.bonds =  np.array(bonds) - 1
+    mol.bond_orders = np.array(bond_types)
     return mol
     
