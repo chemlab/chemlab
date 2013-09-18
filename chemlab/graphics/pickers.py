@@ -8,9 +8,13 @@ class SpherePicker(object):
     
     def __init__(self, widget, positions, radii):
         
+        self.o_positions = positions
+        self.o_radii = np.array(radii)
+
         self.positions = positions
         self.radii = np.array(radii)
-        self.widget = widget
+        
+        self.widget = widget        
         
     def pick(self, x, y):
         # X and Y are normalized coordinates
@@ -62,6 +66,7 @@ class SpherePicker(object):
         
         if intersections:
             distances, intersections = zip(*sorted(zip(distances, intersections)))
+            
             return list(intersections), list(distances)
         else:
             return [], []

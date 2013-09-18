@@ -65,7 +65,8 @@ def display_system(sys, style='vdw'):
     
     v.run()
 
-def display_trajectory(sys, times, coords_list, style='spheres'):
+def display_trajectory(sys, times, coords_list, box_vectors=None,
+                       style='spheres'):
     '''Display the the system *sys* and instrument the trajectory
     viewer with frames information.
     
@@ -86,6 +87,7 @@ def display_trajectory(sys, times, coords_list, style='spheres'):
     v = QtTrajectoryViewer()
     
     v.add_post_processing(SSAOEffect)
+    v.add_post_processing(FXAAEffect)
     v.add_post_processing(GammaCorrectionEffect, 1.60)
     
     if style == 'spheres':
@@ -116,7 +118,8 @@ def display_trajectory(sys, times, coords_list, style='spheres'):
     @v.update_function
     def on_update(index):
         sr.update_positions(coords_list[index])
-        br.update(sys.box_vectors)
+        if box_vectors is not None:
+            br.update(box_vectors[index])
         v.set_text(format_time(times[index]))
         v.widget.repaint()
 
