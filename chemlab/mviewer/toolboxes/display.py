@@ -1,4 +1,6 @@
-from chemlab.graphics.representations import BallAndStickRepresentation
+from chemlab.mviewer.representations import BallAndStickRepresentation
+from chemlab.graphics.qttrajectory import format_time
+
 from core import *
 from chemlab.db import CirDB
 from chemlab.io import datafile
@@ -53,7 +55,7 @@ def load_trajectory(name, skip=1):
         viewer.representation.update_positions(f)
         current_system().r_array = f
         current_system().box_vectors = boxes[index]
-        
+        viewer.traj_controls.set_time(dt[index])
         viewer.update()
         
     viewer.traj_controls.frame_changed.connect(update)

@@ -3,12 +3,12 @@ import itertools
 
 from .obsarray import obsarray as obsarray
 from .state import SystemHiddenState, SystemSelectionState
-from ..renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
+from ...graphics.renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
                          AtomRenderer, BondRenderer)
-from .. import colors
-from ..pickers import SpherePicker, CylinderPicker
+from ...graphics import colors
+from ...graphics.pickers import SpherePicker, CylinderPicker
 from ...db import ChemlabDB
-from ..postprocessing import GlowEffect
+from ...graphics.postprocessing import GlowEffect
 
 from PyQt4 import QtCore
 

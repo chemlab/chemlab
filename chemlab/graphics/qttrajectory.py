@@ -103,6 +103,7 @@ class TrajectoryControls(QtGui.QWidget):
         super(TrajectoryControls, self).__init__(parent)
 
         self.current_index = 0
+        self.max_index = 0
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.do_update)
         
@@ -235,7 +236,12 @@ class TrajectoryControls(QtGui.QWidget):
         self.slider.setMinimum(0)
         self.slider.setPageStep(1)
 
+    def set_time(self, t):
+        stime = format_time(t)
+        label_tmp = '<b><FONT SIZE=30>{}</b>'
+        self.timelabel.setText(label_tmp.format(stime))
         
+
 class QtTrajectoryViewer(QMainWindow):
     """Bases: `PySide.QtGui.QMainWindow`
 

@@ -529,16 +529,14 @@ def test_toon_shading():
 
 # Tests for the molecular viewer
 def test_molecular_viewer():
-    from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
-    from chemlab.graphics.representations import BallAndStickRepresentation
+    from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
+    from chemlab.mviewer.representations import BallAndStickRepresentation
     cdb = ChemlabDB()
 
     mol = cdb.get('molecule', 'example.norbornene')
     mol.guess_bonds()
-
     v = QtMolecularViewer()
-    #v.ipython.app.exec_lines.append('%run -i toolboxes/init.py')
-    #v.ipython.app.exec_files.append('toolboxes/init.py')
     
     v.run()
+    
     
