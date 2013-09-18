@@ -1,5 +1,6 @@
 """Trying to make a real molecular viewer
 """
+
 import numpy as np
 import os
 
@@ -8,13 +9,17 @@ from PySide.QtCore import Qt, QSize
 from PySide import QtCore
 
 from .qtviewer import QtViewer
+from . import colors
 from .renderers import AtomRenderer, SphereImpostorRenderer
 from .pickers import SpherePicker
 from .representations.ballandstick import BallAndStickRepresentation
+from .QIPythonWidget import QIPythonWidget
+from .qttrajectory import TrajectoryControls
 
 from .. import resources
 
 resources_dir = os.path.dirname(resources.__file__)
+
 
 class IconButton(QtGui.QPushButton):
     def __init__(self, iconname, text):
@@ -24,12 +29,15 @@ class IconButton(QtGui.QPushButton):
         self.setToolTip(text)
 
 class QtMolecularViewer(QtViewer):
-    def __init__(self, system):
+    def __init__(self):
         super(QtMolecularViewer, self).__init__()
         self.actions = {}
         
-        self.system = system
+        self.widget.background_color = colors.black
         
+        #####################################
+        #  This is all UI stuff
+        #####################################
         self.widget.clicked.connect(self.on_click)
         # Let's add some dock
         self.controls = QtGui.QDockWidget()
@@ -45,6 +53,8 @@ class QtMolecularViewer(QtViewer):
         # Sidebar definition        
         
         dock1 = QtGui.QDockWidget()
+        dock2 = QtGui.QDockWidget()
+        
         bt1 = IconButton(os.path.join(resources_dir,
                                       'select_atoms.svg'), 'Select all atoms')
         bt2 = IconButton(os.path.join(resources_dir,
@@ -71,31 +81,45 @@ class QtMolecularViewer(QtViewer):
         wrapper = QtGui.QWidget()
         wrapper.setLayout(layout)
         dock1.setWidget(wrapper)
+        
+        self.ipython = QIPythonWidget()
+        self.ipython.initialize()        
+        
+        wrapper2 = QtGui.QWidget(self)
+        vb = QtGui.QVBoxLayout(self)
+        vb.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        
+        self.traj_controls = TrajectoryControls()
+        vb.addWidget(self.traj_controls, 1)
+        vb.addWidget(self.ipython, 2)
+        wrapper2.setLayout(vb)
+        
+        dock2.setWidget(wrapper2)
         wrapper.setFixedSize(150, 100)
+        
         self.addDockWidget(Qt.DockWidgetArea(Qt.RightDockWidgetArea),
                            dock1)
+        self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
+                           dock2)
         
         self._repr_controls = QtGui.QDockWidget()
+        
         self.addDockWidget(Qt.RightDockWidgetArea, self._repr_controls)
         
-        #self.add_representation(VdWRepresentation)
-        self.add_representation(BallAndStickRepresentation)
+        ############################################
+        # Initialization code
+        ############################################
 
-    def add_representation(self, Repr):
-        self.representation =  Repr(self, self.system)
-        #self.actions['select_all_atoms'].clicked.connect(self.select_all_atoms)
-        #self.actions['select_all_molecules'].clicked.connect(self.select_all_molecules)
-        #self.actions['hide'].clicked.connect(lambda: self.representation.hide(self.representation.selection))
-
-        #def confwidget_on():
-        #    if self._repr_controls.widget() is not self.representation.confwidget:
-        #        self._repr_controls.setWidget(self.representation.confwidget)
-            
-        # def confwidget_off():
-        #     self._repr_controls.setWidget(QtGui.QWidget())
+        self.namespace = self.ipython.get_user_namespace()
+        self.namespace['__builtins__'].viewer = self
         
-        #self.representation.hasSelection.connect(confwidget_on)
-        #self.representation.noSelection.connect(confwidget_off)
+        self.ipython.app.shell.ex('import sys')
+        self.ipython.app.shell.ex('''sys.path.append('/home/gabriele/workspace/chemlab/toolboxes/')''')
+        self.ipython.app.shell.ex('from init import *')
+        
+    def add_representation(self, Repr, system):
+        self.system = system
+        self.representation = Repr(self, system)
         
     def on_click(self, evt):
         self.representation.on_click(evt.x(), evt.y())
