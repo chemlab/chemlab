@@ -37,6 +37,7 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         self.radiuslist = radiuslist
         self.colorlist = colorlist
         self.n_spheres = len(poslist)
+        self.show_mask = np.ones(self.n_spheres, dtype='bool')
         self.ldir = np.array([0.0, 0.0, 10.0, 1.0])
         
         self.shading = shading
@@ -76,6 +77,9 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
                'toon': 1}[self.shading]
         
         set_uniform(self.shader, 'shading_type', '1i', shd)
+    
+    def change_shading(self, shd_typ):
+        self.shading = shd_typ
         
     def draw(self):
         self.setup_shader()
@@ -89,7 +93,7 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         at_sphere_center = glGetAttribLocation(self.shader, b"at_sphere_center")
         at_sphere_radius = glGetAttribLocation(self.shader, b"at_sphere_radius")
         
-        glEnableVertexAttribArray(at_mapping)        
+        glEnableVertexAttribArray(at_mapping)
         glEnableVertexAttribArray(at_sphere_center)
         glEnableVertexAttribArray(at_sphere_radius)
         
@@ -111,7 +115,7 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         self._radius_vbo.unbind()
         self._color_vbo.unbind()
         
-        glDisableVertexAttribArray(at_mapping)        
+        glDisableVertexAttribArray(at_mapping)
         glDisableVertexAttribArray(at_sphere_center)
         glDisableVertexAttribArray(at_sphere_radius)
 
@@ -126,19 +130,31 @@ class SphereImpostorRenderer(ShaderBaseRenderer):
         glUseProgram(0)
         
     def update_positions(self, rarray):
-        vertices = np.repeat(rarray, 4, axis=0).astype(np.float32)
+        rarray = np.array(rarray)
+        vertices = np.repeat(rarray[self.show_mask], 4, axis=0).astype(np.float32)
         self.poslist = rarray
         
         self._verts_vbo.set_data(vertices)
         self._centers_vbo.set_data(vertices)
         
     def update_colors(self, colorlist):
-        colors = np.repeat(colorlist, 4, axis=0).astype(np.uint8)
+        colorlist = np.array(colorlist)
+        colors = np.repeat(colorlist[self.show_mask], 4, axis=0).astype(np.uint8)
         self.colorlist = colorlist
         self._color_vbo.set_data(colors)
         
     def update_radii(self, radiuslist):
+        radiuslist = np.array(radiuslist)
+        
         self.radiuslist = radiuslist
-        radii = np.repeat(radiuslist, 4, axis=0).astype(np.float32)
+        radii = np.repeat(radiuslist[self.show_mask], 4, axis=0).astype(np.float32)
         self._radius_vbo.set_data(radii)
 
+    def hide(self, mask):
+        self.n_spheres = len(mask.nonzero()[0])
+        self.show_mask = mask
+        
+        radii = np.array(self.radiuslist)
+        self.update_positions(np.array(self.poslist))
+        self.update_colors(np.array(self.colorlist))
+        self.update_radii(radii)

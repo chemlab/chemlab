@@ -168,6 +168,9 @@ class QtViewer(QMainWindow):
             self.widget.renderers.remove(rend)
         else:
             raise Exception("The renderer is not in this viewer")
+    def update(self):
+        super(QtViewer, self).update()
+        self.widget.update()
         
     def add_ui(self, klass, *args, **kwargs):
         '''Add an UI element for the current scene. The approach is
@@ -209,6 +212,9 @@ class QtViewer(QMainWindow):
         ..versionadded:: 0.3
         '''
         self.widget.post_processing.remove(pp)
+
+    def clear(self):
+        del self.widget.renderers[:]
         
     # Events
     def keyPressEvent(self, evt):

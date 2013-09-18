@@ -85,6 +85,9 @@ class BondRenderer(AbstractRenderer):
 
     def update_positions(self, r_array):
         bounds_a, bounds_b = self._compute_bounds(r_array, self.bonds)
+        if bounds_a.size == 0 or bounds_b.size == 0:
+            return
+        
         self.cr1.update_bounds(bounds_a)
         self.cr2.update_bounds(bounds_b)
 

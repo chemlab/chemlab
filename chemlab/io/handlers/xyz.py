@@ -58,4 +58,3 @@ class XyzIO(IOHandler):
                              (t, x*10, y*10, z*10))
             
             self.fd.write('\n'.join(lines))
-    

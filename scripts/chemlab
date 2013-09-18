@@ -11,6 +11,19 @@ def infoprint(msg, color=None):
     cprint(msg, color=color, end='')
     sys.stdout.flush()
     
+    
+def mview(args):
+    from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
+    base, ext = os.path.splitext(args.filename)
+    mv = QtMolecularViewer()
+
+    mv.ipython.app.shell.ex('load_system("%s")' % args.filename)
+
+    if args.traj:
+        mv.ipython.app.shell.ex('load_trajectory("%s", skip=10)' % args.traj)
+    
+    mv.run()
+
 def view(args):
     from chemlab.io import datafile
     from chemlab.graphics import display_system, display_trajectory
@@ -25,8 +38,8 @@ def view(args):
     df = datafile(args.filename)
     sys = df.read('system')
   
-    cprint('DONE (%f s)'%(time.time()-t0), color='green')	
-  
+    cprint('DONE (%f s)'%(time.time()-t0), color='green')
+
     if args.nowater:
         infoprint('Removing water molecules ... ')
         t0 = time.time()
@@ -47,7 +60,7 @@ def view(args):
         
         df = datafile(args.traj)
         times, frames = df.read('trajectory', skip=args.skip or None)
-
+        box_vectors = df.read('boxes')
         
         cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
@@ -79,23 +92,22 @@ def view(args):
         from chemlab.utils import minimum_image
         if args.translate:
             translate = [float(it) for it in args.translate.split(',')]
-            boxes = df.read('boxes')
+
             infoprint('Translating by {} ...'.format(translate))
             t0 = time.time()
             for i,f in enumerate(frames):
-                frames[i] = minimum_image(f + translate, boxes[i].diagonal())
+                frames[i] = minimum_image(f + translate, box_vectors[i].diagonal())
             
             sys.r_array = minimum_image(sys.r_array + translate,
                                         sys.box_vectors.diagonal())
             cprint('DONE (%f s)'%(time.time()-t0), color='green')
-            
-        display_trajectory(sys, times,  frames)
+        
+        display_trajectory(sys, times, frames, box_vectors=box_vectors)
 
 def plot(args):
     base, ext = os.path.splitext(args.filename)
 
 parser = argparse.ArgumentParser()
-
 subparsers = parser.add_subparsers()
 
 # Contrib plugins
@@ -116,6 +128,13 @@ view_parser.add_argument('--translate', action='store', type=str,
                          help='Take only the ith frames')
 
 view_parser.set_defaults(func=view)
+
+mview_parser = subparsers.add_parser('mview')
+mview_parser.add_argument('filename', type=str)
+mview_parser.add_argument('--traj', action='store', type=str)
+mview_parser.add_argument('--translate', action='store', type=str,
+                         help='Take only the ith frames')
+mview_parser.set_defaults(func=mview)
 
 args = parser.parse_args(sys.argv[1:])
 args.func(args)
