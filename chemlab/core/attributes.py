@@ -214,6 +214,10 @@ class BondsAttr(object):
         at_indices = sys.mol_to_atom_indices(indices)
         old_indices = np.delete(prev_indices, at_indices, axis=0)
 
+        
+        if len(sys.bonds) == 0:
+            return
+            
         # Remove the bonds related to the removed atoms
         bond_mask = np.zeros(sys.n_bonds, 'bool')
         for ai in at_indices:
