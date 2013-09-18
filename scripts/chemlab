@@ -20,8 +20,13 @@ def mview(args):
 
     mv.ipython.app.shell.ex('load_system("%s")' % args.filename)
 
+    skip = 1
+    if args.skip:
+        skip = args.skip
+    
     if args.traj:
-        mv.ipython.app.shell.ex('load_trajectory("%s", skip=10)' % args.traj)
+        mv.ipython.app.shell.ex('load_trajectory("%s", skip=%i)' %
+                                (args.traj, skip))
     
     if args.e:
         mv.ipython.app.shell.ex(args.e)
@@ -82,6 +87,7 @@ def view(args):
             t0 = time.time()
             for i, f in enumerate(frames):
                 nf = np.zeros_like(f)
+                
                 toaverage = range(max(0, i - 2), min(i+4, len(frames)))
                 navg = 0
                 for j in toaverage:
@@ -138,6 +144,8 @@ mview_parser.add_argument('filename', type=str)
 mview_parser.add_argument('--traj', action='store', type=str)
 mview_parser.add_argument('-e', action='store', type=str,
                          help='Execute a python command after loading')
+mview_parser.add_argument('--skip', action='store', type=int,
+                         help='Take only the ith frames')
 
 mview_parser.set_defaults(func=mview)
 
