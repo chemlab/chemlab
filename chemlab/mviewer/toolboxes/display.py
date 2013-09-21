@@ -17,7 +17,7 @@ def autozoom():
     viewer.widget.camera.autozoom(current_system().r_array)
     viewer.update()
 
-def download(name):
+def download_molecule(name):
     mol = db.get('molecule', name)
     display(mol)
 

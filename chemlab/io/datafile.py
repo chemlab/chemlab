@@ -1,5 +1,11 @@
 import os
 import difflib
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError: # python 2
+    from urllib2 import urlopen
+    from urlparse import urlparse
 
 from .handlers.base import make_ionotavailable
 from .handlers import GromacsIO
@@ -56,6 +62,22 @@ def add_default_handler(ioclass, format, extension=None):
 for h in _default_handlers:
     add_default_handler(*h)
 
+    
+def get_handler_class(ext):
+    if ext in _extensions_map:
+        format = _extensions_map[ext]
+    else:
+        raise ValueError("Unknown format for %s extension." % ext)    
+
+    if format in _handler_map:
+        hc = _handler_map[format]
+        return hc
+    else:
+        matches = difflib.get_close_matches(format, _handler_map.keys())
+        raise ValueError("Unknown Handler for format %s, close matches: %s"
+                         % (format, str(matches)))
+    
+
 def datafile(filename, mode="rb", format=None):
     """Initialize the appropriate
     :py:class:`~chemlab.io.iohandler.IOHandler` for a given file
@@ -85,19 +107,30 @@ def datafile(filename, mode="rb", format=None):
         filename = os.path.expanduser(filename)
         base, ext = os.path.splitext(filename)
             
-        if ext in _extensions_map:
-            format = _extensions_map[ext]
-        else:
-            raise ValueError("Unknown format for %s extension." % ext)    
-
-        if format in _handler_map:
-            hc = _handler_map[format]
-            handler_class = hc
-            fd = open(filename, mode)
-            handler = hc(fd)
-        else:
-            matches = difflib.get_close_matches(format, _handler_map.keys())
-            raise ValueError("Unknown Handler for format %s, close matches: %s"
-                             % (format, str(matches)))
+        hc = get_handler_class(ext)
+        fd = open(filename, mode)
+        
+        handler = hc(fd)
         return handler
 
+def remotefile(url, format=None):
+    """The usage of *remotefile* is equivalent to
+    :func:`chemlab.io.datafile` except you can download a file from a
+    remote url.
+    
+    **Example**
+
+        mol = remotefile("https://github.com/chemlab/chemlab-testdata/blob/master/3ZJE.pdb").read("molecule")
+
+    """
+
+    if format is None:
+        
+        res = urlparse(url)
+        filename, ext = os.path.splitext(res.path)
+        
+        hc = get_handler_class(ext)
+        fd = urlopen(url)
+        
+        handler = hc(fd)
+        return handler

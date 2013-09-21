@@ -1,4 +1,6 @@
 from chemlab.utils import distances_within
+from chemlab.utils import minimum_image
+
 from core import *
 from select_ import *
 from display import *
@@ -30,8 +32,41 @@ def center_on_crystal():
     center = cluster_center()
     current_system().r_array -= center
     current_system().r_array += 0.5 * current_system().box_vectors.diagonal()
-    current_system().r_array = minimum_image(current_system().r_array, current_system().box_vectors.diagonal())
+    current_system().r_array[:] = minimum_image(current_system().r_array, current_system().box_vectors.diagonal())
     current_representation().update_positions(current_system().r_array)
+    
+def radial_density(ion='Cl'):
+    s = current_system()    
+    
+    select_crystal()
+    center = cluster_center()
+
+    mask = s.type_array == ion | s.type_array == 'Na'
+    r_array = s.r_array.copy()
+    
+    ions_r = r_array[mask]
+    ions_r -= center
+    ions_r = minimum_image(ions_r, s.box_vectors.diagonal())
+    
+    # Density
+    mx = s.box_vectors.max()
+    
+    # distance from center
+    distances = np.sqrt((ions_r ** 2).sum(axis=1))
+    
+    bins = np.linspace(0, mx, 100)
+    hist, bins_= np.histogram(distances, bins)
+
+    # Normalize the histogram
+    start_shells_r = bins_[:-1]
+    end_shells_r = bins_[1:]
+    
+    start_shells_V = 4.0/3.0 * np.pi * start_shells_r**3
+    end_shells_V = 4.0/3.0 * np.pi * end_shells_r**3
+    
+    V_shell = end_shells_V - start_shells_V
+    
+    return bins_[:-1], hist/V_shell
     
 def cluster_center():
     # Center of mass calculation from wikipedia

@@ -10,24 +10,25 @@ def infoprint(msg, color=None):
     cprint('INFO: ', color='yellow', end='')    
     cprint(msg, color=color, end='')
     sys.stdout.flush()
-    
-    
+
+
 def mview(args):
     from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
-    
-    base, ext = os.path.splitext(args.filename)
+
     mv = QtMolecularViewer()
 
-    mv.ipython.app.shell.ex('load_system("%s")' % args.filename)
+    if args.filename:
+        base, ext = os.path.splitext(args.filename)
+        mv.ipython.app.shell.ex('load_system("%s")' % args.filename)
 
     skip = 1
     if args.skip:
         skip = args.skip
-    
+
     if args.traj:
         mv.ipython.app.shell.ex('load_trajectory("%s", skip=%i)' %
                                 (args.traj, skip))
-    
+
     if args.e:
         mv.ipython.app.shell.ex(args.e)
     
@@ -140,7 +141,7 @@ view_parser.add_argument('--translate', action='store', type=str,
 view_parser.set_defaults(func=view)
 
 mview_parser = subparsers.add_parser('mview')
-mview_parser.add_argument('filename', type=str)
+mview_parser.add_argument('filename', type=str, action='store', nargs='?')
 mview_parser.add_argument('--traj', action='store', type=str)
 mview_parser.add_argument('-e', action='store', type=str,
                          help='Execute a python command after loading')
