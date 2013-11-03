@@ -53,6 +53,7 @@ class ChemlabDB(AbstractDB):
                 vdw_dict = dict(vdw_tuples)
                 fd.close()
                 return vdw_dict
+
             if key == 'massdict':
                 mass_tuples = [(f[1], float(f[7])) for f in fields]
                 mass_dict = dict(mass_tuples)
@@ -64,6 +65,13 @@ class ChemlabDB(AbstractDB):
                 covalent_dict = dict(covalent_tuples)
                 fd.close()
                 return covalent_dict
+
+            if key == 'paulingenegdict':
+                paulingeneg_tuples = [(f[1], float(f[8])) for f in fields]
+                paulingeneg_dict = dict(paulingeneg_tuples)
+                fd.close()
+                return paulingeneg_dict
+
                 
             if key == 'symbols':
                 return [f[1] for f in fields]
