@@ -27,6 +27,7 @@ class ChemlabDB(AbstractDB):
         - vdwdict: Dictionary with per-element Van Der Waals radii.
         - massdict: Dictionary of masses.
         - symbols: Atomic symbols in a list.
+        - paulingenegdict: Dictionary with per-element Pauling electronegativity
 
         Data was taken from the `OpenBabel <http://openbabel.org>`_ distribution.
     """
