@@ -30,7 +30,7 @@ on `github <http://github.com/chemlab/chemlab/issues>`_.
 Once you're setup, you're ready to to dig in chemlab's
 features. You may start from the :ref:`user-manual`.
 
-Developement
+Development
 ------------
 
 After installing the dependencies, grab the chemlab source from git::
