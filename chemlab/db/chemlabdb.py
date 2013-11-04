@@ -30,7 +30,8 @@ class ChemlabDB(AbstractDB):
         - paulingenegdict: Dictionary with per-element Pauling electronegativity
         - arenegdict: Dictionary with per-element Allred-Rochow electronegativity
         - maxbonddict: Dictionary of maximum bond valences. 6 if unknown.
-        - ionpot: Dictionary of ionisation potentials in eV
+        - ionpotdict: Dictionary of ionisation potentials in eV
+        - eaffdict: Dictionary of electron affinities in eV
 
         Data was taken from the `OpenBabel <http://openbabel.org>`_ distribution.
     """
@@ -88,11 +89,17 @@ class ChemlabDB(AbstractDB):
                 fd.close()
                 return maxbond_dict
 
-            if key == 'ionpot':
+            if key == 'ionpotdict':
                 ionpot_tuples = [(f[1], float(f[9])) for f in fields]
                 ionpot_dict = dict(ionpot_tuples)
                 fd.close()
                 return ionpot_dict
+
+            if key == 'eaffdict':
+                eaff_tuples = [(f[1], float(f[10])) for f in fields]
+                eaff_dict = dict(eaff_tuples)
+                fd.close()
+                return eaff_dict
                 
             if key == 'symbols':
                 return [f[1] for f in fields]
