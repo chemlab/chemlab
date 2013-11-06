@@ -10,7 +10,7 @@ Welcome to chemlab's documentation!
    Gabriele Lanaro
    
 :Contributors:
-   Yotam Y. Avital
+   Yotam Y. Avital, Adam Jackson
 
 :Webpage:
    https://chemlab.github.com/chemlab
