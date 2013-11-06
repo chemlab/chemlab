@@ -67,8 +67,8 @@ Implementing your own IOHandler
 -------------------------------
 
 Implementing or improving an existing IOHandler is a great way to
-partecipate in chemlab development. Fortuately, it's extremely easy to
-setup one of them.
+participate in chemlab development. Fortunately, it's extremely easy to
+set one up.
 
 It boils down to a few steps:
 
