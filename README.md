@@ -5,7 +5,7 @@ chemlab - the python chemistry package you were waiting for
 
 - Version: 0.3
 - Author: Gabriele Lanaro
-- Contributors: Yotam Y. Avital
+- Contributors: Yotam Y. Avital, Adam Jackson
 - Email: python-chemlab@googlegroups.com
 - Website: http://chemlab.github.com/chemlab
 - Docs: http://chemlab.rtfd.org
