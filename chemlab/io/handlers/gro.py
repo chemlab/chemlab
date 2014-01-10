@@ -176,7 +176,7 @@ def write_gro(sys, fd):
             x, y, z = sys.r_array[offset+j]
 
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
-                         .format(res_n, res_name,
+                         .format(res_n % 99999, res_name,
                                  at_name, at_n % 99999, x, y, z))
 
     if sys.box_vectors is None:
