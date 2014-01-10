@@ -51,37 +51,9 @@ class QtMolecularViewer(QtViewer):
         
         self.actions['action1'] = QtGui.QPushButton('action1')
         self.actions['action2'] = QtGui.QPushButton('action2')
+        
         # Sidebar definition        
-        
-        dock1 = QtGui.QDockWidget()
         dock2 = QtGui.QDockWidget()
-        
-        bt1 = IconButton(os.path.join(resources_dir,
-                                      'select_atoms.svg'), 'Select all atoms')
-        bt2 = IconButton(os.path.join(resources_dir,
-                                      'select_molecules.svg'), 'Select all molecules')
-        bt3 = IconButton(os.path.join(resources_dir,
-                                      'hide_icon.svg'), 'Hide selected')
-        bt4 = IconButton(os.path.join(resources_dir,
-                                      'show_icon.svg'), 'Show selected')
-        
-        self.actions['select_all_atoms'] = bt1
-        self.actions['select_all_molecules'] = bt2
-        self.actions['hide'] = bt3
-        self.actions['show'] = bt4
-        
-        layout = QtGui.QGridLayout()
-        layout.addWidget(bt1, 0, 0, Qt.AlignLeft)
-        layout.addWidget(bt2, 0, 1, Qt.AlignLeft)
-        layout.addWidget(bt3, 1, 0, Qt.AlignLeft)
-        layout.addWidget(bt4, 1, 1, Qt.AlignLeft)
-   
-        layout.setColumnStretch(3, 1)
-        layout.setRowStretch(2, 1)
-
-        wrapper = QtGui.QWidget()
-        wrapper.setLayout(layout)
-        dock1.setWidget(wrapper)
         
         self.ipython = QIPythonWidget()
         self.ipython.initialize()        
@@ -96,16 +68,8 @@ class QtMolecularViewer(QtViewer):
         wrapper2.setLayout(vb)
         
         dock2.setWidget(wrapper2)
-        wrapper.setFixedSize(150, 100)
-        
-        self.addDockWidget(Qt.DockWidgetArea(Qt.RightDockWidgetArea),
-                           dock1)
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            dock2)
-        
-        self._repr_controls = QtGui.QDockWidget()
-        
-        self.addDockWidget(Qt.RightDockWidgetArea, self._repr_controls)
         
         ############################################
         # Initialization code
