@@ -32,6 +32,8 @@ def mview(args):
     if args.e:
         mv.ipython.app.shell.ex(args.e)
     
+    if args.nowater:
+        mv.ipython.app.shell.ex('hide_water()')
     mv.run()
 
 def view(args):
@@ -147,6 +149,8 @@ mview_parser.add_argument('-e', action='store', type=str,
                          help='Execute a python command after loading')
 mview_parser.add_argument('--skip', action='store', type=int,
                          help='Take only the ith frames')
+mview_parser.add_argument('--nowater', action='store_true',
+                         help='Do not display water molecules')
 
 mview_parser.set_defaults(func=mview)
 

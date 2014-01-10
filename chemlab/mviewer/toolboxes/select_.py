@@ -3,6 +3,12 @@ from core import *
 def select_indices(indices):
     current_selection().select_atoms(indices)
 
+def unselect_indices(indices):
+    current_selection().select_atoms(indices, mode='flip')
+
+def select_visible():
+    select_indices(visible_atoms())
+    
 def clear_selection():
     select_indices([])
     
@@ -16,9 +22,14 @@ def select_molecules(name):
     ind = current_system().mol_to_atom_indices(mask.nonzero()[0])
     current_selection().select_atoms(ind)
     
+def unselect_molecules(name):
+    mol_formula = current_system().get_derived_molecule_array('formula')
+    mask = mol_formula == name
+    ind = current_system().mol_to_atom_indices(mask.nonzero()[0])
+    current_selection().select_atoms(ind, mode='flip')
+    
 def visible_atoms():
     return (~viewer.representation.hidden_state.atom_hidden_mask).nonzero()[0]
-
     
 def invert_selection():
     current_selection().select_atoms((~viewer.representation.selection_state.atom_selection_mask).nonzero()[0])
@@ -26,7 +37,11 @@ def invert_selection():
 def unhide(sel=None):
     if sel == None:
         viewer.representation.hidden_state.hide_atoms([])
-    
+
+def hide_water():
+    select_molecules('H2O')
+    hide()
+
 from chemlab.core import subsystem_from_atoms
 
 def delete():
@@ -43,6 +58,10 @@ def delete():
 def selected_atoms():
     return current_selection().atom_selection
 
+def visible_to_original(visible_index):
+    return (~current_representation().hidden_state.atom_hidden_mask).nonzero(0)
+
+    
 _selection_stack = []
 def store_selection():
     _selection_stack.append(selected_atoms())

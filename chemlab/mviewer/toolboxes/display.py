@@ -29,11 +29,6 @@ def load_molecule(name):
     mol = datafile(name).read('molecule')
     display(mol)
 
-def current_traj_frame():
-    return viewer.traj_controls.current_index
-
-def current_traj_time():
-    return viewer.frame_times[current_traj_frame()]
 
 import bisect
 def goto_time(timeval):
