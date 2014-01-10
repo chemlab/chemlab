@@ -58,3 +58,29 @@ class SystemHiddenState(MaskState):
     def hide_bonds(self, selection, mode='exclusive'):
         _apply_selection(self.bond_hidden_mask, selection, mode)
         self.bond_mask_changed.emit()
+
+class ArrayState(Model):
+    
+    changed = Event()
+    
+    def __init__(self, default):
+        super(ArrayState, self).__init__()
+        self.default = default
+        self.reset()
+
+    @property
+    def array(self):
+        return self._array
+        
+    @array.setter
+    def array(self, val):
+        self._array = np.array(val)
+    
+    def reset(self):
+        self.array = self.default
+        
+    def __setitem__(self, key, value):
+        self.array[key] = value
+        self.changed.emit()
+        
+        

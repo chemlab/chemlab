@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 from .obsarray import obsarray as obsarray
-from .state import SystemHiddenState, SystemSelectionState
+from .state import SystemHiddenState, SystemSelectionState, ArrayState
 from ...graphics.renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
                          AtomRenderer, BondRenderer)
 from ...graphics import colors
@@ -21,17 +21,15 @@ class BallAndStickRepresentation(object):
     
     @property
     def atom_colors(self):
-        return self._atom_colors
+        return self.color_state
     
     @atom_colors.setter
     def atom_colors(self, value):
-        self._atom_colors = obsarray(value)
-        self._atom_colors.changed.connect(self.on_atom_colors_changed)
+        self.color_state.array = value
         self.on_atom_colors_changed()
 
     def on_atom_colors_changed(self):
-        print 'Updating colors'
-        self.atom_renderer.update_colors(self._atom_colors._arr)
+        self.atom_renderer.update_colors(self.color_state.array)
         self.on_atom_selection_changed() # Hack
         
         self.viewer.widget.update()
@@ -40,29 +38,26 @@ class BallAndStickRepresentation(object):
         self.system = system
         self.viewer = viewer
         
+        self.color_scheme = colors.default_atom_map
+        
         # Model classes
         self.hidden_state = SystemHiddenState(system)
         self.selection_state = SystemSelectionState(system)
-        
-        atom_scale = 0.3
-        radii_map = {k: v * atom_scale for k, v in vdw_radii.items()}
-        
+        self.color_state = ArrayState([colors.default_atom_map.get(t, colors.deep_pink) for t in system.type_array])
+        self.radii_state = ArrayState([vdw_radii.get(t) * 0.3  for t in system.type_array])
         
         # Visualization classes
-        self.atom_renderer = self.viewer.add_renderer(AtomRenderer,
+        self.atom_renderer = self.viewer.add_renderer(SphereImpostorRenderer,
                                                       system.r_array,
-                                                      system.type_array,
-                                                      radii_map=radii_map)
-        self.default_colors = self.atom_renderer.colors.copy()
-        
-        self.atom_radii = self.atom_renderer.radii
-        self.atom_colors = self.atom_renderer.colors
-        
+                                                      self.radii_state.array,
+                                                      self.color_state.array)
+
         self.bond_renderer = self.viewer.add_renderer(BondRenderer,
                                                       system.bonds, system.r_array,
                                                       system.type_array, style='impostors')
         
-        self.scale_factors = np.ones_like(self.atom_renderer.radii)
+        self.scale_factors = np.ones_like(self.radii_state.array)
+        
         self.bond_radii = self.bond_renderer.radii
         self.bond_colors = self.bond_renderer.colors_a, self.bond_renderer.colors_b
         
@@ -71,7 +66,8 @@ class BallAndStickRepresentation(object):
         
         # User controls
         self.atom_picker = SpherePicker(self.viewer.widget, system.r_array,
-                                        self.atom_renderer.radii)
+                                        self.radii_state.array)
+        
         self.bond_picker = CylinderPicker(self.viewer.widget,
                                           system.r_array.take(system.bonds, axis=0),
                                           self.bond_radii)
@@ -82,7 +78,12 @@ class BallAndStickRepresentation(object):
         self.selection_state.atom_mask_changed.connect(self.on_atom_selection_changed)
         self.selection_state.bond_mask_changed.connect(self.on_bond_selection_changed)
 
+        self.color_state.changed.connect(self.on_atom_colors_changed)
+        
         self.glow_timer = QtCore.QTimer()
+
+    def visible_atoms(self):
+        return (~self.hidden_state.atom_hidden_mask).nonzero()[0]
         
     def _gen_atom_renderer(self):
         pass
@@ -93,10 +94,10 @@ class BallAndStickRepresentation(object):
     def hide(self):
         # Take current selection and hide it
         self.hidden_state.hide_atoms(self.selection_state.atom_selection, mode='additive')
-        
+
     def update_scale_factors(self, scalefac):
         self.scale_factors = scalefac
-        radii = self.atom_radii * scalefac
+        radii = np.array(self.radii_state.array) * scalefac
         self.atom_renderer.update_radii(radii)
         
     def update_positions(self, r_array):
@@ -104,8 +105,10 @@ class BallAndStickRepresentation(object):
         self.bond_renderer.update_positions(r_array)
         
         # User controls
-        self.atom_picker = SpherePicker(self.viewer.widget, r_array,
-                                        self.atom_renderer.radii)
+        va = self.visible_atoms()
+        self.atom_picker = SpherePicker(self.viewer.widget, r_array[va],
+                                        self.radii_state.array[va])
+        
         self.bond_picker = CylinderPicker(self.viewer.widget,
                                           r_array.take(self.system.bonds, axis=0),
                                           self.bond_radii)
@@ -122,6 +125,10 @@ class BallAndStickRepresentation(object):
         
         self.atom_renderer.hide(sel)
         
+        # Pickers
+        self.atom_picker = SpherePicker(self.viewer.widget, self.system.r_array[sel],
+                                        self.radii_state.array[sel])
+        
         # Reset selection
         self.selection_state.select_atoms([])
         self.viewer.update()
@@ -135,7 +142,7 @@ class BallAndStickRepresentation(object):
         #self.glow_timer.stop()
         # When selection state changes, the view update itself
         sel = self.selection_state.atom_selection
-        cols = self.atom_colors.copy()
+        cols = np.array(self.atom_colors.array)
         
         cols[sel, -1] = 50
                     
@@ -171,6 +178,9 @@ class BallAndStickRepresentation(object):
         #print 'A', a_indices, a_dists
         #print 'B', b_indices, b_dists
         
+        # This applies only to visible atoms
+        visible_atoms = (~self.hidden_state.atom_hidden_mask).nonzero()[0]
+        
         if not indices:
             # Cancel selection
             self.selection_state.select_atoms([], mode='exclusive')
@@ -181,7 +191,7 @@ class BallAndStickRepresentation(object):
             dist_b = b_dists[0] if b_indices else float('inf')
             
             if dist_a < dist_b:
-                self.selection_state.select_atoms([a_indices[0]], mode='flip')
+                self.selection_state.select_atoms([visible_atoms[a_indices[0]]], mode='flip')
             else:
                 self.selection_state.select_bonds([b_indices[0]], mode='flip')
         
