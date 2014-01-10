@@ -78,8 +78,6 @@ class QtMolecularViewer(QtViewer):
         self.namespace = self.ipython.get_user_namespace()
         self.namespace['__builtins__'].viewer = self
         
-        #self.ipython.app.shell.ex('import sys')
-        #self.ipython.app.shell.ex('''sys.path.append('/home/gabriele/workspace/chemlab/toolboxes/')''')
         self.ipython.app.shell.ex('from chemlab.mviewer.toolboxes.init import *')
         
     def add_representation(self, Repr, system):
