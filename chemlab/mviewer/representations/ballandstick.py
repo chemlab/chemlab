@@ -3,6 +3,7 @@ import itertools
 
 from .obsarray import obsarray as obsarray
 from .state import SystemHiddenState, SystemSelectionState, ArrayState
+from .state import Selection
 from ...graphics.renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
                          AtomRenderer, BondRenderer)
 from ...graphics import colors
@@ -41,8 +42,12 @@ class BallAndStickRepresentation(object):
         self.color_scheme = colors.default_atom_map
         
         # Model classes
-        self.hidden_state = SystemHiddenState(system)
-        self.selection_state = SystemSelectionState(system)
+        self.hidden_state = {'atoms' : Selection([], system.n_atoms),
+                             'bonds' : Selection([], system.n_bonds)}
+        
+        self.selection_state = {'atoms' : Selection([], system.n_atoms),
+                                'bonds' : Selection([], system.n_bonds)}
+        
         self.color_state = ArrayState([colors.default_atom_map.get(t, colors.deep_pink) for t in system.type_array])
         self.radii_state = ArrayState([vdw_radii.get(t) * 0.3  for t in system.type_array])
         
@@ -72,18 +77,12 @@ class BallAndStickRepresentation(object):
                                           system.r_array.take(system.bonds, axis=0),
                                           self.bond_radii)
         
-        self.hidden_state.atom_mask_changed.connect(self.on_atom_hidden_changed)
-        self.hidden_state.bond_mask_changed.connect(self.on_bond_hidden_changed)
-        
-        self.selection_state.atom_mask_changed.connect(self.on_atom_selection_changed)
-        self.selection_state.bond_mask_changed.connect(self.on_bond_selection_changed)
-
         self.color_state.changed.connect(self.on_atom_colors_changed)
         
         self.glow_timer = QtCore.QTimer()
 
     def visible_atoms(self):
-        return (~self.hidden_state.atom_hidden_mask).nonzero()[0]
+        return self.hidden_state['atoms'].invert().indices
         
     def _gen_atom_renderer(self):
         pass
@@ -91,14 +90,18 @@ class BallAndStickRepresentation(object):
     def _gen_cylinder_renderer(self):
         pass
     
-    def hide(self):
-        # Take current selection and hide it
-        self.hidden_state.hide_atoms(self.selection_state.atom_selection, mode='additive')
+    # def hide(self):
+    #     # Take current selection and hide it
+    #     selected = self.selection_state['atoms'].indices
+    #     self.hidden_state['atoms'] = self.hidden_state['atoms'].add(
+    #         Selection(selected, self.system.n_atoms))
+    #     self.on_atom_hidden_changed()
 
     def update_scale_factors(self, scalefac):
         self.scale_factors = scalefac
         radii = np.array(self.radii_state.array) * scalefac
         self.atom_renderer.update_radii(radii)
+        self.viewer.widget.update()
         
     def update_positions(self, r_array):
         self.atom_renderer.update_positions(r_array)
@@ -116,11 +119,11 @@ class BallAndStickRepresentation(object):
     def on_atom_hidden_changed(self):
         # When hidden state changes, the view update itself
         # Update the Renderers and the pickers
-        no_sel = self.selection_state.atom_selection
+        no_sel = self.selection_state['atoms'].indices
         
         # Take everything else
         sel = np.ones(self.system.n_atoms, dtype='bool')
-        sel[self.hidden_state.atom_hidden_mask] = False
+        sel[self.hidden_state['atoms'].mask] = False
         sel[no_sel] = False
         
         self.atom_renderer.hide(sel)
@@ -130,18 +133,20 @@ class BallAndStickRepresentation(object):
                                         self.radii_state.array[sel])
         
         # Reset selection
-        self.selection_state.select_atoms([])
+        self.selection_state['atoms'] = Selection([], self.system.n_atoms)
+        self.on_atom_selection_changed()
+        
         self.viewer.update()
         
     def on_bond_hidden_changed(self):
         # When hidden state changes, the view update itself
         # Update the renderers and the pickers
-        sel = self.hidden_state.bond_selection
+        sel = self.hidden_state['bonds'].indices
 
     def on_atom_selection_changed(self):
         #self.glow_timer.stop()
         # When selection state changes, the view update itself
-        sel = self.selection_state.atom_selection
+        sel = self.selection_state['atoms'].indices
         cols = np.array(self.atom_colors.array)
         
         cols[sel, -1] = 50
@@ -154,7 +159,7 @@ class BallAndStickRepresentation(object):
         if self.system.n_bonds == 0:
             return
         
-        sel = self.selection_state.bond_selection
+        sel = self.selection_state['bonds'].indices
         cols_a, cols_b = self.bond_colors
         
         cols_a = cols_a.copy()
@@ -179,20 +184,123 @@ class BallAndStickRepresentation(object):
         #print 'B', b_indices, b_dists
         
         # This applies only to visible atoms
-        visible_atoms = (~self.hidden_state.atom_hidden_mask).nonzero()[0]
         
-        if not indices:
+        visible_atoms = self.hidden_state['atoms'].invert().indices
+        #visible_atoms = (~self.hidden_state.atom_hidden_mask).nonzero()[0]
+        
+        if len(indices) == 0 :
             # Cancel selection
-            self.selection_state.select_atoms([], mode='exclusive')
-            self.selection_state.select_bonds([], mode='exclusive')
+            self.selection_state['atoms'] = Selection([], self.system.n_atoms)
+            self.selection_state['bonds'] = Selection([], self.system.n_bonds)
+            self.on_atom_selection_changed()
+            self.on_bond_selection_changed()
         else:
             # Determine the candidate
             dist_a = a_dists[0] if a_indices else float('inf')
             dist_b = b_dists[0] if b_indices else float('inf')
             
             if dist_a < dist_b:
-                self.selection_state.select_atoms([visible_atoms[a_indices[0]]], mode='flip')
+                self.selection_state['atoms'] \
+                    = self.selection_state['atoms'].subtract(
+                        Selection([visible_atoms[a_indices[0]]],
+                                  self.system.n_atoms))
+                self.on_atom_selection_changed()
             else:
-                self.selection_state.select_bonds([b_indices[0]], mode='flip')
-        
+                self.selection_state['bonds'] \
+                    = self.selection_state['bonds'].subtract(
+                        Selection([b_indices[0]], self.system.n_bonds))
+                self.on_bond_selection_changed()
+                
         self.viewer.widget.update()
+        
+    def select(self, selections):
+        '''Make a selection in this
+        representation. BallAndStickRenderer support selections of
+        atoms and bonds.
+        
+        To select the first atom and the first bond you can use the
+        following code::
+        
+            from chemlab.mviewer.state import Selection        
+            representation.select({'atoms': Selection([0], system.n_atoms),
+                                   'bonds': Selection([0], system.n_bonds)})
+
+        Returns the current Selection
+        '''
+        if 'atoms' in selections:
+            self.selection_state['atoms'] = selections['atoms']
+            self.on_atom_selection_changed()
+            
+        if 'bonds' in selections:
+            self.selection_state['bonds'] = selections['bonds']
+            self.on_bond_selection_changed()
+        
+        return self.selection_state
+        
+    def hide(self, selections):
+        '''Hide objects in this representation. BallAndStickRepresentation
+        support selections of atoms and bonds.
+        
+        To hide the first atom and the first bond you can use the
+        following code::
+        
+            from chemlab.mviewer.state import Selection
+            representation.hide({'atoms': Selection([0], system.n_atoms),
+                                   'bonds': Selection([0], system.n_bonds)})
+
+        Returns the current Selection of hidden atoms and bonds.
+
+        '''
+        if 'atoms' in selections:
+            self.hidden_state['atoms'] = selections['atoms']
+            self.on_atom_hidden_changed()
+            
+        if 'bonds' in selections:
+            self.selection_state['bonds'] = selections['bonds']
+            self.on_bond_hidden_changed()
+        
+        return self.hidden_state
+        
+    def scale(self, selections, factor):
+        '''Scale the objects represented by *selections* up to a
+        certain *factor*.
+
+        '''
+        if 'atoms' in selections:
+            atms = selections['atoms'].mask
+            if factor is None:
+                    self.scale_factors[atms] = 1.0
+            else:
+                self.scale_factors[atms] = factor
+    
+        self.update_scale_factors(self.scale_factors)
+
+    def change_radius(self, selections, value):
+        '''Change the radius of each atom by a certain value
+        
+        '''
+        if 'atoms' in selections:
+            atms = selections['atoms'].mask
+            if value is None:
+                self.radii_state.array[atms] = [vdw_radii.get(t) * 0.3  for t in self.system.type_array[atms]]
+            else:
+                self.radii_state.array[atms] = value
+    
+        self.update_scale_factors(self.scale_factors)
+            
+    def change_color(self, selections, value):
+        '''Change the color of each atom by a certain value. *value*
+        should be a tuple.
+
+        '''
+        if 'atoms' in selections:
+            atms = selections['atoms'].mask
+            if value is None:
+                #self.radii_state.array[atms] = [vdw_radii.get(t) * 0.3  for t in self.system.type_array[atms]]
+                self.atom_colors.array[atms, 0:3] = [self.color_scheme.get(t, colors.deep_pink)[0:3]
+                                                     for t in self.system.type_array[atms]]
+            else:
+                self.atom_colors.array[atms, 0:3] = value[0:3]
+    
+        self.atom_renderer.update_colors(self.atom_colors.array)
+        self.on_atom_colors_changed()

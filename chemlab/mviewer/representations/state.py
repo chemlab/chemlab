@@ -2,6 +2,47 @@ import numpy as np
 
 from ..events import Model, Event
     
+class Selection(object):
+    def __init__(self, indices, total):
+        '''A Selection is an object that keeps state of the selected
+        status of a collection of entities, such as atoms or bonds.
+        
+        You don't instantiate them directly but they're tipically used
+        by the other components.
+
+        '''
+        self.indices = indices
+        self.total = total
+        
+        # Masks
+        self.mask = np.zeros(self.total, dtype='bool')
+        self.mask[self.indices] = True
+        
+    @classmethod
+    def from_mask(cls, am):
+        return Selection(indices=am.nonzero()[0], total=len(am))
+    
+    def add(self, other):
+        am = self.mask | other.mask 
+        
+        return Selection.from_mask(am)
+
+    def intersect(self, other):
+        am = self.mask & other.mask 
+        
+        return Selection.from_mask(am)
+
+    def subtract(self, other):
+        am = np.logical_xor(self.mask, other.mask)
+        
+        return Selection.from_mask(am)
+    
+    def invert(self):
+        am = np.logical_not(self.mask)
+        
+        return Selection.from_mask(am)
+
+
 def _apply_selection(mask, selection, mode):
     # Apply a selection to a numpy mask using different modes
     # the selection is applied inplace.

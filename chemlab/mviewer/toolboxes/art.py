@@ -17,6 +17,21 @@ def change_background(color):
     viewer.widget.background_color = col
     viewer.update()
 
+def scale(factor):
+    '''Scale the currently selected objects by a certain
+    *factor*.
+    
+    '''
+    rep = current_representation()
+    rep.scale(rep.selection_state, factor)
+
+def change_radius(value):
+    '''Change the radius of each atom by a certain *value*.
+
+    If *value* is None, set the radius to the default value.
+    '''
+    current_representation().change_radius(current_representation().selection_state, value)
+
 
 def scale_atoms(fac=None):
     rep = current_representation()
@@ -44,18 +59,15 @@ def change_color(color):
     if isinstance(color, str):
         # The color should be a string
         col = _color_from_str(color)
-        rep.atom_colors[atms,0:3] = col[0:3]
-    if isinstance(color, list):
-        if isinstance(color[0], str):
-            cols = [_color_from_str(c) for c in color]
-            cols = np.array(cols)
+
+    if isinstance(color, tuple):
+        col = color
         
-        rep.atom_colors[atms, 0:3] = cols[:, 0:3]
-        
-    if isinstance(color, np.ndarray):
-        cols = color
-        print len(cols), len(atms)
-        rep.atom_colors[atms, 0:3] = cols[:, 0:3]
+    if color is None:
+        col = None
+
+    # Color array
+    rep.change_color(rep.selection_state, col)
 
 def reset_color():
     atms = selected_atoms()

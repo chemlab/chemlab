@@ -52,5 +52,5 @@ def load_trajectory(name, skip=1):
         current_system().box_vectors = boxes[index]
         viewer.traj_controls.set_time(dt[index])
         viewer.update()
-        
+    viewer.traj_controls.show()
     viewer.traj_controls.frame_changed.connect(update)

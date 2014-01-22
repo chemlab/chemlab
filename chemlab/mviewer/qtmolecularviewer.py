@@ -34,6 +34,7 @@ class QtMolecularViewer(QtViewer):
         super(QtMolecularViewer, self).__init__()
         self.actions = {}
         
+        self.representation = None
         self.widget.background_color = colors.black
         
         #####################################
@@ -71,6 +72,7 @@ class QtMolecularViewer(QtViewer):
         self.addDockWidget(Qt.DockWidgetArea(Qt.BottomDockWidgetArea),
                            dock2)
         
+        self.traj_controls.hide()
         ############################################
         # Initialization code
         ############################################
@@ -85,7 +87,8 @@ class QtMolecularViewer(QtViewer):
         self.representation = Repr(self, system)
         
     def on_click(self, evt):
-        self.representation.on_click(evt.x(), evt.y())
+        if self.representation is not None:
+            self.representation.on_click(evt.x(), evt.y())
     
     def select_all_atoms(self):
         mol = self.system

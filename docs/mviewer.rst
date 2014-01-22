@@ -2,50 +2,94 @@
 The chemlab molecular viewer
 ============================
 
-The molecular viewer sets a new standard and a new way of interacting,
-editing and analyzing data. Common molecular viewers lacks an easy way
-to extend while the chemlab phylosophy everybody should be able to
-write a simple plugin. This is because there are so many applications
-in chemistry and physics and customizing is the true way.
+The Chemlab molecular viewer sets a new standard and a new way of
+interacting, editing and analyzing data. The chemlab philosophy is
+that the program should be really easy to extend, without sacrificing
+any power. There are so many applications in chemistry and physics and
+the user can't be limited to the built-in functionalities of the program.
 
-At the moment the chemlab molecular viewer is a prototype. All is
-available is a command line interface that lets you type commands and
-interact with the viewer in a pretty easy way. From that, in future
-releases it will be possible to modify the user interface and build
-interactive tools also for selecting certain areas etc. It's gonna be
-good. A LOT
+Right now the chemlab molecular viewer consist in a viewer and a
+shell. You can type commands and the changes will appear
+interactively. 
 
-Let's try a small tutorial introduction:
+Quick Start
+===========
 
-You start chemlab mview. download a sample molecule from the web::
+You can start the chemlab molecular viewer by typing::
 
-    download_molecule('aspirine')
+    chemlab mview
 
-By clicking the atoms it will select the atoms. To retrieve the selected atoms yo ucan type::
+This will load the user interface consisting of the viewer, and an
+IPython shell.
+
+.. image:: _static/mviewer_screen1.png
+    :width: 600px
+
+You can start typinc commands in the IPython shell and changes will
+appear in the upper viewer. For example downloading a molecule from
+the web is really easy with the command download_molecule::
+
+   download_molecule('aspirine')
+
+By clicking the atoms it will select the atoms. The selection effect
+is a white glow.
+
+.. image:: _static/mviewer_screen1.png
+    :width: 600px
+
+Let's try how to work with it with some simple tasks.
+
+
+Distance between two atoms
+..........................
+
+How do I find the interatomic distance between two selected atoms?
+
+Chemlab gives you some basic functions to change and retrieve
+information of what's currently displaying.
+
+For example, to get the current :class:`~chemlab.core.System` instance
+being displayed you can type::
+
+     In: s = current_system()
+
+If you want to know which are the indexes of the atoms currently
+selected you can type the following command::
   
-    selected_atoms()
-    [0, 1]
+    In : selected_atoms()
+    Out: array([ 0,  1])
 
-Tasks that we'll try to accomplish:
+You can also do the reverse, given the indexes you can select two
+atoms, the interface will update accordingly::
 
-How to find interatomic distance?
+    select_atoms([0, 1])
 
-::
-    distance_between_atoms(0, 1) # Between the first two atoms
-    distance_between_atoms()     # Interactive, between the two 
-                                 # currently selected atoms
+To calculate the distance between the selected atoms, we have first to
+retrieve their indexes first and then use the System to retrieve their
+coordinates. At that point we can use them to find the distance (it's
+the norm of the difference between the two coordinates)::
 
+    selected = selected_atoms()
+    s = current_system()
+    a, b = s.r_array[selected]
+    import numpy as np
+    distance = np.linalg.norm(a - b)
 
-How to change bond and atom appeareance
+Changing the appeareance
+........................
 
-We can change their size::
-    scale(scale_factor=2.0)
+Chemlab lets you change the appeareance of the things that get
+displayed in a really easy way.
+
+For example we can select all the carbon atoms and give them a size of 0.3::
+
+    select_atom_type('C')
+    change_radius(0.3)
 
 We can change their color::
-    change_color(color='green')
+  
+    change_color(color='black')
 
-We can globally change the color scheme (which is a dictionary)::
-    change_color_scheme(someotherscheme)
 
 Writing your own commands
 =========================
@@ -109,11 +153,10 @@ information on the selection state, so you can use it later::
 
 You can combine selections::
 
-    sel1.and(sel2)
-    sel1.sub(sel2) # Subtracts another selection
+    sel1.add(sel2)
+    sel1.subtract(sel2) # Subtracts another selection
+    sel1.intersect(sel2) # Computes the intersection
     
-    sel1.or(sel2)
-    sel1.xor(sel2)
     sel1.invert()
     
 To easily retrieve the currently selected atoms and bonds::
@@ -140,17 +183,6 @@ Selection commands will usually work on visible things only unless you write::
     # How to select hidden only?
     select_all().invert()
 
-Cookbook
-========
-
-You have a protein solvated in water, you want to remove the water and
-make it big balls::
-
-    $ chemlab mview prot.pdb
-
-    
-Let's solvate a protein in water::
-
 Extending
 =========
 
@@ -167,3 +199,37 @@ The thing is pretty easy to implement, we first need to do this::
   nbs = periodic_distance(s.r_array[atom], s.r_array) < radius
   nbs = nbs.nonzero()[0] # we get the actual neighbour indices
   return select(ids=nbs)
+
+So we should put this in the file .chemlab/toolboxes/my_selects.py
+and we should load this at the chemlab start in the .chemlab/toolboxes/__init__.py::
+
+  from my_selects import *
+
+Now when you start chemlab this thing will be made available immediately.
+
+Cookbook
+========
+
+You have a protein solvated in water, you want to remove the water and
+make it big balls::
+
+    $ chemlab mview prot.pdb
+
+Let's solvate a protein in water::
+
+    from chemlab.mviewer.toolboxes.core import *
+
+    load_system('prot.pdb')
+    # Now we get the current system and add the solvation thing as usual
+    s = current_system()
+    # I'll make a box like this
+    wat_box = random_lattice_box([wat], 1000, [7, 7, 7])
+    solv_box = merge_systems(wat_box, s)
+    
+    # We show it again!
+    display_system(solv_box)
+
+We can wrap it into a toolbox::
+  
+    solvate()
+    save_system("out.gro")
