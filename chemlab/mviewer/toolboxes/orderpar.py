@@ -4,7 +4,7 @@ from chemlab.molsim.analysis import rdf
 
 from pylab import *
 from core import *
-from select_ import *
+from selections import *
 from display import *
 from art import *
 
@@ -39,7 +39,7 @@ def order_par():
 
 def select_crystal():
     ld = order_par()
-    current_selection().select_atoms(visible_atoms()[ld > 11.0])
+    select_atoms(visible_atoms()[ld > 11.0])
 
 def center_on_crystal():
     select_crystal()
@@ -173,7 +173,7 @@ def local_densities():
     for i in frame_iter(1):
         QtGui.qApp.processEvents()
         lds.append(order_par())
-        t.append(current_traj_time())
+        t.append(current_time())
         
     return t, lds
 
@@ -229,13 +229,13 @@ def dissolution_profile(directory=None, iframes=1):
     
     goto_time(0)
     select_molecules('H2O')
-    hide()
+    hide_selected()
     
     t = []
     sizes = []
     for i in frame_iter(iframes):
         sizes.append(crystal_size())
-        t.append(current_traj_time())
+        t.append(current_time())
         print t[-1], sizes[-1]
         if sizes[-1] == 0:
             break
@@ -251,13 +251,13 @@ def radius_profile(directory=None, iframes=100):
     
     goto_time(0)
     select_molecules('H2O')
-    hide()
+    hide_selected()
     
     t = []
     sizes = []
     for i in frame_iter(iframes):
         sizes.append(crystal_radius())
-        t.append(current_traj_time())
+        t.append(current_time())
         if sizes[-1] == 0:
             break
     
@@ -342,7 +342,7 @@ def surface_dissolution_rate(iframes=1):
         select_surface()
         natoms = len(selected_atoms())
         surf.append(natoms)
-        t.append(current_traj_time())
+        t.append(current_time())
         if natoms == 0:
             break
     

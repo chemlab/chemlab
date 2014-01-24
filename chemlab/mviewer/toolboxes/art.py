@@ -1,5 +1,5 @@
 from core import *
-from select_ import *
+from selections import *
 from orderpar import *
 from chemlab.graphics import colors
 import numpy as np

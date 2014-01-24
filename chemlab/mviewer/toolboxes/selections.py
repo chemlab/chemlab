@@ -10,11 +10,11 @@ def select_atom_type(name):
 
     You can select all the hydrogen atoms as follows::
     
-        select_atom_type('H')
+      select_atom_type('H')
     
     '''
     mask = current_system().type_array == name
-    select_atoms(mask.nonzero()[0])
+    return select_atoms(mask.nonzero()[0])
 
 
 def select_atoms(indices):
@@ -22,7 +22,7 @@ def select_atoms(indices):
 
     You can select the first 3 atoms as follows::
 
-        select_atoms([0, 1, 2])
+      select_atoms([0, 1, 2])
     
     Return the current selection dictionary.
 
@@ -39,11 +39,11 @@ def select_selection(selection):
     return rep.selection_state
     
 
-def select_all(hidden=False):
-    '''Select all visible atoms, you can pass the option
-    `hidden=True` to select also the hidden atoms.
-
+def select_all():
+    '''Select all the visible atoms.
+    
     '''
+    
     return select_atoms(visible_atoms())
 
 
@@ -59,8 +59,6 @@ def invert_selection():
     '''
     indices = current_representation().selection_state['atoms'].invert().indices
     return select_atoms(indices)
-    #current_selection().select_atoms((~viewer.representation.selection_state.atom_selection_mask).nonzero()[0])    
-
 
 def select_molecules(name):
     '''Select all the molecules corresponding to the formulas.'''
@@ -70,21 +68,27 @@ def select_molecules(name):
     return select_atoms(ind)
     
 def visible_atoms():
+    '''Return the indices of the currently visible atoms.'''
     return current_representation().hidden_state['atoms'].invert().indices
-    #return (~viewer.representation.hidden_state.atom_hidden_mask).nonzero()[0]
+
 
 
 def hide_selected():    
+    '''Hide the selected objects.'''
     current_representation().hide(current_representation().selection_state)
 
 
 def hide_water():
+    '''Conveniency command to hide water molecules.'''
     select_molecules('H2O')
-    hide()
+    hide_selected()
 
 
 def unhide_all():
-    return current_representation().hide([])
+    '''Unhide all the objects'''
+    return current_representation().hide(
+        {'atoms': Selection([],current_system().n_atoms),
+         'bonds': Selection([], current_system().n_bonds)})
 
 # def delete():
 #     s = current_system()

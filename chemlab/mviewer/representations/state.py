@@ -42,6 +42,8 @@ class Selection(object):
         
         return Selection.from_mask(am)
 
+    def __repr__(self):
+        return 'Selection({})'.format(len(self.indices))
 
 def _apply_selection(mask, selection, mode):
     # Apply a selection to a numpy mask using different modes

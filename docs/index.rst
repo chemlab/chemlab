@@ -97,6 +97,7 @@ User Manual
    io
    graphics
    db
+   mviewer
    ipython
    gromacs
 
@@ -113,6 +114,7 @@ Reference Documentation
    api/chemlab.graphics
    api/chemlab.db
    api/chemlab.utils
+   api/chemlab.mviewer.toolboxes
 
 License
 -------

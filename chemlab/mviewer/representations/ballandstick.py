@@ -90,13 +90,6 @@ class BallAndStickRepresentation(object):
     def _gen_cylinder_renderer(self):
         pass
     
-    # def hide(self):
-    #     # Take current selection and hide it
-    #     selected = self.selection_state['atoms'].indices
-    #     self.hidden_state['atoms'] = self.hidden_state['atoms'].add(
-    #         Selection(selected, self.system.n_atoms))
-    #     self.on_atom_hidden_changed()
-
     def update_scale_factors(self, scalefac):
         self.scale_factors = scalefac
         radii = np.array(self.radii_state.array) * scalefac

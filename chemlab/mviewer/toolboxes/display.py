@@ -29,6 +29,25 @@ def load_molecule(name):
     mol = datafile(name).read('molecule')
     display(mol)
 
+def load_remote_molecule(url):
+    from urllib import urlretrieve
+    
+    filename, headers = urlretrieve(url)
+    mol = datafile(filename).read('molecule')
+    display(mol)
+    
+def load_remote_system(url):
+    from urllib import urlretrieve
+    
+    filename, headers = urlretrieve(url)
+    mol = datafile(filename).read('system')
+    display(mol)
+
+def load_remote_trajectory(url):
+    from urllib import urlretrieve
+    
+    filename, headers = urlretrieve(url)
+    load_trajectory(filename)
 
 import bisect
 def goto_time(timeval):
