@@ -14,12 +14,21 @@ def infoprint(msg, color=None):
 
 def mview(args):
     from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
-
+    from chemlab.io import get_handler_class
+    
     mv = QtMolecularViewer()
 
     if args.filename:
         base, ext = os.path.splitext(args.filename)
-        mv.ipython.app.shell.ex('load_system("%s")' % args.filename)
+        Handler = get_handler_class(ext)
+        if 'system' in Handler.can_read:
+            mv.ipython.app.shell.ex('load_system("%s")' %
+                                    args.filename)            
+        elif 'molecule' in Handler.can_read:
+            mv.ipython.app.shell.ex('load_molecule("%s")' %
+                                    args.filename)
+        else:
+            print("Can't read this file format {}".format(ext))
 
     skip = 1
     if args.skip:
@@ -34,6 +43,7 @@ def mview(args):
     
     if args.nowater:
         mv.ipython.app.shell.ex('hide_water()')
+    
     mv.run()
 
 def view(args):

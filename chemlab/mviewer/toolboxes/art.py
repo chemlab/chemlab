@@ -1,30 +1,38 @@
 from core import *
 from selections import *
-from orderpar import *
 from chemlab.graphics import colors
 import numpy as np
 
-def change_background(color):
-    """Setup the background color to *color* as a string
-    """
-
+def color_from_string(color):
     # The color should be a string
     try:
         col = getattr(colors, color)
     except:
-        raise Exception('No color like this')
-        
-    viewer.widget.background_color = col
+        raise ValueError('Color not found: {}'.format(color))
+    return col
+
+def change_background(color):
+    """Setup the background color to *color*.
+    
+    Example::
+
+      change_background('black')
+      change_background('white')
+    
+    As for the color name follow those in lowescore style
+    eg. 'forest_green'.
+
+    """
+    viewer.widget.background_color = color_from_string(color)
     viewer.update()
 
-def scale(factor):
-    '''Scale the currently selected objects by a certain
-    *factor*.
-    
-    '''
-    rep = current_representation()
-    rep.scale(rep.selection_state, factor)
+# That's kinda of a MAYBE API
+def change_appeareance(keyval):
+    raise NotImplementedError()
 
+def get_appeareance(keyval):
+    raise NotImplementedError()
+    
 def change_radius(value):
     '''Change the radius of each atom by a certain *value*.
 
@@ -32,33 +40,35 @@ def change_radius(value):
     '''
     current_representation().change_radius(current_representation().selection_state, value)
 
+def scale_atoms(fac):
+    '''Scale the atoms by a certain factor *fac*.
 
-def scale_atoms(fac=None):
+    Use the value *fac=1.0* to reset the scale.
+
+    '''
     rep = current_representation()
     atms = selected_atoms()
-    if fac is None:
-        rep.scale_factors[atms] = 1.0
-    else:
-        rep.scale_factors[atms] *= fac
+    rep.scale_factors[atms] *= fac
     
     rep.update_scale_factors(rep.scale_factors)
     viewer.update()
-    
-def _color_from_str(color):
-    try:
-        col = getattr(colors, color)
-    except:
-        print('No color like this')
-    return col
-    
+
+
 def change_color(color):
+    """Change the color of the currently selected objects. *color* is
+    represented as a string.
+
+    Reset the color by passing *color=None*.
+
+    """
+
     atms = selected_atoms()
     rep = current_representation()
     
     # Let's parse the color first
     if isinstance(color, str):
         # The color should be a string
-        col = _color_from_str(color)
+        col = color_from_str(color)
 
     if isinstance(color, tuple):
         col = color
@@ -68,16 +78,6 @@ def change_color(color):
 
     # Color array
     rep.change_color(rep.selection_state, col)
-
-def reset_color():
-    atms = selected_atoms()
-    rep = current_representation()
-    
-    if len(atms) == 0:
-        rep.atom_colors.reset()
-
-    rep.atom_colors[atms,0:3] = np.array(rep.atom_colors.default)[atms,0:3]
-
 
 def change_default_radii(def_map):
     s = current_system()
@@ -123,6 +123,14 @@ def change_lightness(amount):
     rep.atom_colors[:, 0:3] = rgb_cols
 
 def screenshot(filename, width=600, height=600):
+    '''Make a screenshot of the current view. You can tweak the
+    resolution up to what your GPU memory supports.
+    
+    Example::
+
+      screenshot('screen.png', 1200, 1200)
+    
+    '''
     img = viewer.widget.toimage(width, height)
     img.save(filename)
 

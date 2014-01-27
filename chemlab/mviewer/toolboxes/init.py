@@ -8,3 +8,14 @@ from display import *
 from orderpar import *
 from art import *
 
+# Ok, now we should add some code that import the thing
+import os, sys
+
+CHEMPATH = os.path.expanduser('~/.chemlab')
+sys.path.insert(0, CHEMPATH)
+
+if os.path.exists(os.path.join(CHEMPATH, 'scripts', '__init__.py')):
+    from scripts import *
+else:
+    print('Create the {} file to put initialization code'.
+          format(os.path.join(CHEMPATH,'scripts', '__init__.py')))
