@@ -160,7 +160,7 @@ def write_gro(sys, fd):
         try:
             res_name = sys.mol_export[i]['groname']
         except KeyError:
-            raise Exception('Gromacs exporter need the'
+            raise Exception('Gromacs exporter need the '
                             'residue name as groname')
 
         for j in range(sys.mol_n_atoms[i]):

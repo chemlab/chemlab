@@ -64,6 +64,8 @@ for h in _default_handlers:
 
     
 def get_handler_class(ext):
+    """Get the IOHandler that can handle the extension *ext*."""
+
     if ext in _extensions_map:
         format = _extensions_map[ext]
     else:
@@ -103,15 +105,21 @@ def datafile(filename, mode="rb", format=None):
     
     """
 
-    if format is None:
-        filename = os.path.expanduser(filename)
-        base, ext = os.path.splitext(filename)
+    filename = os.path.expanduser(filename)
+    base, ext = os.path.splitext(filename)
             
+    if format == None:
         hc = get_handler_class(ext)
-        fd = open(filename, mode)
-        
-        handler = hc(fd)
-        return handler
+    else:
+        hc = _handler_map.get(format)
+        if hc == None:
+            raise ValueError('Format {} not supported.'.format(format))
+    
+    fd = open(filename, mode)
+
+    handler = hc(fd)
+    return handler
+    
 
 def remotefile(url, format=None):
     """The usage of *remotefile* is equivalent to
