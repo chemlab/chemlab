@@ -6,7 +6,7 @@ from core import *
 from selections import *
 from display import *
 from orderpar import *
-from art import *
+from appeareance import *
 
 # Ok, now we should add some code that import the thing
 import os, sys

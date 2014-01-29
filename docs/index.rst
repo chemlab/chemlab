@@ -114,7 +114,7 @@ Reference Documentation
    api/chemlab.graphics
    api/chemlab.db
    api/chemlab.utils
-   api/chemlab.mviewer.toolboxes
+   api/chemlab.mviewer.api
 
 License
 -------

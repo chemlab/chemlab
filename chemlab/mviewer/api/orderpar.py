@@ -6,7 +6,7 @@ from pylab import *
 from core import *
 from selections import *
 from display import *
-from art import *
+from appeareance import *
 
 import numpy as np
 from PyQt4 import QtGui

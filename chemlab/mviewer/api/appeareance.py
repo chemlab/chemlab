@@ -68,7 +68,7 @@ def change_color(color):
     # Let's parse the color first
     if isinstance(color, str):
         # The color should be a string
-        col = color_from_str(color)
+        col = color_from_string(color)
 
     if isinstance(color, tuple):
         col = color

@@ -238,19 +238,56 @@ You can also select hidden objects and show them::
 Extending
 =========
 
-Say we want to get a method that selects the atoms within a certain
-range from one::
+In this section we'll see how to implement a new function in
+chemlab. For example we want to select all the atoms within a certain
+distance from the currently selected atoms. We can create a file in
+the directory ~/.chemlab/scripts/distances.py and we will implment a
+function like this that will operate on the current selection::
 
-    def select_within(atom, radius):
+    def select_within(radius):
         pass
 
-The thing is pretty easy to implement, we first need to do this::
+The implementation will be as follows::
 
-  s = current_system()
-  clear_selection()
-  nbs = periodic_distance(s.r_array[atom], s.r_array) < radius
-  nbs = nbs.nonzero()[0] # we get the actual neighbour indices
-  return select(ids=nbs)
+  for each atom:
+      find the neighbours atoms
+      select them
+
+In chemlab term we have to do this (the implementation is a bit
+inefficient, but it's more readable)::
+
+  from chemlab.mviewer.toolboxes.selection import selected_atoms
+
+  def select_within(radius):
+    neighbours = []
+    
+    for i_central in selected_atoms():
+      r_central = current_system().r_array[i_central]
+      
+      for r in current_system().r_array:
+         dist = np.linalg.norm(r - r_central)
+	 if dist < radius:
+              neighbours.append(i)
+    
+    select_atoms(np.unique(neighbours))
+    
+Now let's test how this works in a chemlab session. First of all let's add automatically the function to the file .chemlab/scripts/__init__.py::
+
+  from .myutils import select_within
+  
+Then type::
+
+  $ chemlab mview
+
+And in the session let's try by downloading a small protein, select an atom and try the within::
+
+  
+  
+.. s = current_system()
+   clear_selection()
+   nbs = periodic_distance(s.r_array[atom], s.r_array) < radius
+   nbs = nnbs.nonzero()[0] # we get the actual neighbour indices
+   return select(ids=nbs)
 
 So we should put this in the file .chemlab/toolboxes/my_selects.py and
 we should load this at the chemlab start in the
@@ -270,7 +307,7 @@ make it big balls::
 
 Let's solvate a protein in water::
 
-    from chemlab.mviewer.toolboxes.core import *
+    from chemlab.mviewer.api import *
 
     load_system('prot.pdb')
     # Now we get the current system and add the solvation thing as usual

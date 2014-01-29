@@ -24,7 +24,7 @@ def display_molecule(mol):
     it.
 
     '''
-    s = System([molecule])
+    s = System([mol])
     display_system(s)
 
 def autozoom():
