@@ -4,6 +4,15 @@ from chemlab.graphics import colors
 import numpy as np
 
 def color_from_string(color):
+    """Given a string *color*, return the color as a tuple (r, g, b,
+    a) where each value is between 0 and 255.
+
+    As for the color name follow the `HTML color names
+    <http://www.w3schools.com/tags/ref_colornames.asp>` in lowescore
+    style eg. *forest_green*.
+
+    """
+
     # The color should be a string
     try:
         col = getattr(colors, color)
@@ -19,8 +28,8 @@ def change_background(color):
       change_background('black')
       change_background('white')
     
-    As for the color name follow those in lowescore style
-    eg. 'forest_green'.
+
+    .. seealso:: :py:func:`chemlab.mviewer.api.color_from_string`
 
     """
     viewer.widget.background_color = color_from_string(color)
@@ -34,21 +43,24 @@ def get_appeareance(keyval):
     raise NotImplementedError()
     
 def change_radius(value):
-    '''Change the radius of each atom by a certain *value*.
+    '''Change the radius of the currently selected atoms by a certain
+    *value*.
 
     If *value* is None, set the radius to the default value.
+
     '''
     current_representation().change_radius(current_representation().selection_state, value)
 
 def scale_atoms(fac):
-    '''Scale the atoms by a certain factor *fac*.
+    '''Scale the currently selected atoms atoms by a certain factor
+    *fac*.
 
     Use the value *fac=1.0* to reset the scale.
 
     '''
     rep = current_representation()
     atms = selected_atoms()
-    rep.scale_factors[atms] *= fac
+    rep.scale_factors[atms] = fac
     
     rep.update_scale_factors(rep.scale_factors)
     viewer.update()
@@ -61,8 +73,6 @@ def change_color(color):
     Reset the color by passing *color=None*.
 
     """
-
-    atms = selected_atoms()
     rep = current_representation()
     
     # Let's parse the color first
@@ -80,11 +90,13 @@ def change_color(color):
     rep.change_color(rep.selection_state, col)
 
 def change_default_radii(def_map):
+    """Change the default radii
+    """
     s = current_system()
     rep = current_representation()
     rep.radii_state.default = [def_map[t] for t in s.type_array]
     rep.radii_state.reset()
-    scale_atoms()
+    #scale_atoms(None)
     
 def change_hue(amount):
     rep = current_representation()

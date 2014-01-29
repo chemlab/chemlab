@@ -107,8 +107,16 @@ def write_molecule(filename, format=None):
 import bisect
 
 def goto_time(timeval):
-    i = bisect.bisect(viewer.frame_times, timeval)
-    viewer.traj_controls.goto_frame(i)
+    '''Go to a specific time (in nanoseconds) in the current
+    trajectory.
+
+    '''
+    i = bisect.bisect(viewer.frame_times, timeval * 1000)
+    goto_frame(i)
+    
+def goto_frame(frame):
+    '''Go to a specific frame in the current trajectory.'''
+    viewer.traj_controls.goto_frame(frame)
     
 def load_trajectory(name, skip=1, format=None):
     '''Load a trajectory file into chemlab. You should call this

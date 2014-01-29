@@ -194,8 +194,9 @@ You can also act on the selection in different ways::
   invert_selection()
   clear_selection()
 
-Each selection routine returns Selection object, that contains
-information on the selection state, so you can use it later::
+Each selection routine returns :class:`chemlab.mviewer.Selection`
+object, that contains information on the selection state, so you can
+use it later::
 
   select_atoms([0, 1, 2])
   Selection([0, 1, 2], tot=6)

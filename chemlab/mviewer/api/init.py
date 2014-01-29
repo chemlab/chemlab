@@ -5,7 +5,6 @@ viewer.ipython.app.shell.run_line_magic('autoreload', '2')
 from core import *
 from selections import *
 from display import *
-from orderpar import *
 from appeareance import *
 
 # Ok, now we should add some code that import the thing

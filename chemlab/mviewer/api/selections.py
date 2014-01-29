@@ -33,16 +33,14 @@ def select_atoms(indices):
 
 
 def select_selection(selection):
-    '''Select a selection object'''
+    '''Select a :class:`~chemlab.mviewer.Selection` object'''
     rep = current_representation()
     rep.select(selection)
     return rep.selection_state
     
 
 def select_all():
-    '''Select all the visible atoms.
-    
-    '''
+    '''Select all the visible atoms.'''
     
     return select_atoms(visible_atoms())
 
@@ -110,4 +108,8 @@ def selected_atoms():
 
 
 def visible_to_original(visible_index):
+    '''Transform the indexes of the visible atoms to the indexes of
+    the total atoms.
+
+    '''
     return (~current_representation().hidden_state.atom_hidden_mask).nonzero(0)
