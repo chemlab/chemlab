@@ -10,6 +10,12 @@ class AbstractEffect(object):
     def __init__(self, *args, **kwargs):
         pass
     
+    def set_options(self, **options):
+        '''Subclasses should use this method to change the options of
+        the effect
+
+        '''
+        pass
 
     def render(self, fb, textures):
         '''Subclasses should override this method to draw the

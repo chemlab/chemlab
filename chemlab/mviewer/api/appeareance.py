@@ -68,7 +68,7 @@ def scale_atoms(fac):
 
 def change_color(color):
     """Change the color of the currently selected objects. *color* is
-    represented as a string.
+    represented as a string. Otherwise color can be passed as an rgba tuple of values between 0, 255
 
     Reset the color by passing *color=None*.
 
@@ -150,17 +150,76 @@ def change_shading(shader):
     rep = current_representation()
     rep.atom_renderer.change_shading(shader)
 
-from chemlab.graphics.postprocessing import *
+_counter = 0
 
-def add_post_processing(pp, **kwargs):
-    viewer.add_post_processing(pp, **kwargs)
+from collections import OrderedDict
+_effect_map = OrderedDict()
+
+def add_post_processing(effect,  options):
+    """Apply a post processing effect.
+
+    **Parameters**
+    
+    effect: string
+        The effect to be applied, choose between ``ssao``,
+        ``outline``, ``fxaa``, ``gamma``.
+    
+    options: dict
+        A dictionary of option used to initialize the effect,
+        check the :doc:`chemlab.graphics.postprocessing` for a complete reference of all the options.
+    
+    **Returns**
+
+    A string id to reference the applied effect later.
+    
+    """
+
+    from chemlab.graphics.postprocessing import SSAOEffect, OutlineEffect, FXAAEffect, GammaCorrectionEffect
+    
+    pp_map = {'ssao': SSAOEffect,
+              'outline': OutlineEffect,
+              'fxaa': FXAAEffect,
+              'gamma': GammaCorrectionEffect}
+    
+    pp = viewer.add_post_processing(pp_map[effect], **options)    
     viewer.update()
 
+
+    global _counter
+    _counter += 1
+    
+    str_id = effect + str(_counter)    
+    _effect_map[str_id] = pp # saving it for removal for later...
+    
+    return str_id # That's an unique ID
+
 def list_post_processing():
-    pass
+    """List all the post processing effects by name."""
+    
+    return list(_effect_map.keys())
 
-def remove_post_processing(pp):
-    pass
+def remove_post_processing(str_id):
+    """Remove a post processing effect by passing its string id
+    provided by
+    :py:func:`~chemlab.mviewer.api.add_post_processing`.
 
-def post_processing_options(pp, options):
-    pass
+    """
+    
+    viewer.remove_post_processing(_effect_map[str_id])
+    
+    # We need to remove the same from our dictionary
+    del _effect_map[str_id]
+
+def clear_post_processing():
+    """Remove all post processing effects."""
+    
+    for str_id in list_post_processing():
+        remove_post_processing(str_id)
+
+def change_post_processing_options(str_id, **options):
+    """Change the options of the post processing effect referred by
+    its string id.
+
+    """
+    _effect_map[str_id].set_options(**options)
+    viewer.update()

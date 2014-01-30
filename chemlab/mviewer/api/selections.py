@@ -73,7 +73,13 @@ def visible_atoms():
 
 def hide_selected():    
     '''Hide the selected objects.'''
-    current_representation().hide(current_representation().selection_state)
+    ss = current_representation().selection_state
+    hs = current_representation().hidden_state
+    res = {}
+    for k in ss:
+        res[k] = hs[k].add(ss[k])
+    
+    current_representation().hide(res)
 
 
 def hide_water():
@@ -87,6 +93,21 @@ def unhide_all():
     return current_representation().hide(
         {'atoms': Selection([],current_system().n_atoms),
          'bonds': Selection([], current_system().n_bonds)})
+    
+def unhide_selected():
+    '''Unhide the selected objects'''
+    
+    hidden_state = current_representation().hidden_state
+    selection_state = current_representation().selection_state
+
+    res = {}
+    # Take the hidden state and flip the selected atoms bits.
+    for k in selection_state:
+        visible = hidden_state[k].invert()
+        visible_and_selected = visible.add(selection_state[k]) # Add some atoms to be visible
+        res[k] = visible_and_selected.invert()
+    
+    current_representation().hide(res)
 
 # def delete():
 #     s = current_system()

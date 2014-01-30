@@ -8,10 +8,11 @@ import numpy as np
 import numpy.linalg as LA
 import os
 from random import uniform
+from .base import AbstractEffect
 from ..transformations import normalized
 from ..shaders import set_uniform, compileShader
 
-class SSAOEffect(object):
+class SSAOEffect(AbstractEffect):
     """Screen space ambient occlusion.
 
     This effect greatly enhances the perception of the shape of the
@@ -91,6 +92,16 @@ class SSAOEffect(object):
         # Kernel sampling
         self.kernel_radius = kernel_radius
         self.kernel_size = kernel_size
+        self.generate_kernel()
+        
+    def set_options(self, ssao_power=None, kernel_size=None, kernel_radius=None):
+        if ssao_power:
+            self.ssao_power = ssao_power
+        if kernel_radius:
+            self.kernel_radius = kernel_radius
+        if kernel_size:
+            self.kernel_size = kernel_size
+        
         self.generate_kernel()
         
     def generate_kernel(self):

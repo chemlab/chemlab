@@ -1,1 +1,1 @@
-from chemlab.representations.state import Selection
+from .representations.state import Selection

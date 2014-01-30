@@ -112,12 +112,14 @@ class BallAndStickRepresentation(object):
     def on_atom_hidden_changed(self):
         # When hidden state changes, the view update itself
         # Update the Renderers and the pickers
-        no_sel = self.selection_state['atoms'].indices
+        #no_sel = self.selection_state['atoms'].indices
         
         # Take everything else
-        sel = np.ones(self.system.n_atoms, dtype='bool')
-        sel[self.hidden_state['atoms'].mask] = False
-        sel[no_sel] = False
+        #sel = np.ones(self.system.n_atoms, dtype='bool')
+        #sel[self.hidden_state['atoms'].mask] = False
+        #sel[no_sel] = False
+        
+        sel = self.hidden_state['atoms'].invert().mask
         
         self.atom_renderer.hide(sel)
         
