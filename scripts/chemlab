@@ -12,7 +12,7 @@ def infoprint(msg, color=None):
     sys.stdout.flush()
 
 
-def mview(args):
+def view(args):
     from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
     from chemlab.io import get_handler_class
     
@@ -46,86 +46,86 @@ def mview(args):
     
     mv.run()
 
-def view(args):
-    from chemlab.io import datafile
-    from chemlab.graphics import display_system, display_trajectory
-    from chemlab.core import subsystem_from_molecules
-    import numpy as np
+# def view(args):
+#     from chemlab.io import datafile
+#     from chemlab.graphics import display_system, display_trajectory
+#     from chemlab.core import subsystem_from_molecules
+#     import numpy as np
 
-    base, ext = os.path.splitext(args.filename)
+#     base, ext = os.path.splitext(args.filename)
     
-    infoprint('Reading file %s ... ' % args.filename)
-    t0 = time.time()
+#     infoprint('Reading file %s ... ' % args.filename)
+#     t0 = time.time()
     
-    df = datafile(args.filename)
-    sys = df.read('system')
+#     df = datafile(args.filename)
+#     sys = df.read('system')
   
-    cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#     cprint('DONE (%f s)'%(time.time()-t0), color='green')
 
-    if args.nowater:
-        infoprint('Removing water molecules ... ')
-        t0 = time.time()
+#     if args.nowater:
+#         infoprint('Removing water molecules ... ')
+#         t0 = time.time()
         
-        mols = sys.get_derived_molecule_array('formula')
-        noh2o = np.logical_not(mols == 'H2O')
-        noh2o_atom = sys.mol_to_atom_indices(noh2o.nonzero()[0])        
+#         mols = sys.get_derived_molecule_array('formula')
+#         noh2o = np.logical_not(mols == 'H2O')
+#         noh2o_atom = sys.mol_to_atom_indices(noh2o.nonzero()[0])        
         
-        sys = subsystem_from_molecules(sys, noh2o)
+#         sys = subsystem_from_molecules(sys, noh2o)
       
-        cprint('DONE (%f s)'%(time.time() - t0), color='green')
+#         cprint('DONE (%f s)'%(time.time() - t0), color='green')
    
-    if not args.traj:
-        display_system(sys)
-    else:
-        infoprint('Reading trajectory frames ... ')
-        t0 = time.time()
+#     if not args.traj:
+#         display_system(sys)
+#     else:
+#         infoprint('Reading trajectory frames ... ')
+#         t0 = time.time()
         
-        df = datafile(args.traj)
-        times, frames = df.read('trajectory', skip=args.skip or None)
-        box_vectors = df.read('boxes')
+#         df = datafile(args.traj)
+#         times, frames = df.read('trajectory', skip=args.skip or None)
+#         box_vectors = df.read('boxes')
         
-        cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#         cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
-        if args.nowater:
-            infoprint('Removing water from frames ... ')
-            t0 = time.time()
+#         if args.nowater:
+#             infoprint('Removing water from frames ... ')
+#             t0 = time.time()
             
-            for i, f in enumerate(frames):
-                frames[i] = f[noh2o_atom]
+#             for i, f in enumerate(frames):
+#                 frames[i] = f[noh2o_atom]
                 
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
-        if args.smooth:
-            infoprint('Smoothing frames ... ')
-            t0 = time.time()
-            for i, f in enumerate(frames):
-                nf = np.zeros_like(f)
+#         if args.smooth:
+#             infoprint('Smoothing frames ... ')
+#             t0 = time.time()
+#             for i, f in enumerate(frames):
+#                 nf = np.zeros_like(f)
                 
-                toaverage = range(max(0, i - 2), min(i+4, len(frames)))
-                navg = 0
-                for j in toaverage:
-                    navg += 1
-                    nf += frames[j]
+#                 toaverage = range(max(0, i - 2), min(i+4, len(frames)))
+#                 navg = 0
+#                 for j in toaverage:
+#                     navg += 1
+#                     nf += frames[j]
 
-                nf /= navg
-                frames[i] = nf
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#                 nf /= navg
+#                 frames[i] = nf
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
 
-        from chemlab.utils import minimum_image
-        if args.translate:
-            translate = [float(it) for it in args.translate.split(',')]
+#         from chemlab.utils import minimum_image
+#         if args.translate:
+#             translate = [float(it) for it in args.translate.split(',')]
 
-            infoprint('Translating by {} ...'.format(translate))
-            t0 = time.time()
-            for i,f in enumerate(frames):
-                frames[i] = minimum_image(f + translate, box_vectors[i].diagonal())
+#             infoprint('Translating by {} ...'.format(translate))
+#             t0 = time.time()
+#             for i,f in enumerate(frames):
+#                 frames[i] = minimum_image(f + translate, box_vectors[i].diagonal())
             
-            sys.r_array = minimum_image(sys.r_array + translate,
-                                        sys.box_vectors.diagonal())
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#             sys.r_array = minimum_image(sys.r_array + translate,
+#                                         sys.box_vectors.diagonal())
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
-        display_trajectory(sys, times, frames, box_vectors=box_vectors)
+#         display_trajectory(sys, times, frames, box_vectors=box_vectors)
 
 def plot(args):
     base, ext = os.path.splitext(args.filename)
