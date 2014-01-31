@@ -1,6 +1,6 @@
-============================
-The chemlab molecular viewer
-============================
+================
+Molecular Viewer
+================
 
 The Chemlab molecular viewer sets a new standard and a new way of
 interacting, editing and analyzing data. The chemlab philosophy is
@@ -17,7 +17,7 @@ Quick Start
 
 You can start the chemlab molecular viewer by typing::
 
-    chemlab mview
+    chemlab view
 
 This will load the user interface consisting of the viewer, and an
 IPython shell.
@@ -51,29 +51,29 @@ information of what's currently displaying.
 For example, to get the current :class:`~chemlab.core.System` instance
 being displayed you can type::
 
-     current_system()
+  current_system()
 
 If you want to know which are the indexes of the atoms currently
 selected you can type the following command::
   
-    selected_atoms()
-    # Out: array([ 0,  1])
+  selected_atoms()
+  # array([ 0,  1])
 
 You can also do the reverse, given the indexes you can select two
 atoms, the interface will update accordingly::
 
-    select_atoms([0, 1])
+  select_atoms([0, 1])
 
 To calculate the distance between the selected atoms, we have to first
 retrieve their indexes and then use the System to retrieve their
 coordinates. At that point we can use them to find the distance (it's
 the norm of the difference between the two coordinates)::
 
-    selected = selected_atoms()
-    s = current_system()
-    a, b = s.r_array[selected]
-    import numpy as np
-    distance = np.linalg.norm(a - b)
+  selected = selected_atoms()
+  s = current_system()
+  a, b = s.r_array[selected]
+  import numpy as np
+  distance = np.linalg.norm(a - b)
 
 Changing the appeareance
 ........................
@@ -84,17 +84,18 @@ easy way.
 For example we can select all the carbon atoms using the
 select_atom_type function and give them a size of 0.3 with the function change_radius, that operates on the current selection::
 
-    select_atom_type('C')
-    change_radius(0.3)
+  select_atom_type('C')
+  change_radius(0.3)
 
 Similarly, we can change their color with the change_color function::
   
-    change_color(color='black')
+  change_color(color='black')
 
-For a complete reference of the commands refer to the :doc:`api/chemlab.mviewer.toolboxes`.
+For a complete reference of the commands refer to the
+:doc:`api/chemlab.mviewer.api`.
 
 Writing your own commands
-=========================
+.........................
 
 The built-in commands provide a quick and easy way to operate on your
 molecules and they provide basic functionality. The true power of chemlab
@@ -113,6 +114,7 @@ put the following code in it::
          print("Only two atoms must be selected")
 	 return
      else:
+         # Here we use numpy fancy indexing
          a, b = current_system().r_array[sel]
 	 return np.linalg.norm(b - a)
 
@@ -127,7 +129,8 @@ time.
 
 The file is stored in your home directory
 .chemlab/scripts/__init__.py. For example, we can add the following
-line to automatically load the command "distance", after putting the file utils.py in the directory .chemlab/scripts/::
+line to automatically load the command "distance", after putting the
+file utils.py in the directory .chemlab/scripts/::
   
   from .utils import distance
 
@@ -239,7 +242,7 @@ You can also select hidden objects and show them::
 Extending
 =========
 
-In this section we'll see how to implement a new function in
+In this section we'll see another example on how to implement a new function in
 chemlab. For example we want to select all the atoms within a certain
 distance from the currently selected atoms. We can create a file in
 the directory ~/.chemlab/scripts/distances.py and we will implment a
@@ -276,51 +279,80 @@ Now let's test how this works in a chemlab session. First of all let's add autom
 
   from .myutils import select_within
   
-Then type::
+Now when you start chemlab this command will be made available immediately.
 
-  $ chemlab mview
+Changing the Appeareance
+========================
 
-And in the session let's try by downloading a small protein, select an atom and try the within::
+Chemlab can make seriously good-looking pictures. 
 
+The general way the appeareance-related function work is that they
+apply on selections. Say, you want the change all the Carbon atom
+colors to black.
+
+This is really easy to do::
+
+  select_atom_type('C')
+  change_color('black')
+
+The colors available as string are the standard `HTML colors
+<http://www.w3schools.com/html/html_colornames.asp>`_, written in
+underscore.
+
+You can also pass rgba tuples in the range 0-255. Please, leave the
+alpha value to 255::
+
+  select_atom_type('C')
+  change_color((0, 0, 0, 255))
+
+Similarly you can change the radius of certain atoms or scale them::
+
+  select_all()
+  scale_atoms(2.0) # Scale Factor
+  change_radius(0.15) # Exact value in nm
   
+Perhaps the most interesting feature are the post processing effects,
+the most interesting is called 'ssao' or Screen Space Ambient
+Occlusion. It enhances the picture by giving nice shadows in the more
+occluded areas, take a look at the picture generated by this code::
   
-.. s = current_system()
-   clear_selection()
-   nbs = periodic_distance(s.r_array[atom], s.r_array) < radius
-   nbs = nnbs.nonzero()[0] # we get the actual neighbour indices
-   return select(ids=nbs)
-
-So we should put this in the file .chemlab/toolboxes/my_selects.py and
-we should load this at the chemlab start in the
-.chemlab/toolboxes/__init__.py::
-
-  from my_selects import *
-
-Now when you start chemlab this thing will be made available immediately.
-
-Cookbook
-========
-
-You have a protein solvated in water, you want to remove the water and
-make it big balls::
-
-    $ chemlab mview prot.pdb
-
-Let's solvate a protein in water::
-
-    from chemlab.mviewer.api import *
-
-    load_system('prot.pdb')
-    # Now we get the current system and add the solvation thing as usual
-    s = current_system()
-    # I'll make a box like this
-    wat_box = random_lattice_box([wat], 1000, [7, 7, 7])
-    solv_box = merge_systems(wat_box, s)
-    
-    # We show it again!
-    display_system(solv_box)
-
-We can wrap it into a toolbox::
+  download_molecule('testosterone')
   
-    solvate()
-    save_system("out.gro")
+  select_all()
+  scale_atoms(2.0)
+  
+  # We make the colors brighter, ssao works best on light colors.
+  
+  select_atom_type('C')
+  change_color((210, 210, 210, 0)) # That's a very light gray
+  
+  select_atom_type('O')
+  change_color((255, 163, 163, 255))
+  
+  change_background('white')
+  
+  pp_id = add_post_processing('ssao')
+  
+  # For max quality 
+  # add_post_processing('ssao', kernel_size=128)
+
+.. image:: _static/test_ssao_on.png
+   :width: 600px
+
+There is a good amount of shadows, you can also setup other effects
+such as anti aliasing and gamma correction::
+
+  add_post_processing('fxaa')
+  add_post_processing('gamma')
+
+The function :py:func:`~chemlab.mviewer.api.appeareance.add_post_processing`
+returns a string id that you can use to remove the effect or to change
+its options. To list all the available post processing effects, use
+the function :py:func:`~chemlab.mviewer.api.appeareance.list_post_processing`::
+
+  list_post_processing()
+  # ['ssao1', 'fxaa2', 'gamma3']
+  change_post_processing_options('ssao1', kernel_size=128)
+  remove_post_processing('fxaa2')
+  clear_post_processing()
+

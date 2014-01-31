@@ -138,31 +138,16 @@ from chemlab.contrib import gromacs
 gromacs.setup_commands(subparsers)
 
 view_parser = subparsers.add_parser('view')
-view_parser.add_argument('filename', type=str)
+view_parser.add_argument('filename', type=str, action='store', nargs='?')
 view_parser.add_argument('--traj', action='store', type=str)
-view_parser.add_argument('--nowater', action='store_true',
-                         help='Do not display water molecules')
-view_parser.add_argument('--smooth', action='store_true',
-                         help='Apply a very crude smoothing filter')
+view_parser.add_argument('-e', action='store', type=str,
+                         help='Execute a python command after loading')
 view_parser.add_argument('--skip', action='store', type=int,
                          help='Take only the ith frames')
-
-view_parser.add_argument('--translate', action='store', type=str,
-                         help='Take only the ith frames')
-
-view_parser.set_defaults(func=view)
-
-mview_parser = subparsers.add_parser('mview')
-mview_parser.add_argument('filename', type=str, action='store', nargs='?')
-mview_parser.add_argument('--traj', action='store', type=str)
-mview_parser.add_argument('-e', action='store', type=str,
-                         help='Execute a python command after loading')
-mview_parser.add_argument('--skip', action='store', type=int,
-                         help='Take only the ith frames')
-mview_parser.add_argument('--nowater', action='store_true',
+view_parser.add_argument('--nowater', action='store_true',
                          help='Do not display water molecules')
 
-mview_parser.set_defaults(func=mview)
+view_parser.set_defaults(func=view)
 
 args = parser.parse_args(sys.argv[1:])
 args.func(args)

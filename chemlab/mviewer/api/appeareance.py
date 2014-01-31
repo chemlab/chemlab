@@ -155,7 +155,7 @@ _counter = 0
 from collections import OrderedDict
 _effect_map = OrderedDict()
 
-def add_post_processing(effect,  options):
+def add_post_processing(effect,  **options):
     """Apply a post processing effect.
 
     **Parameters**
@@ -164,14 +164,15 @@ def add_post_processing(effect,  options):
         The effect to be applied, choose between ``ssao``,
         ``outline``, ``fxaa``, ``gamma``.
     
-    options: dict
-        A dictionary of option used to initialize the effect,
-        check the :doc:`chemlab.graphics.postprocessing` for a complete reference of all the options.
+    **options:
+        Options used to initialize the effect, check the
+        :doc:`chemlab.graphics.postprocessing` for a complete
+        reference of all the options.
     
     **Returns**
 
-    A string id to reference the applied effect later.
-    
+    A string identifier that can be used to reference the applied effect.
+
     """
 
     from chemlab.graphics.postprocessing import SSAOEffect, OutlineEffect, FXAAEffect, GammaCorrectionEffect
