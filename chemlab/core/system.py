@@ -10,7 +10,7 @@ import numpy as np
 
 from .molecule import Atom, Molecule, guess_bonds
 from .attributes import (NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr,
-                         BondsAttr)
+                         BondsAttr, BondOrderAttr)
 from .serialization import json_to_data, data_to_json
 
 from ..db import ChemlabDB
@@ -92,6 +92,13 @@ class System(object):
 
        Array of  all the atomic symbols. It can be used to select
        certain atoms in a system.
+    
+    .. py:attribute:: charge_array
+
+       :type: np.ndarray(N, dtype=float)
+       :derived from: Atom
+    
+       Array of the charges present on the atoms.
 
        **Example**
 
@@ -186,11 +193,14 @@ class System(object):
         NDArrayAttr('r_array', 'r_array', np.float, 3),
         AtomicArrayAttr('m_array', 'm_array',  np.float,
                         default=lambda s: np.array([masses[t] for t in s.type_array])),
+        AtomicArrayAttr('charge_array', 'charge_array',  np.float,
+                        default=lambda s: np.zeros(len(s.type_array), np.float)),
         AtomicArrayAttr('atom_export_array', 'atom_export_array', np.object,
             default=lambda s: np.array([{} for i in range(s.n_atoms)], dtype=np.object)),
         MoleculeArrayAttr('mol_export', 'export', np.object,
             default=lambda s: np.array([{} for i in range(s.n_mol)], dtype=np.object)),
         BondsAttr(),
+        BondOrderAttr()
     ]
 
     def __init__(self, molecules, box_vectors=None):
@@ -569,6 +579,23 @@ class System(object):
     @property
     def n_bonds(self):
         return len(self.bonds)
+        
+    @property
+    def bonds(self):
+        return self._bonds
+        
+    @bonds.setter
+    def bonds(self, val):
+        orig_size = len(self._bonds)
+        self._bonds = np.array(val, dtype='int')
+        
+        # Update the bond orders
+        if len(val) > orig_size:
+            self.bond_orders = np.concatenate((self.bond_orders,
+                                               [1] * (len(val) - orig_size))).astype('int')
+        if len(val) < orig_size:
+            self.bond_orders = self.bond_orders[:len(val)]
+    
         
     def get_atom(self, index):
         return Atom.from_fields(r=self.r_array[index], export=self.atom_export_array[index],

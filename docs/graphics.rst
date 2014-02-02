@@ -70,11 +70,12 @@ this way they provide the maximum flexibility required to build
 efficient opengl routines. Renderers may be subclass other renderers
 as well as use other renderers.
 
-A very useful renderer is TriangleRenderer, used to render efficiently
-a list of triangles, it constitutes a base for writing other
-renderers. TriangleRenderer works basically like this, you pass the
-vertices, normals and colors of the triangle and it will display a
-triangle in the world::
+A very useful renderer is
+:py:class:`~chemlab.graphics.renderers.TriangleRenderer`, used to
+render efficiently a list of triangles, it constitutes a basis for
+writing other renderers. TriangleRenderer works like this:
+you pass the vertices, normals and colors of the triangles and it will
+display a set of triangles in the world::
 
     from chemlab.graphics import QtViewer
     from chemlab.graphics.renderers import TriangleRenderer
@@ -92,8 +93,8 @@ triangle in the world::
 .. image:: _static/graphics_triangle.png
 	   :width: 600px
 		   
-If you pass 6 vertices/normals/colors, he will display 2 triangles and
-so on. As a sidenote, he is very efficient and in fact
+If you pass 6 vertices/normals/colors, it will display 2 triangles and
+so on. As a sidenote, it is very efficient and in fact
 :py:class:`chemlab.graphics.renderers.TriangleRenderer` is used as a
 backend for a lot of other renderers such as
 :py:class:`~chemlab.graphics.renderers.SphereRenderer` and
@@ -124,10 +125,6 @@ example by defining an update function that rotates our triangle::
   v.schedule(update, 10)
   v.run()
 
-On this ground we can develop a TetrahedronRenderer based on our
-TriangleRenderer. To do that we first need to understand how a
-tetrahedron is made, and how can we define the vertices that make the
-tetrahedron.
 
 Post Processing Effects
 -----------------------
@@ -160,15 +157,14 @@ You'll get a representation like this:
 .. image:: /_static/ssao_off.png
     :width: 600px
 
-This representation doesn't really show how the molecule surface
-features, plus it looks dull and plasticky. We can add the SSAO
-post-processing effect to improve its visual quality.
+This representation doesn't really show the molecule surface
+features, plus it looks dull and plasticky. We can add the screen space ambient occlusion effect to improve its visual quality.
 
 `Screen space ambient occlusion (SSAO)
 <http://en.wikipedia.org/wiki/Screen_space_ambient_occlusion>`_ is a
 very powerful technique used by numerous videogames to make the
 illumination much more realistic, by darkening the more occluded areas
-of the objects, such as pockets.
+of the objects, such as pockets and surface features.
 
 Chemlab implements this effect in the
 :py:class:`~chemlab.graphics.postprocessing.SSAOEffect` class. To
@@ -184,9 +180,9 @@ What you'll get is this, with a much-improved visual quality:
 .. image:: /_static/ssao_on.png
     :width: 600px
 
-Post processing effects can be customized with some arguments. The
+Post processing effects can be customized with arguments. The
 SSAO effect may have a dirty look, you can fix that by changing the
-parameter kernel_size, defaulted to 32, with a max value of 128::
+parameter kernel_size, which default to 32, with a max value of 128::
 
   v.add_post_processing(SSAOEffect, kernel_size=128)
 
@@ -213,14 +209,133 @@ of effects that will be applied in turn::
 .. image:: /_static/multi_effects.png
     :width: 600px
 
-Unfortunately on ATI cards with open source drivers you can't apply
+Unfortunately on ATI cards with open source drivers can't apply
 multiple post processing effects. I'm investigating the issue, but
 this can be potentially due to a bug in the drivers.
 
 .. seealso:: :doc:`api/chemlab.graphics.postprocessing`
 
+Offline Rendering
+-----------------
+
+.. versionadded:: 0.3
+
+With chemlab you can produce renderings programmatically without
+having to display anything or tinkering with the user interface. This
+feature comes pretty useful when generating reports with a lot of
+pictures.
+
+Let's say you want to make a showcase of different chemical compounds,
+such as the first four alkanes. First of all we'll take a sample
+molecule to adjust the looks and then we'll adapt the code to render
+all of the alkanes in a sequence.
+
+As an example we'll tweak our rendering on the norbornene molecule
+contained in the chemlab database::
+
+    from chemlab.db import ChemlabDB
+    cdb = ChemlabDB()
+    
+    norb = cdb.get("molecule", "example.norbornene")
+
+We want to do the rendering of this molecule using a space fill
+representation, this can be achieved by using the AtomRenderer, which
+will render each atom as a sphere with its Van Der Waals radius::
+
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import AtomRenderer
+    
+    v = QtViewer()
+    atom_rend = v.add_renderer(AtomRenderer, norb.r_array, norb.type_array)
+    
+After we've got the renderer in place we can programmatically
+manipulate the camera to adjust at the right zoom level. You can, for
+instance, use the :meth:`chemlab.graphics.camera.Camera.autozoom`
+method to automatically adjust the scene, but you are free to use any
+other method present in the :class:`~chemlab.graphics.camera.Camera`
+class::
+
+    v.widget.camera.autozoom(norb.r_array)
+    
+    v.run()
+
+.. image:: /_static/norb_step1.png
+
+At this point, you are free experiment with different effects and
+combinations. In our case we'll add SSAO and anti aliasing to add more
+depth and smoothness to the rendering::
+
+    from chemlab.graphics.postprocessing import SSAOEffect, FXAAEffect
+    
+    v.add_post_processing(SSAOEffect, kernel_size=128, kernel_radius=1.0)
+    v.add_post_processing(FXAAEffect)
+    
+    v.run()
+
+.. image:: /_static/norb_step2.png
+
+To actually save the image you can now use the
+:py:meth:`chemlab.graphics.QChemlabWidget.toimage` method and select a
+resolution of 800x800 pixels. This will return a PIL image, that has a
+save method to store it as a png::
+      
+    img = v.widget.toimage(800, 800)
+    img.save("norb.png")
+ 
+Once we've got the sample molecule up and running it's very easy to
+automatize the process to produce images of different molecules. In
+the following code we prepare the QtViewer with the effects, and for
+each molecule we add an AtomRenderer and adjust the camera::
+
+    from chemlab.db import CirDB
+    from chemlab.graphics import QtViewer
+    from chemlab.graphics.renderers import AtomRenderer
+    from chemlab.graphics.postprocessing import FXAAEffect, SSAOEffect
+     
+    # A series of compounds to display
+    compounds = ["methane", "ethane", "propane", "butane"]
+     
+    db = CirDB()
+     
+    # Prepare the viewer
+    v = QtViewer()
+    v.add_post_processing(SSAOEffect, kernel_size=128, kernel_radius=1.0)
+    v.add_post_processing(FXAAEffect)
+     
+    for compound in compounds:
+        mol = db.get("molecule", compound)
+        rend = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array)
+        
+        v.widget.camera.autozoom(mol.r_array)
+        # Give some extra zoom
+        v.widget.camera.mouse_zoom(1.0)
+        
+        v.widget.toimage(300, 300).save(compound + '.png')
+        
+        # Cleanup
+        v.remove_renderer(rend)
+
+.. image:: /_static/offline_rendering/methane.png
+	   
+.. image:: /_static/offline_rendering/ethane.png	   
+
+.. image:: /_static/offline_rendering/propane.png	   
+	   
+.. image:: /_static/offline_rendering/butane.png	   
+
+This example is stored in the ``chemlab/examples/offline_rendering.py`` file.
+ 
+
 Tutorial: TetrahedronRenderer
 -----------------------------
+
+.. note:: This section is mainly for developers.
+
+In this section, we'll see how to write a renderer that will display
+several tetrahedrons. We will write our TetrahedronRenderer based on
+TriangleRenderer. To do that we first need to understand how a
+tetrahedron is made, and how can we define the vertices that make the
+tetrahedron.
 
 First of all, we need to have the 4 coordinates that represents a
 tetrahedron. Without even trying to visualize it, just pick the values
@@ -394,3 +509,4 @@ To demostrate let's draw a grid of 125 tetrahedra::
 If you had any problem with the tutorial or you want to implement
 other kind of renderers don't exitate to contact me. The full code of
 this tutorial is in `chemlab/examples/tetrahedra_tutorial.py`.
+

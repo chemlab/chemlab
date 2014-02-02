@@ -68,6 +68,12 @@ class TestSystem(object):
         # Test atom masses
         #print s.m_array
 
+        # Test charges
+        assert_allclose(system.charge_array, [0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0,
+                                              0.0, 0.0, 0.0])
+        
         # Test mol indices
         assert_npequal(system.mol_indices, [0, 3, 6, 9])
 
@@ -90,6 +96,8 @@ class TestSystem(object):
                                       [6, 7], [6, 8],
                                       [9, 10], [9, 11]])
 
+        # Test bond orders
+        
         #print 'Test Indexing of system.molecule'
         #print s.molecules[0]
         #print s.molecules[:], s.molecules[:-5]
@@ -206,6 +214,7 @@ def test_sort():
     tsys.sort()
     assert np.all(tsys.type_array[:tsys.n_mol/2] == 'Cl')
 
+
 def test_bonds():
     from chemlab.io import datafile
     bz = datafile("tests/data/benzene.mol").read('molecule')
@@ -215,33 +224,67 @@ def test_bonds():
     s = System.empty(2, 2*bz.n_atoms)
     s.add(bz)
     assert_npequal(s.bonds, bz.bonds)
+    assert_npequal(bz.bond_orders, [1, 2, 2, 1, 1, 2])
+    assert_npequal(s.bond_orders, bz.bond_orders)
+    
     s.add(bz)
     assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
-
+    #assert_npequal(s.bond_orders)
+    
     # Reordering
     orig = np.array([[0, 1], [6, 8]])
     s.bonds = orig
     s.reorder_molecules([1, 0])
     assert_npequal(s.bonds, np.array([[6, 7], [0, 2]]))
+    # This doesn't change the bond_ordering
 
     # Selection
     ss = subsystem_from_molecules(s, [1])
     assert_npequal(ss.bonds, np.array([[0, 1]]))
 
-    ss2 = System.from_arrays(**ss.__dict__)
+    import inspect
+    ss2 = System.from_arrays(**dict(inspect.getmembers(ss)))
     ss2.r_array += 10.0
+    
     ms = merge_systems(ss, ss2)
     assert_npequal(ms.bonds, np.array([[0, 1], [6, 7]]))
+    assert_npequal(ms.bond_orders, np.array([1, 1]))
 
     # From_arrays
-    s = System.from_arrays(mol_indices=[0], **bz.__dict__)
+    s = System.from_arrays(mol_indices=[0], bonds=bz.bonds, **bz.__dict__)
     assert_npequal(s.bonds, bz.bonds)
-
+    assert_npequal(s.bond_orders, bz.bond_orders)
+    
     # Get molecule entry
-
     # Test the bonds when they're 0
     s.bonds = np.array([])
     assert_equals(s.get_derived_molecule_array('formula'), 'C6')
+
+def test_bond_orders():
+    # Get a molecule with some bonds
+    wat = _make_water()
+    wat_o = wat.copy()
+    # 0,1 0,2
+    assert_npequal(wat.bond_orders, np.array([1, 1]))
+
+    # Remove a bond
+    wat.bonds = np.array([[0, 1]])
+    assert_npequal(wat.bond_orders, np.array([1]))
+
+    wat.bond_orders = np.array([2])
+
+    # Try with a system
+    s = System.empty(2, 6)
+
+    s.add(wat_o)
+    s.add(wat)
+
+    assert_npequal(s.bond_orders , np.array([1, 1, 2]))
+    s.reorder_molecules([1, 0]) # We don't actually sort bonds again
+    assert_npequal(s.bond_orders , np.array([1, 1, 2]))
+    
+    s.bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5]])
+    assert_npequal(s.bond_orders, np.array([1, 1, 2, 1]))
 
 def test_random():
     '''Testing random made box'''
@@ -292,7 +335,6 @@ def test_bond_guessing():
     #display_molecule(mol)
 
 
-
 def test_extending():
     from chemlab.core.attributes import NDArrayAttr, MArrayAttr
     from chemlab.core.fields import AtomicField
@@ -327,6 +369,7 @@ def test_extending():
 
     na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
     print(type(na_atom.astype(Atom)))
+
 
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])

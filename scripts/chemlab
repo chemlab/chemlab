@@ -10,92 +10,127 @@ def infoprint(msg, color=None):
     cprint('INFO: ', color='yellow', end='')    
     cprint(msg, color=color, end='')
     sys.stdout.flush()
-    
+
+
 def view(args):
-    from chemlab.io import datafile
-    from chemlab.graphics import display_system, display_trajectory
-    from chemlab.core import subsystem_from_molecules
-    import numpy as np
+    from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
+    from chemlab.io import get_handler_class
+    
+    mv = QtMolecularViewer()
 
-    base, ext = os.path.splitext(args.filename)
+    if args.filename:
+        base, ext = os.path.splitext(args.filename)
+        Handler = get_handler_class(ext)
+        if 'system' in Handler.can_read:
+            mv.ipython.app.shell.ex('load_system("%s")' %
+                                    args.filename)            
+        elif 'molecule' in Handler.can_read:
+            mv.ipython.app.shell.ex('load_molecule("%s")' %
+                                    args.filename)
+        else:
+            print("Can't read this file format {}".format(ext))
+
+    skip = 1
+    if args.skip:
+        skip = args.skip
+
+    if args.traj:
+        mv.ipython.app.shell.ex('load_trajectory("%s", skip=%i)' %
+                                (args.traj, skip))
+
+    if args.e:
+        mv.ipython.app.shell.ex(args.e)
     
-    infoprint('Reading file %s ... ' % args.filename)
-    t0 = time.time()
-    
-    df = datafile(args.filename)
-    sys = df.read('system')
-  
-    cprint('DONE (%f s)'%(time.time()-t0), color='green')	
-  
     if args.nowater:
-        infoprint('Removing water molecules ... ')
-        t0 = time.time()
+        mv.ipython.app.shell.ex('hide_water()')
+    
+    mv.run()
+
+# def view(args):
+#     from chemlab.io import datafile
+#     from chemlab.graphics import display_system, display_trajectory
+#     from chemlab.core import subsystem_from_molecules
+#     import numpy as np
+
+#     base, ext = os.path.splitext(args.filename)
+    
+#     infoprint('Reading file %s ... ' % args.filename)
+#     t0 = time.time()
+    
+#     df = datafile(args.filename)
+#     sys = df.read('system')
+  
+#     cprint('DONE (%f s)'%(time.time()-t0), color='green')
+
+#     if args.nowater:
+#         infoprint('Removing water molecules ... ')
+#         t0 = time.time()
         
-        mols = sys.get_derived_molecule_array('formula')
-        noh2o = np.logical_not(mols == 'H2O')
-        noh2o_atom = sys.mol_to_atom_indices(noh2o.nonzero()[0])        
+#         mols = sys.get_derived_molecule_array('formula')
+#         noh2o = np.logical_not(mols == 'H2O')
+#         noh2o_atom = sys.mol_to_atom_indices(noh2o.nonzero()[0])        
         
-        sys = subsystem_from_molecules(sys, noh2o)
+#         sys = subsystem_from_molecules(sys, noh2o)
       
-        cprint('DONE (%f s)'%(time.time() - t0), color='green')
+#         cprint('DONE (%f s)'%(time.time() - t0), color='green')
    
-    if not args.traj:
-        display_system(sys)
-    else:
-        infoprint('Reading trajectory frames ... ')
-        t0 = time.time()
+#     if not args.traj:
+#         display_system(sys)
+#     else:
+#         infoprint('Reading trajectory frames ... ')
+#         t0 = time.time()
         
-        df = datafile(args.traj)
-        times, frames = df.read('trajectory', skip=args.skip or None)
-
+#         df = datafile(args.traj)
+#         times, frames = df.read('trajectory', skip=args.skip or None)
+#         box_vectors = df.read('boxes')
         
-        cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#         cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
-        if args.nowater:
-            infoprint('Removing water from frames ... ')
-            t0 = time.time()
+#         if args.nowater:
+#             infoprint('Removing water from frames ... ')
+#             t0 = time.time()
             
-            for i, f in enumerate(frames):
-                frames[i] = f[noh2o_atom]
+#             for i, f in enumerate(frames):
+#                 frames[i] = f[noh2o_atom]
                 
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
             
-        if args.smooth:
-            infoprint('Smoothing frames ... ')
-            t0 = time.time()
-            for i, f in enumerate(frames):
-                nf = np.zeros_like(f)
-                toaverage = range(max(0, i - 2), min(i+4, len(frames)))
-                navg = 0
-                for j in toaverage:
-                    navg += 1
-                    nf += frames[j]
+#         if args.smooth:
+#             infoprint('Smoothing frames ... ')
+#             t0 = time.time()
+#             for i, f in enumerate(frames):
+#                 nf = np.zeros_like(f)
+                
+#                 toaverage = range(max(0, i - 2), min(i+4, len(frames)))
+#                 navg = 0
+#                 for j in toaverage:
+#                     navg += 1
+#                     nf += frames[j]
 
-                nf /= navg
-                frames[i] = nf
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
+#                 nf /= navg
+#                 frames[i] = nf
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
         
 
-        from chemlab.utils import minimum_image
-        if args.translate:
-            translate = [float(it) for it in args.translate.split(',')]
-            boxes = df.read('boxes')
-            infoprint('Translating by {} ...'.format(translate))
-            t0 = time.time()
-            for i,f in enumerate(frames):
-                frames[i] = minimum_image(f + translate, boxes[i].diagonal())
+#         from chemlab.utils import minimum_image
+#         if args.translate:
+#             translate = [float(it) for it in args.translate.split(',')]
+
+#             infoprint('Translating by {} ...'.format(translate))
+#             t0 = time.time()
+#             for i,f in enumerate(frames):
+#                 frames[i] = minimum_image(f + translate, box_vectors[i].diagonal())
             
-            sys.r_array = minimum_image(sys.r_array + translate,
-                                        sys.box_vectors.diagonal())
-            cprint('DONE (%f s)'%(time.time()-t0), color='green')
-            
-        display_trajectory(sys, times,  frames)
+#             sys.r_array = minimum_image(sys.r_array + translate,
+#                                         sys.box_vectors.diagonal())
+#             cprint('DONE (%f s)'%(time.time()-t0), color='green')
+        
+#         display_trajectory(sys, times, frames, box_vectors=box_vectors)
 
 def plot(args):
     base, ext = os.path.splitext(args.filename)
 
 parser = argparse.ArgumentParser()
-
 subparsers = parser.add_subparsers()
 
 # Contrib plugins
@@ -103,17 +138,14 @@ from chemlab.contrib import gromacs
 gromacs.setup_commands(subparsers)
 
 view_parser = subparsers.add_parser('view')
-view_parser.add_argument('filename', type=str)
+view_parser.add_argument('filename', type=str, action='store', nargs='?')
 view_parser.add_argument('--traj', action='store', type=str)
-view_parser.add_argument('--nowater', action='store_true',
-                         help='Do not display water molecules')
-view_parser.add_argument('--smooth', action='store_true',
-                         help='Apply a very crude smoothing filter')
+view_parser.add_argument('-e', action='store', type=str,
+                         help='Execute a python command after loading')
 view_parser.add_argument('--skip', action='store', type=int,
                          help='Take only the ith frames')
-
-view_parser.add_argument('--translate', action='store', type=str,
-                         help='Take only the ith frames')
+view_parser.add_argument('--nowater', action='store_true',
+                         help='Do not display water molecules')
 
 view_parser.set_defaults(func=view)
 

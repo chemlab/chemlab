@@ -19,7 +19,7 @@ data ::
 
 A :py:class:`chemlab.core.Molecule` is an entity composed of more
 atoms and most of the Molecule properties are inherited from the
-constituent atoms. To initialize a Molecule you can, for example pass
+constituent atoms. To initialize a Molecule you can, for example, pass
 a list of atom instances to its constructor::
 
     >>> from chemlab.core import Molecule
@@ -34,10 +34,10 @@ the array of coordinates :py:attr:`Molecule.r_array`.  The array of
 coordinates is a numpy array of shape ``(NA,3)`` where ``NA`` is the
 number of atoms in the molecule.  According to the numpy broadcasting
 rules, if you sum two arrays with shapes ``(NA,3)`` and ``(3,)``, each
-row of the first array get summed by the second array. Let's say we
+row of the first array gets summed with the second array. Let's say we
 have a water molecule and we want to displace it randomly in a box,
 this is easily accomplished by initializing a Molecule at the
-origin and summing its coordinates by a random displacement::
+origin and summing its coordinates with a random displacement::
 
     import numpy as np
     
@@ -49,7 +49,7 @@ origin and summing its coordinates by a random displacement::
     wat.r_array += np.random.rand(3)
     
 
-Using the same principles you can also apply other kinds of
+Using the same principles, you can also apply other kinds of
 transformations such as matrices.  You can for example rotate the
 molecule by 90 degrees around the z-axis::
 
@@ -69,12 +69,12 @@ The array-based API provides a massive increase in performance and a
 more straightforward integration with C libraries thanks to the numpy
 arrays. This feature comes at a cost: the data is copied between atoms
 and molecules, in other words the changes in the costituents atoms are
-not reflected in the Molecule and viceversa. Even if it may look a bit
-unnatural, this approach limits side effects making the code more
+not reflected in the Molecule and vice-versa. Even if it may look a bit
+unnatural, this approach limits side effects and makes the code more
 predictable and easy to follow.
 
 Bonds between atoms can be set or retrieved by using the
-:py:class:`~chemlab.core.Molecule.bonds` attribute. It's a array of
+:py:class:`~chemlab.core.Molecule.bonds` attribute. It's an array of
 integers of dimensions ``(nbonds, 2)`` where the integer value
 corresponds to the atomic indices::
 
@@ -86,7 +86,7 @@ corresponds to the atomic indices::
 
 By using the `numpy.take`_ function it's very easy to extract
 properties relative to the bonds. `numpy.take`_ lets you index an
-array using another array as a sorce of indices, for example, we can
+array using another array as a source of indices, for example, we can
 extract the bonds extrema in this way::
 
     >>> import numpy as np
@@ -95,7 +95,7 @@ extract the bonds extrema in this way::
            ['O', 'H']], dtype=object)
 
 If the array is not flat (like r_array), you can also specify the
-indexing axis, the following snippet can be used to retrieve the bond
+indexing axis; the following snippet can be used to retrieve the bond
 distances::
 
     # With water.bonds[:, 0] we take an array with the indices of the 
@@ -131,14 +131,14 @@ recommended) you can pass also periodic box information::
    # molecule = a list of Molecule instances
    >>> s = System(molecules, boxsize=2.0) 
  
-*System* do not take directly *Atom* instances as its constituents,
+A *System* does not directly take *Atom* instances as its constituents,
 therefore if you need to simulate a system made of single atoms (say,
 a box of liquid Ar) you need to wrap the atoms into a Molecule::
  
    >>> ar = Atom('Ar', [0.0, 0.0, 0.0])
    >>> mol = Molecule([ar])
  
-System, similarly to Molecule can expose data by using arrays and it
+System, similarly to Molecule, can expose data by using arrays and it
 inherits atomic data from the constituent molecules. For instance,
 you can easily and efficiently access all the atomic coordinates by
 using the attribute :py:attr:`System.r_array`. To understand the
@@ -171,7 +171,7 @@ then add the molecules one by one::
   
   display_system(s)
 
-Since the data is copied, the ``wat`` molecule act as a *template* so
+Since the data is copied, the ``wat`` molecule acts as a *template* so
 you can move it around and keep adding it to the *System*.
 
 Preallocating and adding molecules is a pretty fast way to build a
@@ -181,7 +181,7 @@ build the system by passing ready-made arrays, this is done by using
 
 Most of the :py:class:`chemlab.core.Molecule` array attributes are
 still present in :py:class:`chemlab.core.System`, including
-:py:attr:`System.bonds`, bonds between molecules are currently not
+:py:attr:`System.bonds`; bonds between molecules are currently not
 supported and setting them will result in an unexpected behaviour.
 There is also a :py:meth:`chemlab.core.System.guess_bonds` method to
 automatically set the intramolecular bonds.
@@ -196,7 +196,7 @@ Random Boxes
 It is possible to build boxes where atoms are placed randomly by using
 the :py:meth:`chemlab.core.random_lattice_box` function. A set of
 template molecules are copied and translated randomly on the points of
-a 3d lattice. This ensure that the spacing between molecules is
+a 3d lattice. This ensures that the spacing between molecules is
 consistent and to avoid overlaps.
 
 To make an example box::
@@ -250,11 +250,11 @@ from a bigger system, this is implemented in the functions
 :py:func:`chemlab.core.subsystem_from_atoms` and
 :py:func:`chemlab.core.subsystem_from_molecules`.
 
-Those two functions take as first argument the original *System*, and as
+Those two functions take as the first argument the original *System*, and as
 the second argument a `selection`. A `selection` is either a boolean
 array that is True when we want to select that element and False
-otherwise or an integer array containing the elements that we want to
-select. By using those two functions we can create subsystem by building
+otherwise, or an integer array containing the elements that we want to
+select. By using those two functions we can create a subsystem by building
 those selections.
 
 The following example shows an easy way to take the molecules that
@@ -283,7 +283,7 @@ contain atoms in the region of space `x > 0.5` by employing
     :width: 800px
 
 It is also possible to select a subsystem by selecting specific
-molecules, in the following example we select the first 10 water
+molecules; in the following example we select the first 10 water
 molecules by using :py:func:`~chemlab.core.subsystem_from_molecules`::
 
   from chemlab.core import subsystem_from_molecules
@@ -346,7 +346,7 @@ Removing
 There are two methods used to remove specific atoms and molecules from
 a system. :py:meth:`chemlab.core.System.remove_molecules` and
 :py:meth:`chemlab.core.System.remove_atoms`. Taking from the previous
-NaCl example, you may need to remove some excess ions to met the
+NaCl example, you may need to remove some excess ions to meet the
 electroneutrality condition::
 
   # n_na and n_cl are the number of Na and Cl molecules 
@@ -389,7 +389,7 @@ The management of the atomic and molecular properties within a System
 is done through specific handlers. Those handlers are called
 *attributes* and *fields*. In the following example we may see how
 it's possible to add a new field "v" to the Atom class, and
-transmitting this field as a "v_array" in the Molecule and System
+transmit this field as a "v_array" in the Molecule and System
 class. In those cases they basically take as their argument the
 attribute/field name, the type, and a function that return the default
 value for the field/attribute::

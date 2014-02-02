@@ -4,13 +4,52 @@ import numpy as np
 from .transformations import unit_vector, angle_between_vectors, rotation_matrix
 import time
 
+def ray_spheres_intersection(origin, direction, centers, radii):
+    """Calculate the intersection points between a ray and multiple
+    spheres.
+
+    **Returns**
+
+    intersections
+    
+    distances
+    
+    Ordered by closest to farther
+    """
+    b_v = 2.0 * ((origin - centers) * direction).sum(axis=1)
+    c_v = ((origin - centers)**2).sum(axis=1) - radii ** 2
+    det_v = b_v * b_v - 4.0 * c_v
+
+    inters_mask = det_v >= 0
+    intersections = (inters_mask).nonzero()[0]
+    distances = (-b_v[inters_mask] - np.sqrt(det_v[inters_mask])) / 2.0
+
+    # We need only the thing in front of us, that corresponts to
+    # positive distances.
+    dist_mask = distances > 0.0
+
+    # We correct this aspect to get an absolute distance
+    distances = distances[dist_mask]
+    intersections = intersections[dist_mask].tolist()
+
+    if intersections:
+        distances, intersections = zip(*sorted(zip(distances, intersections)))
+        return list(intersections), list(distances)
+    else:
+        return [], []
+
+
 class SpherePicker(object):
     
     def __init__(self, widget, positions, radii):
         
+        self.o_positions = positions
+        self.o_radii = np.array(radii)
+
         self.positions = positions
         self.radii = np.array(radii)
-        self.widget = widget
+        
+        self.widget = widget        
         
     def pick(self, x, y):
         # X and Y are normalized coordinates
@@ -24,6 +63,7 @@ class SpherePicker(object):
         # direction of the ray
         direction = unit_vector(dest - origin)
         
+
         #intersections = []
         #distances = []
         # Quadratic equation for the intersection
@@ -43,29 +83,8 @@ class SpherePicker(object):
 
         # Vectorized intersections. This is just a numpy-vectorize
         # version of the above algorithm
+        return ray_spheres_intersection(origin, direction, self.positions, self.radii)
         
-        b_v = 2.0 * ((origin - self.positions) * direction).sum(axis=1)
-        c_v = ((origin - self.positions)**2).sum(axis=1) - self.radii ** 2
-        det_v = b_v * b_v - 4.0 * c_v
-        
-        inters_mask = det_v >= 0
-        intersections = (inters_mask).nonzero()[0]
-        distances = (-b_v[inters_mask] - np.sqrt(det_v[inters_mask])) / 2.0
-        
-        # We need only the thing in front of us, that corresponts to
-        # positive distances.
-        dist_mask = distances > 0.0
-        
-        # We correct this aspect to get an absolute distance
-        distances = distances[dist_mask]
-        intersections = intersections[dist_mask].tolist()
-        
-        if intersections:
-            distances, intersections = zip(*sorted(zip(distances, intersections)))
-            return list(intersections), list(distances)
-        else:
-            return [], []
-            
 class CylinderPicker(object):
 
     def __init__(self, widget, bounds, radii):

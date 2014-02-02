@@ -27,11 +27,11 @@ for a in range(grid_size[0]):
             s.add(water_tmp)
 
 # Adjust boxsize for periodic conditions
-s.boxsize = 8 * spacing
-            
+s.box_vectors = np.eye(3) * 8 * spacing
+
 # Visualize to verify that the system was setup correctly
 # display_system(s)
 
 from chemlab.io import datafile
 
-datafile("start.gro").write("system", s)
+datafile("start.gro", "w").write("system", s)

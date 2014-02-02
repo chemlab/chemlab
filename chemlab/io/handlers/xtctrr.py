@@ -49,7 +49,12 @@ class XtcIO(IOHandler):
 
        positions is a *list* of ``np.ndarray(n_atoms, 3)``.
     
-       
+    .. method:: read("boxes")
+    
+       After reading the "trajectory" feature you can call
+       `read("boxes")` that will return a list of *box_vectors*
+       correspoiding to each frame.
+
     '''
     can_read = ['trajectory', 'boxes']
     can_write = []

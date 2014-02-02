@@ -1,3 +1,4 @@
+import numpy as np
 # X11 colors!!
 
 # Pink colors
@@ -162,6 +163,150 @@ slate_gray = (112, 128, 144, 255)
 dark_slate_gray = ( 47,  79,  79, 255)
 black = (  0,   0,   0, 255)
 
+# Functions
+def get(name):
+    
+    try:
+        color = globals().get(name)
+    except:
+        raise Exception('Color %s not found' % name)
+    
+    return color
+
+def mix(a, b, ratio=0.5):
+    ca = get(a)
+    cb = get(b)
+    
+    r_a, g_a, b_a = ca[0:3]
+    r_b, g_b, b_b = cb[0:3]
+    
+    return tuple([int(comp1 * ratio +  comp2 * (1-ratio))
+                  for comp1, comp2 in zip(ca[:3], cb[:3])] + [255])
+
+def rgb_to_hsl_hsv(a, isHSV=True):
+    """
+    Converts RGB image data to HSV or HSL.
+    :param a: 3D array. Retval of numpy.asarray(Image.open(...), int)
+    :param isHSV: True = HSV, False = HSL
+    :return: H,S,L or H,S,V array
+    """
+    R, G, B = a.T
+
+    m = np.min(a, 1).T
+    M = np.max(a, 1).T
+
+    C = M - m #chroma
+    Cmsk = C != 0
+
+    # Hue
+    H = np.zeros(R.shape, int)
+    mask = (M == R) & Cmsk
+    H[mask] = np.mod(60 * (G[mask] - B[mask]) / C[mask], 360)
+    mask = (M == G) & Cmsk
+    H[mask] = (60 * (B[mask] - R[mask]) / C[mask] + 120)
+    mask = (M == B) & Cmsk
+    H[mask] = (60 * (R[mask] - G[mask]) / C[mask] + 240)
+    H *= 255
+    H /= 360 # if you prefer, leave as 0-360, but don't convert to uint8
+
+
+    # Saturation
+    S = np.zeros(R.shape, int)
+
+    if isHSV:
+        # This code is for HSV:
+        # Value
+        V = M
+
+        # Saturation
+        S[Cmsk] = ((255 * C[Cmsk]) / V[Cmsk])
+        # H, S, and V are now defined as integers 0-255
+        return np.array((H.swapaxes(0, 1), S.swapaxes(0, 1), V.swapaxes(0, 1))).T
+    else:
+        # This code is for HSL:
+        # Value
+        L = 0.5 * (M + m)
+
+        # Saturation
+        S[Cmsk] = ((C[Cmsk]) / (1 - np.absolute(2 * L[Cmsk]/255.0 - 1)))
+        # H, S, and L are now defined as integers 0-255
+        return np.array((H.swapaxes(0, 1), S.swapaxes(0, 1), L.swapaxes(0, 1))).T
+
+
+def rgb_to_hsv(a):
+    return rgb_to_hsl_hsv(a, True)
+
+
+def rgb_to_hsl(a):
+    return rgb_to_hsl_hsv(a, False)
+
+
+def hsl_to_rgb(arr):
+    """
+    Converts HSL color array to RGB array
+
+    H = [0..360]
+    S = [0..1]
+    l = [0..1]
+
+    http://en.wikipedia.org/wiki/HSL_and_HSV#From_HSL
+
+    Returns R,G,B in [0..255]
+    """
+    H, S, L = arr.T
+    
+    H = (H.copy()/255.0) * 360
+    S = S.copy()/255.0
+    L = L.copy()/255.0
+    
+    C = (1 - np.absolute(2 * L - 1)) * S
+
+    Hp = H / 60.0
+    X = C * (1 - np.absolute(np.mod(Hp, 2) - 1))
+
+    # initilize with zero
+    R = np.zeros(H.shape, float)
+    G = np.zeros(H.shape, float)
+    B = np.zeros(H.shape, float)
+
+    # handle each case:
+
+    mask = (Hp >= 0) == ( Hp < 1)
+    R[mask] = C[mask]
+    G[mask] = X[mask]
+
+    mask = (Hp >= 1) == ( Hp < 2)
+    R[mask] = X[mask]
+    G[mask] = C[mask]
+
+    mask = (Hp >= 2) == ( Hp < 3)
+    G[mask] = C[mask]
+    B[mask] = X[mask]
+
+    mask = (Hp >= 3) == ( Hp < 4)
+    G[mask] = X[mask]
+    B[mask] = C[mask]
+
+    mask = (Hp >= 4) == ( Hp < 5)
+    R[mask] = X[mask]
+    B[mask] = C[mask]
+
+    mask = (Hp >= 5) == ( Hp < 6)
+    R[mask] = C[mask]
+    B[mask] = X[mask]
+
+    m = L - 0.5*C
+    R += m
+    G += m
+    B += m
+
+    R *= 255.0
+    G *= 255.0
+    B *= 255.0
+
+    return np.array((R.astype(int),G.astype(int),B.astype(int))).T
+    
+# Maps
 default_atom_map = {
 "C": gray,
 "O": red,

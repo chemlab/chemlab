@@ -2,6 +2,35 @@
 What's new
 ==========
 
+Version 0.3
+-----------
+
+chemlab.core:
+    - New bond handling with the Molecule.bonds and System.bonds attributes
+    - Possibility to add charges
+
+chemlab.graphics:
+    - Post Processing Effects:
+        - FXAA -- Fast Approximate Antialiasing
+	- Gamma Correction
+	- Glow
+	- Outline
+        - SSAO -- Screen Space Ambient Occlusion
+
+     - Renderers:
+        - Implemented toon shading for different shapes.
+        - CylinderImpostorRenderer -- a really fast way to draw cylinders
+ 
+     - Offline Rendering at any resolution supported by the video card.
+     - Started some work on user interaction for a full molecular viewer.
+
+chemlab.db:
+
+      - New Databases:
+         - RCSB for protein structures
+	 - ToxNetDB for properties
+	 - ChemspiderDB
+	  
 Version 0.2
 -----------
 

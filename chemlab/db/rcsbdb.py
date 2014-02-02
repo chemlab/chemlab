@@ -35,7 +35,6 @@ class RcsbDB(AbstractDB):
         if feature == 'molecule':
             url = 'http://www.rcsb.org/pdb/files/%s.pdb' % key
             result = urlopen(url)
-            print(result.getcode())
             pdbtext = result.read()
             if pdbtext.startswith(b'<!DOCTYPE'):
                 raise EntryNotFound()

@@ -3,8 +3,9 @@ chemlab - the python chemistry package you were waiting for
 
 [![Build Status](https://travis-ci.org/chemlab/chemlab.png?branch=master)](https://travis-ci.org/chemlab/chemlab) [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)
 
-- Version: 0.2
+- Version: 0.3
 - Author: Gabriele Lanaro
+- Contributors: Yotam Y. Avital, Adam Jackson
 - Email: python-chemlab@googlegroups.com
 - Website: http://chemlab.github.com/chemlab
 - Docs: http://chemlab.rtfd.org
@@ -42,6 +43,9 @@ chemlab is currently tested on Ubuntu 13.04. First install the dependencies:
 Then install chemlab from the setup.py included:
 
     $ sudo python setup.py install
+
+NOTE: For python3 support install the corresponding python3
+      packages available in your distribution or use pip.
 
 Documentation
 -------------

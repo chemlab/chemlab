@@ -140,7 +140,7 @@ class QtViewer(QMainWindow):
             except for the *widget* argument.
         
         .. seealso:: :py:class:`~chemlab.graphics.renderers.AbstractRenderer`
-        .. seealso:: :docs:`api/chemlab.graphics.renderers`
+        .. seealso:: :doc:`/api/chemlab.graphics.renderers`
         
         **Return**
 
@@ -153,10 +153,24 @@ class QtViewer(QMainWindow):
         return renderer
     
     def remove_renderer(self, rend):
+        '''Remove a renderer from the current view.
+        
+        **Example**
+        
+        ::
+
+            rend = v.add_renderer(AtomRenderer)
+            v.remove_renderer(rend)
+
+        .. versionadded:: 0.3
+        '''
         if rend in self.widget.renderers:
             self.widget.renderers.remove(rend)
         else:
             raise Exception("The renderer is not in this viewer")
+    def update(self):
+        super(QtViewer, self).update()
+        self.widget.update()
         
     def add_ui(self, klass, *args, **kwargs):
         '''Add an UI element for the current scene. The approach is
@@ -180,20 +194,27 @@ class QtViewer(QMainWindow):
             v = QtViewer()
             effect = v.add_post_processing(SSAOEffect)
         
-        .. seealso:: :docs:`api/chemlab.graphics.postprocessing`
+        .. seealso:: :doc:`/api/chemlab.graphics.postprocessing`
         
         **Return**
         
         an instance of :py:class:`~chemlab.graphics.postprocessing.base.AbstractEffect`
         
+        .. versionadded:: 0.3
         '''
         pp = klass(self.widget, *args, **kwargs)
         self.widget.post_processing.append(pp)
         return pp
         
     def remove_post_processing(self, pp):
-        '''Remove a post processing effect'''
+        '''Remove a post processing effect.
+
+        ..versionadded:: 0.3
+        '''
         self.widget.post_processing.remove(pp)
+
+    def clear(self):
+        del self.widget.renderers[:]
         
     # Events
     def keyPressEvent(self, evt):

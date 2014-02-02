@@ -6,6 +6,12 @@
 Welcome to chemlab's documentation!
 ===================================
 
+:Author:
+   Gabriele Lanaro
+   
+:Contributors:
+   Yotam Y. Avital, Adam Jackson
+
 :Webpage:
    https://chemlab.github.com/chemlab
  
@@ -23,14 +29,14 @@ Welcome to chemlab's documentation!
 Chemlab is a library that can help the user with chemistry-relevant
 calculations using the flexibility and power of the python programming
 language. It aims to be well-designed and pythonic, taking inspiration
-from project such as numpy and scipy.
+from projects such as numpy and scipy.
 
-Chemlab long term goal is to be:
+Chemlab's long term goal is to be:
 
 - **General**
   Chemistry is a huge field, chemlab wants to provide a general ground from where to build domain-specific tools and apps.
 - **Array oriented** 
-  most operations and data structures are based on
+  Most operations and data structures are based on
   numpy arrays.  This let you write compact and efficient
   code.
 - **Graphic**
@@ -50,9 +56,9 @@ Current Status
 --------------
 
 Computational and theoretical chemistry is a huge field, and providing
-a program that encompasses all aspect of it is an impossible task. The
+a program that encompasses all aspects of it is an impossible task. The
 spirit of chemlab is to provide a common ground from where you can
-build specific programs. For this reason it includes an :doc:`fully
+build specific programs. For this reason it includes a :doc:`fully
 programmable </graphics>` molecular viewer.
 
 Chemlab includes a lot of utilities to programmatically download and
@@ -65,7 +71,7 @@ in the :doc:`whatsnew` document.
 Chemlab is developer-friendly, it provides good documentation and has
 an easy structure to get in. Feel free to send me anything that you
 may do with chemlab, like supporting a new file format, a new graphic
-renderer, a nice example, even if you don'think it's perfect. Send an
+renderer, a nice example, even if you don't think it's perfect. Send an
 email to the `mailing list <mailto:python-chemlab.googlegroups.com>`_
 or file an issue on the github page to discuss any idea that comes to
 your mind. Get involved!
@@ -91,6 +97,7 @@ User Manual
    io
    graphics
    db
+   mviewer
    ipython
    gromacs
 
@@ -107,6 +114,7 @@ Reference Documentation
    api/chemlab.graphics
    api/chemlab.db
    api/chemlab.utils
+   api/chemlab.mviewer.api
 
 License
 -------

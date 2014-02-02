@@ -55,7 +55,7 @@ class CylinderImpostorRenderer(ShaderBaseRenderer):
 
         self.colors = np.array(colors, dtype='uint8')
         prim_colors = self._gen_colors(self.colors)
-        
+       
         local = np.array([
            # First face -- front
           0.0, 0.0, 0.0,

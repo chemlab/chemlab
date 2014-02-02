@@ -111,7 +111,7 @@ information, this is an one-liner::
 
     from chemlab.io import datafile
     
-    datafile("start.gro").write("system", s)
+    datafile("start.gro", "w").write("system", s)
 
 .top and .mdp files
 -------------------

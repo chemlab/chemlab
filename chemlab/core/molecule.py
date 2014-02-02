@@ -58,6 +58,12 @@ class Atom(object):
     
        Mass in atomic mass units.
     
+    .. py:attribute:: charge
+    
+       :Type: float
+    
+       Charge in electron charge units.
+
     .. py:attribute:: export
     
        :Type: dict
@@ -80,7 +86,8 @@ class Atom(object):
     fields = [AtomicField("type", default=False),
               AtomicField("r", default=lambda at: np.zeros(3,dtype=np.float)),
               AtomicField('export', default=lambda at: {}),
-              AtomicField('mass', default=lambda at: masses[at.type])]
+              AtomicField('mass', default=lambda at: masses[at.type]),
+              AtomicField('charge', default=lambda at: 0.0)]
     
     def __init__(self, type, r, export=None):
         self.type = type
@@ -94,6 +101,7 @@ class Atom(object):
 
         #self.atno = symbols.symbol_list.index(type.lower()) + 1
         self.mass = masses[type]
+        self.charge = 0.0
 
     @classmethod
     def from_fields(cls, **kwargs):
@@ -178,6 +186,13 @@ class Molecule(object):
     
        Array of masses.
     
+    .. py:attribute:: charge_array
+
+       :type: np.ndarray(N, dtype=float)
+       :derived from: Atom
+    
+       Array of the charges present on the atoms.
+    
     .. py:attribute:: atom_export_array
     
        :type: np.ndarray(N, dtype=object) *array of dicts*
@@ -231,10 +246,14 @@ class Molecule(object):
                   MArrayAttr('r_array', 'r', np.float, default=lambda mol: np.zeros((mol.n_atoms, 3), np.float)),
                   MArrayAttr('m_array', 'mass', np.float, default=lambda mol: np.array([masses[t] for t in mol.type_array])),
                   MArrayAttr('atom_export_array', 'export', object, default=lambda mol: np.array([{} for i in range(mol.n_atoms)])),
+                  MArrayAttr('charge_array', 'charge', object, default=lambda mol: np.zeros(mol.n_atoms, np.float)),
                   ]
     
-    fields = [MField('export', object, default=lambda mol: {}),
-              MField('bonds', object, default=lambda mol: np.array([], dtype=object))]
+    fields = [
+        MField('export', object, default=lambda mol: {}),
+        MField('bonds', object, default=lambda mol: np.array([], dtype=object)),
+        MField('bond_orders', int, default=lambda mol: np.array([1]*(len(mol.bonds))))
+    ]
     
     derived = ('formula',)
     
@@ -265,8 +284,16 @@ class Molecule(object):
         dx = r - self.r_array[0]
         self.r_array += dx
 
-            
+    @property
+    def bonds(self):
+        # We need 
+        return self._bonds
         
+    @bonds.setter
+    def bonds(self, value):
+        self.bond_orders = np.ones(len(value), dtype='int')
+        self._bonds = value
+    
     @classmethod
     def from_arrays(cls, **kwargs):
         '''Create a Molecule from a set of Atom-derived arrays. 

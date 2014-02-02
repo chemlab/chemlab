@@ -27,3 +27,4 @@ class Texture(object):
     
     def delete(self):
         glDeleteTextures(self.id)
+        

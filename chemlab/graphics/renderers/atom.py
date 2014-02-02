@@ -78,3 +78,13 @@ class AtomRenderer(AbstractRenderer):
     
     def update_colors(self, cols):
         self.sr.update_colors(cols)
+        
+    def update_radii(self, radii):
+        self.sr.update_radii(radii)
+        
+    def hide(self, mask):
+        self.sr.hide(mask)
+        
+    def change_shading(self, shd):
+        self.sr.change_shading(shd)
+    

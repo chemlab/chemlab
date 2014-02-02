@@ -1,6 +1,7 @@
 import numpy as np
 
-from .base import IOHandler
+from .base import IOHandler, FeatureNotAvailable
+
 from .gro_map import gro_to_cl
 
 from ...core.system import System
@@ -49,12 +50,16 @@ class GromacsIO(IOHandler):
     can_write = ['system']
 
     def read(self, feature):
+        super(GromacsIO, self).read(feature)
+        
         if feature == 'system':
             lines = self.fd.readlines()
             lines = [line.decode('utf-8') for line in lines]
             return parse_gro_lines(lines)
 
     def write(self, feature, sys):
+        super(GromacsIO, self).write(feature, sys)
+        
         if feature == 'system':
             write_gro(sys, self.fd)
 
@@ -155,7 +160,7 @@ def write_gro(sys, fd):
         try:
             res_name = sys.mol_export[i]['groname']
         except KeyError:
-            raise Exception('Gromacs exporter need the'
+            raise Exception('Gromacs exporter need the '
                             'residue name as groname')
 
         for j in range(sys.mol_n_atoms[i]):
@@ -171,7 +176,7 @@ def write_gro(sys, fd):
             x, y, z = sys.r_array[offset+j]
 
             lines.append('{:>5}{:<5}{:>5}{:>5}{:>8.3f}{:>8.3f}{:>8.3f}'
-                         .format(res_n, res_name,
+                         .format(res_n % 99999, res_name,
                                  at_name, at_n % 99999, x, y, z))
 
     if sys.box_vectors is None:

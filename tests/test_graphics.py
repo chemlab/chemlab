@@ -286,19 +286,17 @@ def test_traj_viewer():
     tv = QtTrajectoryViewer()
 
     s = datafile('tests/data/water.gro').read('system')
-    #ar = tv.add_renderer(WireframeRenderer, s.r_array, s.type_array, find_bonds(s))
     ar = tv.add_renderer(BallAndStickRenderer, s.r_array, s.type_array, find_bonds(s))
 
     times, frames = datafile('tests/data/trajout.xtc').read('trajectory')
-    tv.set_ticks(len(frames))
 
-    @tv.update_function
     def update(index):
         f = frames[index]
         ar.update_positions(f)
         tv.set_text(format_time(times[index]))
         tv.widget.update()
 
+    tv.update_function(update, len(frames))
     tv.run()
 
 def test_camera_autozoom():
@@ -531,51 +529,14 @@ def test_toon_shading():
 
 # Tests for the molecular viewer
 def test_molecular_viewer():
-    from chemlab.graphics.qtmolecularviewer import QtMolecularViewer
+    from chemlab.mviewer.qtmolecularviewer import QtMolecularViewer
+    from chemlab.mviewer.representations import BallAndStickRepresentation
     cdb = ChemlabDB()
 
     mol = cdb.get('molecule', 'example.norbornene')
-
-    #mol = datafile('tests/data/3ZJE.pdb').read('system')
-    #mol = datafile('tests/data/naclwater.gro').read('system')
     mol.guess_bonds()
-
-    v = QtMolecularViewer(mol)
-    v.widget.background_color = colors.black
-    v.widget.camera.autozoom(mol.r_array)
-
-    def on_action1():
-        if len(v.representation.selection) == 2:
-            i, j = v.representation.selection
-            distsq = ((mol.r_array[j] - mol.r_array[i])**2).sum()
-            print('distance between', i, j, np.sqrt(distsq))
-
-    def select_all_atoms():
-        which = v.representation.selection[0]
-        at = mol.type_array[which]
-        sel = mol.type_array == at
-        v.representation.make_selection(sel.nonzero()[0])
-
-    def select_all_molecules():
-        which = v.representation.last_modified
-        if which is None:
-            return
-
-        at = mol.type_array[which]
-        sel = mol.type_array == at
-        allmol = mol.atom_to_molecule_indices(sel)
-        allmol = mol.mol_to_atom_indices(allmol)
-        v.representation.make_selection(allmol, additive=True)
-
-    def change_representation():
-        BallAndStickRepresentation = 0
-        # We need two representations
-        rep = v.add_representation(BallAndStickRepresentation, mol)
-        rep.set_mask(self.selection)
-        rep.set_mask(not self.selection)
-
-    def scale_radii():
-        #v.representation.scale_radii(v.representation.selection, 0.9)
-        v.representation.hide(v.representation.selection)
-
+    v = QtMolecularViewer()
+    
     v.run()
+    
+    
