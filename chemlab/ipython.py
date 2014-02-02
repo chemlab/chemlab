@@ -47,9 +47,10 @@ def showmol(mol, style='ball-and-stick',
     
     w.paintGL()
     # Make sure to finish everything
-    
-    data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
-    # Make pil image to save as png
+    glBindTexture(w.textures["color"])
+    glActiveTexture(GL_TEXTURE0)
+    data = glGetTexImage(GL_TEXTURE_2D, 0, RGB, GL_UNSIGNED_BYTE)
+    #data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)    # Make pil image to save as png
     image = pil_Image.fromstring('RGB', (width, height), data)
     b = BytesIO()
     image.save(b, format='png')
