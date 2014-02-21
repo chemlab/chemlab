@@ -97,6 +97,9 @@ class BallAndStickRepresentation(object):
     def _gen_cylinder_renderer(self):
         pass
     
+    def update_box(self, vectors):
+        self.box_renderer.vectors = vectors.copy()
+        
     def update_scale_factors(self, scalefac):
         self.scale_factors = scalefac
         radii = np.array(self.radii_state.array) * scalefac

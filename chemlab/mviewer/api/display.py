@@ -136,6 +136,7 @@ def load_trajectory(name, skip=1, format=None):
         f = coords[index]
         # update the current representation
         viewer.representation.update_positions(f)
+        viewer.representation.update_box(boxes[index])
         current_system().r_array = f
         current_system().box_vectors = boxes[index]
         viewer.traj_controls.set_time(dt[index])
@@ -143,3 +144,4 @@ def load_trajectory(name, skip=1, format=None):
     
     viewer.traj_controls.show()
     viewer.traj_controls.frame_changed.connect(update)
+
