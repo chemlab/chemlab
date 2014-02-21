@@ -1,3 +1,4 @@
+import re
 import numpy as np
 
 from .base import IOHandler, FeatureNotAvailable
@@ -6,6 +7,7 @@ from .gro_map import gro_to_cl
 
 from ...core.system import System
 from ...db import ChemlabDB
+
 
 symbol_list = ChemlabDB().get('data', 'symbols')
 symbol_list = [s.lower() for s in symbol_list]
@@ -76,7 +78,7 @@ def parse_gro_lines(lines):
         fields = l.split()
         line_length = len(l)
 
-        if line_length == 45 or line_length == 69:
+        if line_length in (45, 46, 69, 70):
             #Only positions are provided
             molidx = int(l[0:5])
             moltyp = l[5:10].strip()
@@ -123,6 +125,9 @@ def parse_gro_lines(lines):
     atom_export_array = np.array([dict(grotype=g) for g in grotype_array])
 
     # Gromacs Defaults to Unknown Atom type
+    
+    # We need to parse the gromacs type in some way...
+    grotype_array = [re.sub('[0-9]+$', '', g) for g in grotype_array]
     type_array = np.array([gro_to_cl.get(g, "Unknown") for g in grotype_array])
 
     # Molecular Formula Arrays

@@ -54,6 +54,7 @@ class PdbIO(IOHandler):
         self.atoms = []        
         self.atom_res = []
         
+        self._box_vectors = None
         for line in self.lines:
             self.handle_line(line)
             
@@ -71,6 +72,9 @@ class PdbIO(IOHandler):
             self.handle_ATOM(line)
         if line[0:6] == 'HETATM':
             self.handle_ATOM(line)
+
+        if line[0:6] == 'CRYST1':
+            self.handle_CRYST(line)
 
     def handle_ATOM(self, line):
         export = {}
@@ -98,6 +102,21 @@ class PdbIO(IOHandler):
         # Angstrom to nanometer
         self.atoms.append(Atom(atom_type, [x/10.0, y/10.0, z/10.0]))
         
+    def handle_CRYST(self, line):
+        tag, a, b, c, alpha, beta, gamma, group = line.split()
+        
+        a = float(a)
+        b = float(b)
+        c = float(c)
+        
+        alpha = float(alpha)
+        beta = float(beta)
+        gamma = float(gamma)
+        
+        self._box_vectors = np.array([[a/10, 0, 0],
+                                      [0, b/10, 0],
+                                      [0, 0, c/10]])
+        
     def get_system(self):
         r_array = np.array([a.r for a in self.atoms])
         type_array = np.array([a.type for a in self.atoms])
@@ -114,12 +133,14 @@ class PdbIO(IOHandler):
         
         mol_export = [{'pdb.residue': res} for res in mol_names]
             
-        return System.from_arrays(r_array=r_array,
+        s =  System.from_arrays(r_array=r_array,
                                   type_array=type_array,
                                   mol_indices=mol_indices,
                                   atom_export_array=atom_export_array,
                                   mol_formula=mol_names,
                                   mol_export=mol_export)
+        s.box_vectors = self._box_vectors
+        return s
     
     def get_molecule(self):
         m = Molecule(self.atoms)
