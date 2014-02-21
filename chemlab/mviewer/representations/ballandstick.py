@@ -4,8 +4,9 @@ import itertools
 from .obsarray import obsarray as obsarray
 from .state import SystemHiddenState, SystemSelectionState, ArrayState
 from .state import Selection
-from ...graphics.renderers import (SphereImpostorRenderer, CylinderImpostorRenderer,
-                         AtomRenderer, BondRenderer)
+from ...graphics.renderers import (SphereImpostorRenderer,
+                                   CylinderImpostorRenderer, AtomRenderer,
+                                   BondRenderer, BoxRenderer)
 from ...graphics import colors
 from ...graphics.pickers import SpherePicker, CylinderPicker
 from ...db import ChemlabDB
@@ -41,6 +42,8 @@ class BallAndStickRepresentation(object):
         
         self.color_scheme = colors.default_atom_map
         
+
+        
         # Model classes
         self.hidden_state = {'atoms' : Selection([], system.n_atoms),
                              'bonds' : Selection([], system.n_bonds)}
@@ -61,6 +64,10 @@ class BallAndStickRepresentation(object):
                                                       system.bonds, system.r_array,
                                                       system.type_array, style='impostors')
         
+        
+        self.box_renderer = self.viewer.add_renderer(BoxRenderer,
+                                                     system.box_vectors,
+                                                     color=(100, 100, 100, 255))
         self.scale_factors = np.ones_like(self.radii_state.array)
         
         self.bond_radii = self.bond_renderer.radii

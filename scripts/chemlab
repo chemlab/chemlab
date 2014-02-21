@@ -22,7 +22,7 @@ def view(args):
         base, ext = os.path.splitext(args.filename)
         Handler = get_handler_class(ext)
         if 'system' in Handler.can_read:
-            mv.ipython.app.shell.ex('load_system("%s")' %
+            mv.ipython.execute('load_system("%s")' %
                                     args.filename)            
         elif 'molecule' in Handler.can_read:
             mv.ipython.app.shell.ex('load_molecule("%s")' %
@@ -35,14 +35,14 @@ def view(args):
         skip = args.skip
 
     if args.traj:
-        mv.ipython.app.shell.ex('load_trajectory("%s", skip=%i)' %
-                                (args.traj, skip))
+        mv.ipython.execute('load_trajectory("%s", skip=%i)' %
+                           (args.traj, skip))
 
     if args.e:
-        mv.ipython.app.shell.ex(args.e)
+        mv.ipython.execute(args.e)
     
     if args.nowater:
-        mv.ipython.app.shell.ex('hide_water()')
+        mv.ipython.execute('hide_water()')
     
     mv.run()
 
