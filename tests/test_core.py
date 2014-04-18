@@ -115,6 +115,11 @@ class TestSystem(object):
         [system.add(mol) for mol in mols]
         self._assert_init(system)
 
+    def test_from_actual_empty(self):
+        mols = self._make_molecules()
+        system = System([])
+        [system.add(mol) for mol in mols]
+        
     def test_from_arrays(self):
         mols = self._make_molecules()
         r_array = np.concatenate([m.r_array for m in mols])

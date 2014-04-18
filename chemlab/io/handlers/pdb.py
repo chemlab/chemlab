@@ -6,6 +6,7 @@ import numpy as np
 from ...db import ChemlabDB
 import operator
 import os
+import re
 
 cdb = ChemlabDB()
 
@@ -103,7 +104,8 @@ class PdbIO(IOHandler):
         self.atoms.append(Atom(atom_type, [x/10.0, y/10.0, z/10.0]))
         
     def handle_CRYST(self, line):
-        tag, a, b, c, alpha, beta, gamma, group = line.split()
+        matched = re.match('(.{6})(.{9})(.{9})(.{9})(.{7})(.{7})(.{7})(.{11})(.{5})', line)
+        tag, a, b, c, alpha, beta, gamma, group, zval = matched.groups()
         
         a = float(a)
         b = float(b)

@@ -370,16 +370,25 @@ class System(object):
         mc = self._mol_counter
         ac = self._at_counter
         
-        if ac == self.n_atoms:
-            raise Exception("No more space for further atoms")
-        if mc == self.n_mol:
-            raise Exception('No more space for further molecules')
+        #if ac == self.n_atoms:
+        #    raise Exception("No more space for further atoms")
+        #if mc == self.n_mol:
+        #    raise Exception('No more space for further molecules')
         
         if mc == 0:
+            if len(self.mol_indices) == 0:
+                self.mol_indices = np.zeros((1,))
+                self.mol_n_atoms = np.zeros((1,))
+            
             self.mol_indices[0] = 0
             self.mol_n_atoms[0] = mol.n_atoms
         else:
             m_idx = self.mol_indices[mc-1] + self.mol_n_atoms[mc-1]
+            
+            if mc >= len(self.mol_indices):
+                self.mol_indices.resize((mc + 1,))
+                self.mol_n_atoms.resize((mc + 1,))
+            
             self.mol_indices[mc] = m_idx
             self.mol_n_atoms[mc] = mol.n_atoms
         

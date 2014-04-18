@@ -63,8 +63,16 @@ class AtomicArrayAttr(ArrayAttr):
     def on_add_molecule(self, sys, mol):
         ac = sys._at_counter
         attr = getattr(sys, self.name)
-        attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
-
+        
+        if len(attr) >= ac + mol.n_atoms: # If there's space
+            attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
+        else:
+            # Resize the shit
+            shape = list(attr.shape)
+            shape[0] += mol.n_atoms
+            attr.resize(shape, refcheck=False)
+            attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
+        
     def on_remove_molecules(self, sys, indices):
         at_indices = sys.mol_to_atom_indices(indices)
         setattr(sys, self.name, np.delete(getattr(sys, self.name), at_indices, axis=0))
@@ -113,6 +121,13 @@ class MoleculeArrayAttr(ArrayAttr):
     def on_add_molecule(self, sys, mol):
         mc = sys._mol_counter
         attr = getattr(sys, self.name)
+        
+        if mc + 1 > len(attr):
+            # Resize the array
+            shape = list(attr.shape)
+            shape[0] += 1
+            attr.resize(shape, refcheck=False)
+        
         attr[mc] = getattr(mol, self.fieldname)
 
     def on_remove_molecules(self, sys, indices):
@@ -186,7 +201,7 @@ class BondsAttr(object):
         else:
             sys.bonds = np.concatenate((sys.bonds,
                                         mol.bonds.copy() + sys._at_counter))
-    
+
     # TODO: this is an hack to access this outside...
     @staticmethod
     def get_molecule_bonds(sys, index):
