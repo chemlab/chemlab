@@ -16,6 +16,14 @@ def current_frame():
     '''
     return viewer.traj_controls.current_index
 
+def frames(skip=1):
+    from PySide import QtGui
+    
+    for i in range(0, viewer.traj_controls.max_index, skip):
+        viewer.traj_controls.goto_frame(i)
+        yield i
+        QtGui.qApp.processEvents()
+    
 def current_time():
     '''Return the float corresponding to the current time in the
     trajectory (in ns).

@@ -147,6 +147,14 @@ class BallAndStickRepresentation(object):
         # When hidden state changes, the view update itself
         # Update the renderers and the pickers
         sel = self.hidden_state['bonds'].indices
+        
+        
+        # We need to update the pickers...
+        self.bond_picker = CylinderPicker(
+            self.viewer.widget,
+            self.system.r_array.take(self.system.bonds, axis=0),
+            self.bond_radii)
+        
 
     def on_atom_selection_changed(self):
         #self.glow_timer.stop()

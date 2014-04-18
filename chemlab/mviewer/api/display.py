@@ -145,3 +145,11 @@ def load_trajectory(name, skip=1, format=None):
     viewer.traj_controls.show()
     viewer.traj_controls.frame_changed.connect(update)
 
+def guess_bonds():
+    '''Guess the bonds in the current system'''
+    current_system().guess_bonds()
+    reload_system()
+    
+def reload_system():
+    '''Reload the current system in the viewer.'''
+    return display_system(current_system())
