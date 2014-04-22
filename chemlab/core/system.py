@@ -207,6 +207,7 @@ class System(object):
         n_mol = len(molecules)
         n_atoms = sum(m.n_atoms for m in molecules)
 
+
         # Initialize an empty system and fill it with molecules
         self._setup_empty(n_mol, n_atoms, box_vectors)
 
@@ -243,6 +244,12 @@ class System(object):
         kwargs = json_to_data(string)
         return cls.from_arrays(**kwargs)
 
+    def copy(self):
+        """Return a copy of the current system."""
+        #TODO I think this may be made more efficient
+        return type(self).from_json(self.tojson())
+
+
     def tojson(self):
         '''Serialize a System instance using json.
 
@@ -270,6 +277,12 @@ class System(object):
         return cls.from_arrays(**self.todict())
         
     def _setup_empty(self, n_mol, n_atoms, box_vectors):
+        # We put a default value for box vectors
+        if box_vectors == None:
+            box_vectors = np.array([[1.0, 0.0, 0.0],
+                                    [0.0, 1.0, 0.0],
+                                    [0.0, 0.0, 1.0]])
+        
         self.n_mol = n_mol
         self.n_atoms = n_atoms
 
@@ -360,6 +373,11 @@ class System(object):
 
         inst.molecules = MoleculeGenerator(inst)
         inst.atoms = AtomGenerator(inst)
+        
+        # Indices
+        inst._mol_counter = n_mol
+        inst._at_counter = n_atoms
+        
         return inst
 
     def add(self, mol):

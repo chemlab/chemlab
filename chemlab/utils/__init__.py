@@ -85,3 +85,19 @@ def cartesian(arrays, out=None):
         for j in xrange(1, arrays[0].size):
             out[j*m:(j+1)*m,1:] = out[0:m,1:]
     return out
+    
+def geometric_center(r_array):
+    '''Return the geometric center given an array of coordinates of
+    shape (n_coord, coord_dimensions).
+
+    '''
+    
+    return np.average(r_array, axis=0)
+    
+def center_of_mass(r_array, m_array):
+    '''Return the mass center given an array of coordinates of shape
+    (n_coord, coord_dimensions) and an array of masses (weights).
+
+    '''
+    return np.average(r_array, axis=0, weights=m_array)
+    
