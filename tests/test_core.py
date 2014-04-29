@@ -1,6 +1,4 @@
-"""Test core types like Molecule and Atom.
-
-"""
+"""Test core types like Molecule and Atom."""
 from chemlab.core import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import merge_systems
@@ -119,6 +117,11 @@ class TestSystem(object):
         mols = self._make_molecules()
         system = System([])
         [system.add(mol) for mol in mols]
+        
+    def test_resize(self):
+        mols = self._make_molecules()
+        system = System(mols[:1])
+        system.resize(len(mols))
         
     def test_from_arrays(self):
         mols = self._make_molecules()

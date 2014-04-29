@@ -344,14 +344,17 @@ class QChemlabWidget(QGLWidget):
             https://pillow.readthedocs.org/en/latest/PIL.html#module-PIL.Image
         
         '''
+        from mock import Mock
+
         from .postprocessing import NoEffect
         effect = NoEffect(self)
-        
+
         self.post_processing.append(effect)
+        
         oldwidth, oldheight = self.width(), self.height()
-        
-        self.initializeGL()
-        
+
+        #self.initializeGL()
+
         if None not in (width, height):
             self.resize(width, height)
             self.resizeGL(width, height)
@@ -367,9 +370,9 @@ class QChemlabWidget(QGLWidget):
         data = glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE)
         image = pil_Image.frombuffer('RGBA', (width, height), data, 'raw', 'RGBA', 0, -1)
         
-        self.resize(oldwidth, oldheight)
-        self.resizeGL(oldwidth, oldheight)
-        
+        #self.resize(oldwidth, oldheight)
+        #self.resizeGL(oldwidth, oldheight)
+
         return image
 
 def create_color_texture(fb, width, height):

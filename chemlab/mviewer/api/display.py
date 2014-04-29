@@ -7,17 +7,21 @@ from chemlab.io import datafile
 from chemlab.core import System
 import numpy as np
 
+
 db = CirDB()
 
-def display_system(system):
+
+def display_system(system, autozoom=True):
     '''Display a `~chemlab.core.System` instance at screen'''
     viewer.clear()
     viewer.add_representation(BallAndStickRepresentation, system)
 
-    autozoom()
+    if autozoom:
+        autozoom_()
+    
     viewer.update()
 
-def display_molecule(mol):
+def display_molecule(mol, autozoom=True):
     '''Display a `~chemlab.core.Molecule` instance in the viewer.
 
     This function wraps the molecule in a system before displaying
@@ -25,12 +29,13 @@ def display_molecule(mol):
 
     '''
     s = System([mol])
-    display_system(s)
+    display_system(s, autozoom=True)
 
 def autozoom():
     '''Find optimal camera zoom level for the current view.'''
     viewer.widget.camera.autozoom(current_system().r_array)
     viewer.update()
+autozoom_ = autozoom # To prevent shadowing
 
 def download_molecule(name):
     '''Download a molecule by name.'''

@@ -415,6 +415,9 @@ class System(object):
         
         self._mol_counter += 1
         self._at_counter += mol.n_atoms
+        
+        self.n_atoms = len(self.type_array)
+        self.n_mol = len(self.mol_n_atoms)
     
     def remove_molecules(self, indices):
         """Remove the molecules positioned at *indices*.
