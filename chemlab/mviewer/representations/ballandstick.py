@@ -18,8 +18,13 @@ cdb = ChemlabDB()
 vdw_radii = cdb.get('data', 'vdwdict')
 elements = cdb.get('data', 'elements')
 
+from ..events import Model, Event
 
-class BallAndStickRepresentation(object):
+class BallAndStickRepresentation(Model):
+    
+
+    atom_clicked = Event()
+    bond_clicked = Event()
     
     @property
     def atom_colors(self):
@@ -37,6 +42,7 @@ class BallAndStickRepresentation(object):
         self.viewer.widget.update()
         
     def __init__(self, viewer, system):
+        self._callbacks = {} # TODO: This is because the model class doesnt work
         self.system = system
         self.viewer = viewer
         
@@ -70,7 +76,7 @@ class BallAndStickRepresentation(object):
                                                      color=(100, 100, 100, 255))
         self.scale_factors = np.ones_like(self.radii_state.array)
         
-        self.bond_radii = self.bond_renderer.radii
+        self.bond_radii = np.array(self.bond_renderer.radii)
         self.bond_colors = self.bond_renderer.colors_a, self.bond_renderer.colors_b
         
         # For highlight, we'll see
@@ -107,17 +113,20 @@ class BallAndStickRepresentation(object):
         self.viewer.widget.update()
         
     def update_positions(self, r_array):
-        self.atom_renderer.update_positions(r_array)
+
         self.bond_renderer.update_positions(r_array)
+        self.atom_renderer.update_positions(r_array)
         
+
         # User controls
+        hmsk = self.hidden_state['bonds'].invert().indices # Visible
         va = self.visible_atoms()
         self.atom_picker = SpherePicker(self.viewer.widget, r_array[va],
                                         self.radii_state.array[va])
         
         self.bond_picker = CylinderPicker(self.viewer.widget,
-                                          r_array.take(self.system.bonds, axis=0),
-                                          self.bond_radii)
+                                          r_array.take(self.system.bonds[hmsk], axis=0),
+                                          self.bond_radii[hmsk])
 
     def on_atom_hidden_changed(self):
         # When hidden state changes, the view update itself
@@ -146,15 +155,22 @@ class BallAndStickRepresentation(object):
     def on_bond_hidden_changed(self):
         # When hidden state changes, the view update itself
         # Update the renderers and the pickers
-        sel = self.hidden_state['bonds'].indices
-        
+        sel = self.hidden_state['bonds'].invert().indices
+        system = self.system
         
         # We need to update the pickers...
         self.bond_picker = CylinderPicker(
             self.viewer.widget,
-            self.system.r_array.take(self.system.bonds, axis=0),
-            self.bond_radii)
+            system.r_array.take(self.system.bonds, axis=0)[sel, :],
+            self.bond_radii[sel])
         
+        # And the bond renderer
+        self.viewer.remove_renderer(self.bond_renderer)
+        self.bond_renderer = self.viewer.add_renderer(BondRenderer,
+                                                      system.bonds[sel], system.r_array,
+                                                      system.type_array, style='impostors')
+        
+        self.viewer.update()
 
     def on_atom_selection_changed(self):
         #self.glow_timer.stop()
@@ -181,7 +197,8 @@ class BallAndStickRepresentation(object):
         cols_a[sel, -1] = 50
         cols_b[sel, -1] = 50
         
-        self.bond_renderer.update_colors(cols_a, cols_b)
+        hmsk = self.hidden_state['bonds'].invert().indices
+        self.bond_renderer.update_colors(cols_a[hmsk], cols_b[hmsk])
 
     def on_click(self, x, y):
         # This is basically our controller
@@ -213,12 +230,16 @@ class BallAndStickRepresentation(object):
             dist_b = b_dists[0] if b_indices else float('inf')
             
             if dist_a < dist_b:
+                self.atom_clicked.emit(visible_atoms[a_indices[0]])
+                
                 self.selection_state['atoms'] \
                     = self.selection_state['atoms'].subtract(
                         Selection([visible_atoms[a_indices[0]]],
                                   self.system.n_atoms))
                 self.on_atom_selection_changed()
             else:
+                # TODO: fix for visible bonds
+                self.bond_clicked.emit([b_indices[0]])
                 self.selection_state['bonds'] \
                     = self.selection_state['bonds'].subtract(
                         Selection([b_indices[0]], self.system.n_bonds))
@@ -269,7 +290,7 @@ class BallAndStickRepresentation(object):
             self.on_atom_hidden_changed()
             
         if 'bonds' in selections:
-            self.selection_state['bonds'] = selections['bonds']
+            self.hidden_state['bonds'] = selections['bonds']
             self.on_bond_hidden_changed()
         
         return self.hidden_state

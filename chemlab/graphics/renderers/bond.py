@@ -83,6 +83,7 @@ class BondRenderer(AbstractRenderer):
         
         return bounds_a, bounds_b
         
+        
     def draw(self):
         self.cr1.draw()
         self.cr2.draw()

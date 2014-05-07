@@ -5,9 +5,13 @@ class Event(object):
 
 class BoundEvent(object):
     def __init__(self, inst, name):
-        # I can create the thing for the first time here
         self.inst = inst
         self.name = name
+        
+        # I can create the _callbacks attribute for the first time
+        # here
+        if not hasattr(inst, '_callbacks'):
+            self.inst._callbacks = {}
 
     def connect(self, callback):
         self.inst._callbacks[self.name] = callback

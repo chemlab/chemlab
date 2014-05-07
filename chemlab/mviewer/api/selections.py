@@ -63,7 +63,23 @@ def select_molecules(name):
     mol_formula = current_system().get_derived_molecule_array('formula')
     mask = mol_formula == name
     ind = current_system().mol_to_atom_indices(mask.nonzero()[0])
-    return select_atoms(ind)
+    
+
+    selection = {'atoms': Selection(ind, current_system().n_atoms)}
+    
+    # Need to find the bonds between the atoms
+    b = current_system().bonds
+    if len(b) == 0:
+        selection['bonds'] = Selection([], 0)
+    else:
+        molbonds = np.zeros(len(b), 'bool')
+        for i in ind:
+            matching = (i == b).sum(axis=1).astype('bool')
+            molbonds[matching] = True
+        
+        selection['bonds'] = Selection(molbonds.nonzero()[0], len(b))
+
+    return select_selection(selection)
     
 def visible_atoms():
     '''Return the indices of the currently visible atoms.'''

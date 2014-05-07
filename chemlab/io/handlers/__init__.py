@@ -6,3 +6,4 @@ from .xyz import XyzIO
 from .xtctrr import XtcIO
 from .mol import MolIO
 from .cml import CmlIO
+from .cif import CifIO

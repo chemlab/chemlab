@@ -37,3 +37,9 @@ def current_representation():
 
     '''
     return viewer.representation
+
+def current_trajectory():
+    '''Return the current trajectory. A trajectory is a set of frames
+    
+    '''
+    return viewer.current_traj
