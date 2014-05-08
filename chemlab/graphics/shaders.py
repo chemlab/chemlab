@@ -1,6 +1,9 @@
 from OpenGL.GL import *
 import numpy as np
 
+# Alias
+compileProgram = shaders.compileProgram
+
 def set_uniform(prog, uni, typ, value):
     location = glGetUniformLocation(prog, uni.encode('utf-8'))
     if typ == '1f':

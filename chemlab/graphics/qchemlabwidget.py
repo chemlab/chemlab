@@ -185,7 +185,7 @@ class QChemlabWidget(QGLWidget):
         
         self.ldir = cam[:3, :3].T.dot(self.light_dir)
         
-        self.on_draw_ui()
+
         
         # Draw World
         self.on_draw_world()
@@ -212,7 +212,10 @@ class QChemlabWidget(QGLWidget):
             
             else:
                 self.post_processing[0].render(DEFAULT_FRAMEBUFFER, self.textures)
-            
+        
+        # Draw the UI at the very last step
+        self.on_draw_ui()
+
     def resizeGL(self, w, h):
 
         glViewport(0, 0, w, h)

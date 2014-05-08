@@ -247,7 +247,7 @@ def test_text_ui():
 
     # To add some interaction to it
     ar = v.add_renderer(AtomRenderer, mol.r_array, mol.type_array, "impostors")
-    tr = v.add_ui(TextUI, 100, 100, 'Hello guys')
+    tr = v.add_ui(TextUI, 100, 100, 'Hello, Crap')
 
     v.run()
 

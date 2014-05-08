@@ -1,17 +1,22 @@
 from OpenGL.GL import *
 from PySide.QtGui import QFont, QPainter
-
+from .shaders import compileShader, compileProgram
+from OpenGL.arrays import vbo
+import os
+import numpy as np
 import ImageFont # From PIL
 
 def setup_textures():
     # Make the text atlas using freetype
     font_name = 'Arial.ttf'
-    height = 40
+    height = 48
     nglyphs = 128
     ft = ImageFont.truetype(font_name, height)
     
     # 128 Glyphs
     textures = [None] * nglyphs
+    sizes = []
+    actual_coords = []
     for i in range(nglyphs):
         
         ###################################################
@@ -20,7 +25,7 @@ def setup_textures():
         # check second arg for antialiasing
         glyph = ft.getmask((chr(i)))
         glyph_width, glyph_height = glyph.size
-        
+
         # 1 pixel padding, we want only powers of two for storage
         # purposes perhaps
         width = next_p2(glyph_width + 1)
@@ -30,13 +35,13 @@ def setup_textures():
         # 0,1
         expanded_data = ""
         for j in xrange (height):
-            for i in xrange (width):
-                if (i >= glyph_width) or (j >= glyph_height):
+            for k in xrange (width):
+                if (k >= glyph_width) or (j >= glyph_height):
                     value = chr (0)
                     expanded_data += value
                     expanded_data += value
                 else:
-                    value = chr (glyph.getpixel ((i, j)))
+                    value = chr (glyph.getpixel ((k, j)))
                     expanded_data += value
                     expanded_data += value
 
@@ -56,7 +61,12 @@ def setup_textures():
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height,
                       border, GL_LUMINANCE_ALPHA,
                       GL_UNSIGNED_BYTE, expanded_data )
-    return textures
+        
+        sizes.append((width, height))
+        actual_coords.append((float(glyph_width)/width,
+                              float(glyph_height)/height))
+        
+    return textures, sizes, actual_coords
 
 def next_p2 (num):
 	""" If num isn't a power of 2, will return the next higher power of two """
@@ -85,18 +95,111 @@ class TextUI(object):
     
     
     def __init__(self, widget, x, y, text):
-        self.viewer = widget
-        w, h = widget.width(), widget.height()
+        self.widget = widget
+        self.res_x, self.res_y = widget.width(), widget.height()
         self.x, self.y = x, y
         self.text = text
         
-        self._tx = setup_textures()
+        curdir = os.path.dirname(__file__)
+        vert = open(os.path.join(curdir,
+                                 'postprocessing',
+                                 'shaders',
+                                 'text.vert')).read()
+        frag = open(os.path.join(curdir,
+                                 'postprocessing',
+                                 'shaders',
+                                 'text.frag')).read()
+        
+        self._tx, self._tx_sizes, self._tx_accoord = setup_textures()
+        vertex = compileShader(vert, GL_VERTEX_SHADER)
+        fragment = compileShader(frag, GL_FRAGMENT_SHADER)
+        
+        self.quad_program = shaders.compileProgram(vertex, fragment)
+
         
     def draw(self):
+        self.res_x = self.widget.width()
+        self.res_y = self.widget.height()
         # Load the program
         # Draw a Texture
-        pass
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)        
+        glEnable(GL_BLEND)
+        glDisable(GL_DEPTH_TEST)        
         
+        glUseProgram(self.quad_program)
+        glActiveTexture(GL_TEXTURE0)
+        
+        self.xy_ndc = np.array([(float(self.x)/self.res_x)*2 - 1,
+                                (float(self.y)/self.res_y)*2 - 1], 'float32')
+        
+        offset = 0
+        for c in self.text:
+            texture = self._tx[ord(c)]
+            w, h = self._tx_sizes[ord(c)]
+            g_x, g_y = self._tx_accoord[ord(c)]
+
+            wh_ndc = np.array([(float(w)/self.res_x)*2,
+                               (float(h)/self.res_y)*2], 'float32')
+
+            glBindTexture(GL_TEXTURE_2D, texture)
+            # Set our "quad_texture" sampler to user Texture Unit 0
+            qd_id = glGetUniformLocation(self.quad_program, "quad_texture")
+            glUniform1i(qd_id, 0)
+            # Set resolution
+            res_id = glGetUniformLocation(self.quad_program, "resolution")
+            glUniform2f(res_id, self.widget.width(), self.widget.height())
+
+
+            origin = self.xy_ndc
+            destin = wh_ndc
+            origin[0] += offset
+            offset = wh_ndc[0]            
+            
+            destin[0] += origin[0]
+            destin[1] += origin[1]
+            
+            # Let's render a quad
+            quad_data = np.array([origin[0], origin[1], 0.0,
+                                  destin[0], origin[1], 0.0,
+                                  origin[0], destin[1], 0.0,
+                                  origin[0], destin[1], 0.0,
+                                  destin[0], origin[1], 0.0,
+                                  destin[0], destin[1], 0.0],
+                                 dtype='float32')
+
+
+            vboquad = vbo.VBO(quad_data)
+
+            tex_data = np.array([0, 0,
+                                 1.0, 0,
+                                 0, 1.0,
+                                 0, 1.0,
+                                 1.0, 0,
+                                 1.0, 1.0], dtype='float32')
+
+            vbotex = vbo.VBO(tex_data)
+
+            vboquad.bind()        
+            glVertexPointer(3, GL_FLOAT, 0, None)        
+            glEnableClientState(GL_VERTEX_ARRAY)
+
+
+            vbotex.bind()
+            glTexCoordPointer(2, GL_FLOAT, 0, None)
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+
+            # draw "count" points from the VBO
+            glDrawArrays(GL_TRIANGLES, 0, 6)
+
+            vboquad.unbind()
+            glDisableClientState(GL_VERTEX_ARRAY)
+
+            vbotex.unbind()
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+
+        glDisable(GL_BLEND)
+        glEnable(GL_DEPTH_TEST)        
+
     def update_text(self, text):
         self.text = text
         # Setup the textures to be drawn
