@@ -1,8 +1,9 @@
 """Pick objects on screen
 """
+
 import numpy as np
 from .transformations import unit_vector, angle_between_vectors, rotation_matrix
-import time
+
 
 def ray_spheres_intersection(origin, direction, centers, radii):
     """Calculate the intersection points between a ray and multiple
@@ -40,26 +41,26 @@ def ray_spheres_intersection(origin, direction, centers, radii):
 
 
 class SpherePicker(object):
-    
+
     def __init__(self, widget, positions, radii):
-        
+
         self.o_positions = positions
         self.o_radii = np.array(radii)
 
         self.positions = positions
         self.radii = np.array(radii)
-        
-        self.widget = widget        
-        
+
+        self.widget = widget
+
     def pick(self, x, y):
         # X and Y are normalized coordinates
-        
+
         # Origin of the ray, object space
         origin = self.widget.camera.unproject(x, y)
-        
+
         # Another point to get the direction
-        dest = self.widget.camera.unproject(x, y, 0.0) 
-        
+        dest = self.widget.camera.unproject(x, y, 0.0)
+
         # direction of the ray
         direction = unit_vector(dest - origin)
         
@@ -155,22 +156,21 @@ class CylinderPicker(object):
 
             # 2) Intersection between ray and z-aligned cylinder
             cyl_radius = self.radii[i]
-            
 
             a = direction_p[:2].dot(direction_p[:2])
             b = 2.0 * origin_p[:2].dot(direction_p[:2])
             c = origin_p[:2].dot(origin_p[:2]) - cyl_radius*cyl_radius
             det = b**2 - 4*a*c
-            
+
             if det >= 0.0:
                 # Hit
                 t = (-b - np.sqrt(det))/(2.0*a)
-                
+
                 new_point = origin + t * direction
                 # Now, need to check if the intersection point is
                 # outside of the caps
                 end_cyl = cyl_origin + cyl_direction * cyl_length
-                
+
                 outside_top = np.dot(new_point - end_cyl, cyl_direction)
                 if outside_top > 0.0:
                     # Discard

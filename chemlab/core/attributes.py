@@ -205,15 +205,19 @@ class BondsAttr(object):
     # TODO: this is an hack to access this outside...
     @staticmethod
     def get_molecule_bonds(sys, index):
-        bond_mask = np.zeros(sys.n_bonds, dtype='bool')
-        for i, (s, e) in enumerate(sys.bonds):
-            sel_ind_start = sys.mol_indices[index]
-            sel_ind_end = sel_ind_start + sys.mol_n_atoms[index]
+        if sys.n_bonds == 0:
+            return np.zeros(sys.n_bonds, dtype='bool')
+        
+        sel_ind_start = sys.mol_indices[index]
+        sel_ind_end = sel_ind_start + sys.mol_n_atoms[index]
+        
+        s_arr = sys.bonds[:, 0]
+        e_arr = sys.bonds[:, 1]
 
-            is_start = (s >= sel_ind_start) & (s <= sel_ind_end)
-            is_end = (e >= sel_ind_start) & (e <= sel_ind_end)
-
-            bond_mask[i] = is_start and is_end
+        is_start_arr = (s_arr >= sel_ind_start) & (s_arr <= sel_ind_end)
+        is_end_arr = (e_arr >= sel_ind_start) & (e_arr <= sel_ind_end)
+        
+        bond_mask = is_start_arr & is_end_arr
         
         return bond_mask
             

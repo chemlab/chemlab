@@ -20,7 +20,6 @@ def load_ipython_extension(ipython):
     png_formatter.for_type(Molecule, mol_to_png)
     png_formatter.for_type(System, sys_to_png)
 
-
 def unload_ipython_extension(ipython):
     # If you want your extension to be unloadable, put that logic here.
     return
