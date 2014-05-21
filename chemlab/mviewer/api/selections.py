@@ -45,6 +45,25 @@ def select_all():
     return select_atoms(visible_atoms())
 
 
+
+def select_connected_bonds():
+    '''Select the bonds connected to the currently selected atoms.'''
+    s = current_system()
+    start, end = s.bonds.transpose()
+    selected = np.zeros(s.n_bonds, 'bool')
+    for i in selected_atoms():
+        selected |= (i == start) | (i == end)
+
+    csel = current_selection()
+    bsel = csel['bonds'].add(
+        Selection(selected.nonzero()[0], s.n_bonds))
+    
+    ret = csel.copy()
+    ret['bonds'] = bsel
+
+    return select_selection(ret)
+
+
 def clear_selection():
     '''Clear the current selection.'''
     return select_atoms([])
@@ -125,6 +144,11 @@ def unhide_selected():
         res[k] = visible_and_selected.invert()
     
     current_representation().hide(res)
+
+
+def current_selection():
+    rep = current_representation()
+    return rep.selection_state
 
 # def delete():
 #     s = current_system()
