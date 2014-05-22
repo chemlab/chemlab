@@ -82,10 +82,9 @@ def select_molecules(name):
     mol_formula = current_system().get_derived_molecule_array('formula')
     mask = mol_formula == name
     ind = current_system().mol_to_atom_indices(mask.nonzero()[0])
-    
 
     selection = {'atoms': Selection(ind, current_system().n_atoms)}
-    
+
     # Need to find the bonds between the atoms
     b = current_system().bonds
     if len(b) == 0:

@@ -511,7 +511,7 @@ class System(object):
             e = s + self.mol_n_atoms[i]
             ind.extend(rng[s:e])
 
-        return np.array(ind).flatten()
+        return np.array(ind, 'int').flatten()
 
     def walk(self):
         for i in range(self.n_mol):
@@ -747,7 +747,8 @@ def _selection_to_index(selection):
         index = selection
 
     if len(index) == 0:
-        raise Exception('The selection you performed is void.')
+        index = selection
+        #raise Exception('The selection you performed is void.')
     return index
 
 

@@ -118,11 +118,6 @@ class TestSystem(object):
         system = System([])
         [system.add(mol) for mol in mols]
         
-    def test_resize(self):
-        mols = self._make_molecules()
-        system = System(mols[:1])
-        system.resize(len(mols))
-        
     def test_from_arrays(self):
         mols = self._make_molecules()
         r_array = np.concatenate([m.r_array for m in mols])
