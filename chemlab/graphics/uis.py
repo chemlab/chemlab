@@ -4,7 +4,8 @@ from .shaders import compileShader, compileProgram
 from OpenGL.arrays import vbo
 import os
 import numpy as np
-import ImageFont # From PIL
+import ImageFont  # From PIL
+
 
 def setup_textures():
     # Make the text atlas using freetype
@@ -12,13 +13,14 @@ def setup_textures():
     height = 48
     nglyphs = 128
     ft = ImageFont.truetype(font_name, height)
-    
+
     # 128 Glyphs
     textures = [None] * nglyphs
     sizes = []
     actual_coords = []
+    geometrics = []
     for i in range(nglyphs):
-        
+
         ###################################################
         # Create the bitmap. Return PIL.Image.core instance
         ###################################################
@@ -29,26 +31,26 @@ def setup_textures():
         # 1 pixel padding, we want only powers of two for storage
         # purposes perhaps
         width = next_p2(glyph_width + 1)
-        height = next_p2 (glyph_height + 1)
+        height = next_p2(glyph_height + 1)
 
         # We put the pixel data in an awesome, encompassing string of
         # 0,1
         expanded_data = ""
-        for j in xrange (height):
-            for k in xrange (width):
+        for j in xrange(height):
+            for k in xrange(width):
                 if (k >= glyph_width) or (j >= glyph_height):
-                    value = chr (0)
+                    value = chr(0)
                     expanded_data += value
                     expanded_data += value
                 else:
-                    value = chr (glyph.getpixel ((k, j)))
+                    value = chr(glyph.getpixel((k, j)))
                     expanded_data += value
                     expanded_data += value
 
         # Let's make the texture
         texture = glGenTextures(1)
         textures[i] = texture
-        
+
         glBindTexture(GL_TEXTURE_2D, texture)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
@@ -58,22 +60,25 @@ def setup_textures():
         # that we are using GL_LUMINANCE_ALPHA to indicate that
         # we are using 2 channel data.
         # TODO: Luminance is deprecated!!!
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height,
-                      border, GL_LUMINANCE_ALPHA,
-                      GL_UNSIGNED_BYTE, expanded_data )
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height,
+                     border, GL_LUMINANCE_ALPHA,
+                     GL_UNSIGNED_BYTE, expanded_data)
         
         sizes.append((width, height))
+        geometrics.append(ft.geometrics())
         actual_coords.append((float(glyph_width)/width,
                               float(glyph_height)/height))
         
-    return textures, sizes, actual_coords
+    return dict(textures=textures, sizes=sizes, coords=actual_coords,
+                geometrics=geometrics)
 
-def next_p2 (num):
-	""" If num isn't a power of 2, will return the next higher power of two """
-	rval = 1
-	while (rval<num):
-		rval <<= 1
-	return rval
+
+def next_p2(num):
+    """ If num isn't a power of 2, will return the next higher power of two """
+    rval = 1
+    while (rval < num):
+        rval <<= 1
+    return rval
 
 class TextUI(object):
     '''Display an overlay text at the point `x`, `y` in screen space.
@@ -109,34 +114,40 @@ class TextUI(object):
                                  'postprocessing',
                                  'shaders',
                                  'text.frag')).read()
+
+        props = setup_textures()
         
-        self._tx, self._tx_sizes, self._tx_accoord = setup_textures()
+        self._tx = props['textures']
+        self._tx_sizes = props['sizes']
+        self._tx_accoord = props['coords']
+        self._tx_geometrics = props['geometrics']
+
         vertex = compileShader(vert, GL_VERTEX_SHADER)
         fragment = compileShader(frag, GL_FRAGMENT_SHADER)
-        
+
         self.quad_program = shaders.compileProgram(vertex, fragment)
 
-        
     def draw(self):
         self.res_x = self.widget.width()
         self.res_y = self.widget.height()
         # Load the program
         # Draw a Texture
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)        
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_BLEND)
-        glDisable(GL_DEPTH_TEST)        
-        
+        glDisable(GL_DEPTH_TEST)
+
         glUseProgram(self.quad_program)
         glActiveTexture(GL_TEXTURE0)
-        
+
         self.xy_ndc = np.array([(float(self.x)/self.res_x)*2 - 1,
                                 (float(self.y)/self.res_y)*2 - 1], 'float32')
-        
+
         offset = 0
         for c in self.text:
             texture = self._tx[ord(c)]
             w, h = self._tx_sizes[ord(c)]
             g_x, g_y = self._tx_accoord[ord(c)]
+            asc, desc = self._tx_geometrics[ord(c)]
 
             wh_ndc = np.array([(float(w)/self.res_x)*2,
                                (float(h)/self.res_y)*2], 'float32')
@@ -149,15 +160,14 @@ class TextUI(object):
             res_id = glGetUniformLocation(self.quad_program, "resolution")
             glUniform2f(res_id, self.widget.width(), self.widget.height())
 
-
             origin = self.xy_ndc
             destin = wh_ndc
             origin[0] += offset
-            offset = wh_ndc[0]            
-            
+            offset = wh_ndc[0]
+
             destin[0] += origin[0]
             destin[1] += origin[1]
-            
+
             # Let's render a quad
             quad_data = np.array([origin[0], origin[1], 0.0,
                                   destin[0], origin[1], 0.0,
@@ -166,7 +176,6 @@ class TextUI(object):
                                   destin[0], origin[1], 0.0,
                                   destin[0], destin[1], 0.0],
                                  dtype='float32')
-
 
             vboquad = vbo.VBO(quad_data)
 
@@ -179,10 +188,9 @@ class TextUI(object):
 
             vbotex = vbo.VBO(tex_data)
 
-            vboquad.bind()        
-            glVertexPointer(3, GL_FLOAT, 0, None)        
+            vboquad.bind()
+            glVertexPointer(3, GL_FLOAT, 0, None)
             glEnableClientState(GL_VERTEX_ARRAY)
-
 
             vbotex.bind()
             glTexCoordPointer(2, GL_FLOAT, 0, None)
