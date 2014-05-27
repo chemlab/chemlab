@@ -67,11 +67,12 @@ class AtomicArrayAttr(ArrayAttr):
         if len(attr) >= ac + mol.n_atoms: # If there's space
             attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
         else:
-            # Resize the shit
+            # Append
             shape = list(attr.shape)
-            shape[0] += mol.n_atoms
-            attr.resize(shape, refcheck=False)
-            attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
+            setattr(sys, self.name, np.append(attr, getattr(mol, self.fieldname).copy(), axis=0))
+            #shape[0] += mol.n_atoms
+            #attr.resize(shape, refcheck=False)
+            #attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
         
     def on_remove_molecules(self, sys, indices):
         at_indices = sys.mol_to_atom_indices(indices)

@@ -156,8 +156,7 @@ goto_frame and inspect with the functions current_time and current_frame
 Selections
 ==========
 
-In Chemlab you usually operate on the selected atoms, bonds or in
-general objects.
+In Chemlab you select and operate on atoms and bonds.
 
 You can use the built-in functions to select according to various
 types::
@@ -173,24 +172,23 @@ You can also act on the selection in different ways::
   invert_selection()
   clear_selection()
 
-Each selection routine returns :class:`chemlab.mviewer.Selection`
+Each selection routine returns a :class:`~chemlab.mviewer.Selection`
 object, that contains information on the selection state, so you can
 use it later::
 
   select_atoms([0, 1, 2])
   Selection([0, 1, 2], tot=6)
 
-The Selection objects have an API to be combined. For example if you
-can select Na and Cl atoms you can do in this way, using the function
-select_selection::
+The :py:func:`~chemlab.mviewer.Selection` Selection objects have an API to be combined. For example if you
+want to select Na and Cl atoms you can do in this way, using the function
+:py:func:`~chemlab.mviewer.api.select_selection`::
 
   na_at = select_atoms('Na')
   cl_at = select_atoms('Cl')
   select_selection({'atoms' : na_at.add(cl_at)})
     
-You can retrieve retrieve the currently selected atoms and bonds in
-this way, they will return a set of indices of the selected atoms and
-bonds::
+You can retrieve the currently selected atoms and bonds indices in
+the following way::
 
   selected_atoms()
   selected_bonds()

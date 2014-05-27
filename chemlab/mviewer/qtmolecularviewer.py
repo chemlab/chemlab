@@ -55,6 +55,8 @@ class QtMolecularViewer(QtViewer):
         
         # Sidebar definition        
         dock2 = QtGui.QDockWidget()
+
+        self.status_bar = QtGui.QLabel()
         
         self.ipython = QIPythonWidget()
         self.ipython.initialize()        
@@ -66,6 +68,7 @@ class QtMolecularViewer(QtViewer):
         self.traj_controls = TrajectoryControls()
         vb.addWidget(self.traj_controls, 1)
         vb.addWidget(self.ipython, 2)
+        vb.addWidget(self.status_bar, 0)
         wrapper2.setLayout(vb)
         
         dock2.setWidget(wrapper2)

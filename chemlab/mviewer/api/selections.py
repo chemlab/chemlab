@@ -39,12 +39,17 @@ def select_selection(selection):
     return rep.selection_state
     
 
+def cancel_selection():
+    '''Reset the current selection'''
+    sel = current_selection()
+    
+    #for k, v in sel.items():
+    #    sel[k].mask[:] = True
+
 def select_all():
     '''Select all the visible atoms.'''
     
     return select_atoms(visible_atoms())
-
-
 
 def select_connected_bonds():
     '''Select the bonds connected to the currently selected atoms.'''

@@ -34,13 +34,19 @@ class Selection(object):
 
     def subtract(self, other):
         am = np.logical_xor(self.mask, other.mask)
-        
+
         return Selection.from_mask(am)
-    
+
     def invert(self):
         am = np.logical_not(self.mask)
-        
+
         return Selection.from_mask(am)
+
+    def alltrue(self):
+        return Selection.from_mask(np.ones_like(self.mask, 'bool'))
+
+    def allfalse(self):
+        return Selection.from_mask(np.zeros_like(self.mask, 'bool'))
 
     def __repr__(self):
         return 'Selection({})'.format(len(self.indices))

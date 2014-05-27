@@ -43,3 +43,6 @@ def current_trajectory():
     
     '''
     return viewer.current_traj
+    
+def msg(msg):
+    viewer.status_bar.setText('<b>' + msg + '</b>')

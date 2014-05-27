@@ -51,11 +51,13 @@ class BallAndStickRepresentation(Model):
 
         
         # Model classes
-        self.hidden_state = {'atoms' : Selection([], system.n_atoms),
-                             'bonds' : Selection([], system.n_bonds)}
+        self.hidden_state = {'atoms': Selection([], system.n_atoms),
+                             'bonds': Selection([], system.n_bonds),
+                             'box': Selection([], 1)}
         
-        self.selection_state = {'atoms' : Selection([], system.n_atoms),
-                                'bonds' : Selection([], system.n_bonds)}
+        self.selection_state = {'atoms': Selection([], system.n_atoms),
+                                'bonds': Selection([], system.n_bonds),
+                                'box': Selection([], 1)}
         
         self.color_state = ArrayState([colors.default_atom_map.get(t, colors.deep_pink) for t in system.type_array])
         self.radii_state = ArrayState([vdw_radii.get(t) * 0.3  for t in system.type_array])
@@ -264,20 +266,23 @@ class BallAndStickRepresentation(Model):
         if 'atoms' in selections:
             self.selection_state['atoms'] = selections['atoms']
             self.on_atom_selection_changed()
-            
+
         if 'bonds' in selections:
             self.selection_state['bonds'] = selections['bonds']
             self.on_bond_selection_changed()
-        
+
+        if 'box' in selections:
+            self.selection_state['box'] = selections['box']
+
         return self.selection_state
-        
+
     def hide(self, selections):
         '''Hide objects in this representation. BallAndStickRepresentation
         support selections of atoms and bonds.
-        
+
         To hide the first atom and the first bond you can use the
         following code::
-        
+
             from chemlab.mviewer.state import Selection
             representation.hide({'atoms': Selection([0], system.n_atoms),
                                    'bonds': Selection([0], system.n_bonds)})
@@ -288,13 +293,22 @@ class BallAndStickRepresentation(Model):
         if 'atoms' in selections:
             self.hidden_state['atoms'] = selections['atoms']
             self.on_atom_hidden_changed()
-            
+
         if 'bonds' in selections:
             self.hidden_state['bonds'] = selections['bonds']
             self.on_bond_hidden_changed()
-        
+
+        if 'box' in selections:
+            self.hidden_state['box'] = box_s = selections['box']
+            if box_s.mask[0]:
+                if self.viewer.has_renderer(self.box_renderer):
+                    self.viewer.remove_renderer(self.box_renderer)
+            else:
+                if not self.viewer.has_renderer(self.box_renderer):
+                    self.viewer.add_renderer(self.box_renderer)
+
         return self.hidden_state
-        
+
     def scale(self, selections, factor):
         '''Scale the objects represented by *selections* up to a
         certain *factor*.

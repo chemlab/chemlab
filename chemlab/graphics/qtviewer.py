@@ -168,6 +168,13 @@ class QtViewer(QMainWindow):
             self.widget.renderers.remove(rend)
         else:
             raise Exception("The renderer is not in this viewer")
+            
+    def has_renderer(self, rend):
+        '''Return True if the renderer is present in the widget
+        renderers.
+
+        '''
+        return rend in self.widget.renderers
     def update(self):
         super(QtViewer, self).update()
         self.widget.update()

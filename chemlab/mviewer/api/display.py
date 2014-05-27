@@ -10,7 +10,6 @@ import numpy as np
 
 db = CirDB()
 
-
 def display_system(system, autozoom=True):
     '''Display a `~chemlab.core.System` instance at screen'''
     viewer.clear()
@@ -20,6 +19,7 @@ def display_system(system, autozoom=True):
         autozoom_()
     
     viewer.update()
+    msg(str(system))
 
 def display_molecule(mol, autozoom=True):
     '''Display a `~chemlab.core.Molecule` instance in the viewer.
@@ -122,7 +122,9 @@ def goto_time(timeval):
 def goto_frame(frame):
     '''Go to a specific frame in the current trajectory.'''
     viewer.traj_controls.goto_frame(frame)
-    
+
+_frame_processors = []
+
 def load_trajectory(name, skip=1, format=None):
     '''Load a trajectory file into chemlab. You should call this
     command after you load a `~chemlab.core.System` through
@@ -138,7 +140,12 @@ def load_trajectory(name, skip=1, format=None):
     viewer.traj_controls.set_ticks(len(dt))
     
     def update(index):
-        f = coords[index]
+        
+        f = coords[index]        
+        
+        for fp in _frame_processors:
+            f = fp(coords, index)
+
         # update the current representation
         viewer.representation.update_positions(f)
         viewer.representation.update_box(boxes[index])
@@ -157,4 +164,4 @@ def guess_bonds():
     
 def reload_system():
     '''Reload the current system in the viewer.'''
-    return display_system(current_system())
+    return display_system(current_system(), autozoom=False)

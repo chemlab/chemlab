@@ -32,6 +32,10 @@ def moving_average(x, N):
     return np.convolve(x, np.ones((N,))/N)[(N-1):]
 
 def periodic_distance(a, b, periodic):
+    '''Periodic distance between two arrays. Periodic is a 3
+    dimensional array containing the 3 box sizes.
+
+    '''
     delta = np.abs(a - b)
     delta = np.where(delta > 0.5 * periodic, periodic - delta, delta)
     return np.sqrt((delta ** 2).sum(axis=-1))

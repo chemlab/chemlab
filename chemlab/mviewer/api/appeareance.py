@@ -134,15 +134,20 @@ def change_lightness(amount):
     rgb_cols = colors.hsl_to_rgb(hsl_cols)
     rep.atom_colors[:, 0:3] = rgb_cols
 
-def screenshot(filename, width=600, height=600):
+def screenshot(filename, width=None, height=None):
     '''Make a screenshot of the current view. You can tweak the
     resolution up to what your GPU memory supports.
+    
+    By defaults it uses the current window resolution.
     
     Example::
 
       screenshot('screen.png', 1200, 1200)
     
     '''
+    width = width or viewer.widget.width()
+    height = height or viewer.widget.height()
+    
     img = viewer.widget.toimage(width, height)
     img.save(filename)
 
