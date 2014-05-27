@@ -317,8 +317,8 @@ class Camera:
         restored with `Camera.restore`.
 
         '''
-        return dict(a=self.a.copy(), b=self.b.copy(), c=self.b.copy(),
-                    pivot=self.pivot.copy(), position=self.position.copy())
+        return dict(a=self.a.tolist(), b=self.b.tolist(), c=self.c.tolist(),
+                    pivot=self.pivot.tolist(), position=self.position.tolist())
 
     def restore(self, state):
         '''Restore the camera state, passed as a *state*
@@ -326,8 +326,8 @@ class Camera:
         `Camera.state`.
 
         '''
-        self.a = state['a'].copy()
-        self.b = state['b'].copy()
-        self.c = state['c'].copy()
-        self.pivot = state['pivot'].copy()
-        self.position = state['position'].copy()
+        self.a = np.array(state['a']).copy()
+        self.b = np.array(state['b']).copy()
+        self.c = np.array(state['c']).copy()
+        self.pivot = np.array(state['pivot']).copy()
+        self.position = np.array(state['position']).copy()
