@@ -3,25 +3,20 @@ from selections import *
 from chemlab.graphics import colors
 import numpy as np
 
-def color_from_string(color):
-    """Given a string *color*, return the color as a tuple (r, g, b,
-    a) where each value is between 0 and 255.
 
-    As for the color name follow the `HTML color names
-    <http://www.w3schools.com/tags/ref_colornames.asp>` in lowescore
-    style eg. *forest_green*.
-
-    """
-
-    # The color should be a string
-    try:
-        col = getattr(colors, color)
-    except:
-        raise ValueError('Color not found: {}'.format(color))
-    return col
+# Function to popup an interactive dialog
+def _interactive_color_dialog(callback):
+    from PySide.QtGui import QColorDialog
+    
+    dialog = QColorDialog()
+    
+    dialog.currentColorChanged.connect(callback)
+    dialog.show()
+    return dialog
+    
 
 def change_background(color):
-    """Setup the background color to *color*.
+    """Setup the background color to *color*. 
     
     Example::
 
@@ -29,19 +24,32 @@ def change_background(color):
       change_background('white')
     
 
-    .. seealso:: :py:func:`chemlab.mviewer.api.color_from_string`
+    .. seealso:: :py:func:`chemlab.graphics.colors.parse_color`
 
     """
-    viewer.widget.background_color = color_from_string(color)
+    viewer.widget.background_color = colors.any_to_rgb(color)
     viewer.update()
+
+def _change_background_interactive():
+    def on_color_changed(color):
+        r = color.red()
+        g = color.green()
+        b = color.blue()
+        change_background((r, g, b, 255))
+
+    return _interactive_color_dialog(on_color_changed)
+
+change_background.interactive = _change_background_interactive
 
 # That's kinda of a MAYBE API
 def change_appeareance(keyval):
     raise NotImplementedError()
 
+
 def get_appeareance(keyval):
     raise NotImplementedError()
-    
+
+
 def change_radius(value):
     '''Change the radius of the currently selected atoms by a certain
     *value*.
@@ -65,13 +73,20 @@ def scale_atoms(fac):
     rep.update_scale_factors(rep.scale_factors)
     viewer.update()
 
-
+    
 def change_color(color):
     """Change the color of the currently selected objects. *color* is
-    represented as a string. Otherwise color can be passed as an rgba tuple of values between 0, 255
+    represented as a string. Otherwise color can be passed as an rgba
+    tuple of values between 0, 255
 
     Reset the color by passing *color=None*.
+    
+    You can call this function interactively by using::
 
+        change_color.interactive()
+    
+    A new dialog will popup with a color chooser.
+    
     """
     rep = current_representation()
     
@@ -88,6 +103,19 @@ def change_color(color):
 
     # Color array
     rep.change_color(rep.selection_state, col)
+
+
+def _change_color_interactive():
+    def on_color_changed(color):
+        r = color.red()
+        g = color.green()
+        b = color.blue()
+        change_color((r, g, b, 255))
+
+    return _interactive_color_dialog(on_color_changed)
+
+
+change_color.interactive = _change_color_interactive
 
 def change_default_radii(def_map):
     """Change the default radii

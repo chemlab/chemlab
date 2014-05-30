@@ -59,18 +59,18 @@ saddle_brown = (139,  69,  19, 255)
 sienna = (160,  82,  45, 255)
 brown = (165,  42,  42, 255)
 maroon = (128,   0,   0, 255)
-	
+
 # Green colors
-dark_olive_green = ( 85, 107,  47, 255)
+dark_olive_green = (85, 107,  47, 255)
 olive = (128, 128,   0, 255)
 olive_drab = (107, 142,  35, 255)
 yellow_green = (154, 205,  50, 255)
-lime_green = ( 50, 205,  50, 255)
-lime = (  0, 255,   0, 255)
+lime_green = (50, 205,  50, 255)
+lime = (0, 255,   0, 255)
 lawn_green = (124, 252,   0, 255)
 chartreuse = (127, 255,   0, 255)
 green_yellow = (173, 255,  47, 255)
-spring_green = (  0, 255, 127, 255)
+spring_green = (0, 255, 127, 255)
 medium_spring_green = (  0, 250, 154, 255)
 light_green = (144, 238, 144, 255)
 pale_green = (152, 251, 152, 255)
@@ -112,7 +112,7 @@ medium_blue = (  0,   0, 205, 255)
 dark_blue = (  0,   0, 139, 255)
 navy = (  0,   0, 128, 255)
 midnight_blue = ( 25,  25, 112, 255)
-	
+
 # Purple colors
 lavender = (230, 230, 250, 255)
 thistle = (216, 191, 216, 255)
@@ -163,14 +163,79 @@ slate_gray = (112, 128, 144, 255)
 dark_slate_gray = ( 47,  79,  79, 255)
 black = (  0,   0,   0, 255)
 
+
+def any_to_rgb(color):
+    '''If color is an rgb tuple return it, if it is a string, parse it
+    and return the respective rgb tuple.
+
+    '''
+    if isinstance(color, tuple):
+        if len(color) == 3:
+            color = color + (255,)
+        return color
+        
+    if isinstance(color, str):
+        return parse_color(color)
+        
+    raise ValueError("Color not recognized: {}".format(color))
+
+def html_to_rgb(colorstring):
+    """ convert #RRGGBB to an (R, G, B) tuple """
+    colorstring = colorstring.strip()
+    if colorstring[0] == '#':
+        colorstring = colorstring[1:]
+
+    if len(colorstring) != 6:
+        raise ValueError("input #%s is not in #RRGGBB format" % colorstring)
+
+    r, g, b = colorstring[:2], colorstring[2:4], colorstring[4:]
+    r, g, b = [int(n, 16) for n in (r, g, b)]
+
+    return (r, g, b, 255)
+
+
+def parse_color(color):
+    '''Return the RGB 0-255 representation of the current string
+    passed.
+
+    It first tries to match the string with DVI color names.
+
+    '''
+    
+    # Let's parse the color string
+    if isinstance(color, str):
+        # Try dvi names
+        try:
+            col = get(color)
+        except ValueError:
+            # String is not present
+            pass
+
+        # Try html names
+        try:
+            col = html_to_rgb(color)
+        except ValueError:
+            raise ValueError("Can't parse color string: {}'".format(color))
+        
+    return col
+
+
 # Functions
 def get(name):
-    
+    """Given a string *color*, return the color as a tuple (r, g, b,
+    a) where each value is between 0 and 255.
+
+    As for the color name follow the `HTML color names
+    <http://www.w3schools.com/tags/ref_colornames.asp>` in lowescore
+    style eg. *forest_green*.
+
+    """
+
     try:
         color = globals().get(name)
     except:
-        raise Exception('Color %s not found' % name)
-    
+        raise ValueError('Color %s not found' % name)
+        
     return color
 
 def mix(a, b, ratio=0.5):
@@ -308,84 +373,84 @@ def hsl_to_rgb(arr):
     
 # Maps
 default_atom_map = {
-"C": gray,
-"O": red,
-"H": white,
+    "C": gray,
+    "O": red,
+    "H": white,
 
-"N":  light_blue,
-"S":  gold,
-"Cl": green,
-"B":  green,
+    "N": light_blue,
+    "S": gold,
+    "Cl": green,
+    "B":  green,
     
-"P": orange,
-"Fe": orange,
-"Ba": orange,
+    "P": orange,
+    "Fe": orange,
+    "Ba": orange,
 
-"Na": blue,
-"Mg": forest_green,
+    "Na": blue,
+    "Mg": forest_green,
     
-"Zn": brown,
-"Cu": brown,
-"Ni": brown,
-"Br": brown,
+    "Zn": brown,
+    "Cu": brown,
+    "Ni": brown,
+    "Br": brown,
 
-"Ca": dark_gray,
-"Mn": dark_gray,
-"Al": dark_gray,
-"Ti": dark_gray,
-"Cr": dark_gray,
-"Ag": dark_gray,
+    "Ca": dark_gray,
+    "Mn": dark_gray,
+    "Al": dark_gray,
+    "Ti": dark_gray,
+    "Cr": dark_gray,
+    "Ag": dark_gray,
 
-"F":  goldenrod,    
-"Si": goldenrod,
-"Au": goldenrod,
+    "F":  goldenrod,    
+    "Si": goldenrod,
+    "Au": goldenrod,
     
-"I": purple,
-    
-"Li":fire_brick,
-"He":pink,
+    "I": purple,
+        
+    "Li": fire_brick,
+    "He": pink,
 
-"Xx": deep_pink,
+    "Xx": deep_pink,
 }
 
 
 light_atom_map = {
-"C": gainsboro,
-"O": light_salmon,
-"H": snow,
+    "C": gainsboro,
+    "O": light_salmon,
+    "H": snow,
 
 "N":  pale_turquoise,
-"S":  light_goldenrod_yellow,
-"Cl": pale_green,
-"B":  pale_green,
+    "S":  light_goldenrod_yellow,
+    "Cl": pale_green,
+    "B":  pale_green,
     
 "P": beige,
-"Fe": beige,
-"Ba": beige,
+    "Fe": beige,
+    "Ba": beige,
 
 "Na": lavender,
-"Mg": aquamarine,
+    "Mg": aquamarine,
     
 "Zn": dark_salmon,
-"Cu": dark_salmon,
-"Ni": dark_salmon,
-"Br": dark_salmon,
+    "Cu": dark_salmon,
+    "Ni": dark_salmon,
+    "Br": dark_salmon,
 
 "Ca": light_slate_gray,
-"Mn": light_slate_gray,
-"Al": light_slate_gray,
-"Ti": light_slate_gray,
-"Cr": light_slate_gray,
-"Ag": light_slate_gray,
+    "Mn": light_slate_gray,
+    "Al": light_slate_gray,
+    "Ti": light_slate_gray,
+    "Cr": light_slate_gray,
+    "Ag": light_slate_gray,
 
 "F":  pale_goldenrod,    
-"Si": pale_goldenrod,
-"Au": pale_goldenrod,
+    "Si": pale_goldenrod,
+    "Au": pale_goldenrod,
     
 "I": lavender,
     
 "Li": light_coral,
-"He": light_pink,
+    "He": light_pink,
 
 "Xx": deep_pink,
 }

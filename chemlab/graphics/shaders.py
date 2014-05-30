@@ -1,6 +1,8 @@
 from OpenGL.GL import *
 import numpy as np
 
+from OpenGL.GL import shaders  # Fix autodoc
+
 # Alias
 compileProgram = shaders.compileProgram
 
