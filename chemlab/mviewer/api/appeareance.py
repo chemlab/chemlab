@@ -22,7 +22,14 @@ def change_background(color):
 
       change_background('black')
       change_background('white')
+      change_background('#ffffff')
     
+    You can call this function interactively by using::
+
+        change_color.interactive()
+    
+    A new dialog will popup with a color chooser.
+
 
     .. seealso:: :py:func:`chemlab.graphics.colors.parse_color`
 
