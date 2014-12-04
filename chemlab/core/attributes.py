@@ -11,7 +11,7 @@ class ArrayAttr(object):
         self.fieldname = fieldname
 
     def from_array(self, sys, arr):
-        if arr == None:
+        if arr is None:
             if self.default is not None:
                 setattr(sys, self.name, self.default(sys))
             elif self.default is False:
@@ -158,7 +158,7 @@ class MoleculeListAttr(MoleculeArrayAttr):
         return [o_attr[i] for i in selection]
 
     def from_array(self, sys, arr):
-        if arr == None:
+        if arr is None:
             if self.default is not None:
                 setattr(sys, self.name, self.default(sys))
             elif self.default is False:
