@@ -120,8 +120,8 @@ class Atom(object):
         
         for f in cls.fields:
             val = kwargs.get(f.name, None)
-            if val == None:
-                if f.default == False:
+            if val is None:
+                if f.default is False:
                     raise FieldRequired('{} field is required'.format(f.name))
                 else:
                     f.set(self, f.default(self))
