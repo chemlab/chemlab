@@ -1,6 +1,5 @@
 import numpy as np
 from collections import Counter
-import numpy as np
 from copy import copy
 
 from ..libs.ckdtree import cKDTree
@@ -364,7 +363,7 @@ class Molecule(object):
     
     @property
     def center_of_mass(self):
-        return ((self.m_array * self.r_array)/self.m_array.sum()).sum(axis=0)
+        return ((self.m_array * self.r_array.T).sum(axis=1))/self.m_array.sum()
 
     @property
     def geometric_center(self):
