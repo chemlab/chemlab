@@ -15,8 +15,8 @@ resources_dir = os.path.dirname(resources.__file__)
 
 class PlayStopButton(QtGui.QPushButton):
     
-    play = QtCore.Signal()
-    pause = QtCore.Signal()
+    play = QtCore.pyqtSignal()
+    pause = QtCore.pyqtSignal()
     
     def __init__(self):
         css = '''
@@ -93,11 +93,11 @@ class AnimationSlider(QtGui.QSlider):
                                              opt.upsideDown)
 
 class TrajectoryControls(QtGui.QWidget):
-    play = QtCore.Signal()
-    pause = QtCore.Signal()
+    play = QtCore.pyqtSignal()
+    pause = QtCore.pyqtSignal()
 
-    frame_changed = QtCore.Signal(int)
-    speed_changed = QtCore.Signal()
+    frame_changed = QtCore.pyqtSignal(int)
+    speed_changed = QtCore.pyqtSignal()
     
     def __init__(self, parent=None):
         super(TrajectoryControls, self).__init__(parent)

@@ -100,7 +100,7 @@ class QChemlabWidget(QGLWidget):
 
     '''
 
-    clicked = QtCore.Signal(object)
+    clicked = QtCore.pyqtSignal(object)
 
     def __init__(self, *args, **kwargs):
         super(QChemlabWidget, self).__init__(*args, **kwargs)
