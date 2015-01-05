@@ -1,5 +1,5 @@
 from OpenGL.GL import *
-from PySide.QtGui import QFont, QPainter
+from PyQt4.QtGui import QFont, QPainter
 from .shaders import compileShader, compileProgram
 from OpenGL.arrays import vbo
 import os

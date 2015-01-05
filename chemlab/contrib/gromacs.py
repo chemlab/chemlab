@@ -105,50 +105,6 @@ def rdffunc(args):
     grid()
     show()
     
-    
-# from PySide.QtUiTools import QUiLoader
-# from PySide.QtCore import QFile
-# from PySide.QtGui import QWidget, QApplication
-
-# import matplotlib
-# matplotlib.use('Qt4Agg')
-# matplotlib.rcParams['backend.qt4'] = 'PySide'
-# import pylab
-
-# from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-# from matplotlib.figure import Figure
-# import sys
-
-# class App(QApplication):
-#     def __init__(self):
-#         QApplication.__init__(self, sys.argv)
-#         self.loader = loader = QUiLoader()
-#         pref = '/home/gabriele/workspace/chemlab/chemlab/contrib/'
-#         file = QFile(pref + "energyplot.ui")
-#         file.open(QFile.ReadOnly)
-#         self.mainwin = mainwin = loader.load(file)
-#         file.close()
-#         pltcontainer = mainwin.findChild(QWidget, "plotplaceholder")
-#         fig = Figure(figsize=(600,600), dpi=72, facecolor=(1,1,1), edgecolor=(0,0,0))
-#         self.ax = ax = fig.add_subplot(111)
-#         # generate the canvas to display the plot
-#         self.canvas = canvas = FigureCanvas(fig)
-#         ly = pltcontainer.layout()
-#         ly.addWidget(canvas)
-#         #canvas.setParent(self.mainwin)
-#         tb = NavigationToolbar(canvas, self.mainwin)
-        
-#         ly.addWidget(tb)
-#         self.mainwin.show()
-        
-#     def plot(self, *a, **kw):
-#         self.ax.plot(*a, **kw)
-#         self.canvas.draw()
-
-#     def set_statusbar(self, msg):
-#         self.mainwin.statusBar().showMessage(msg)
-
 
 if __name__ == '__main__':
     main(['pressure'])

@@ -1,5 +1,5 @@
 import numpy as np
-from chemlab.graphics.events import BoundEvent
+from ..events import BoundEvent
 
 class obsarray(object):
     def __init__(self, arr):

@@ -5,9 +5,9 @@ import time
 
 from PIL import Image as pil_Image
 
-from PySide import QtCore, QtGui
-from PySide.QtCore import  Qt
-from PySide.QtOpenGL import QGLWidget
+from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import  Qt
+from PyQt4.QtOpenGL import QGLWidget
 
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
@@ -19,8 +19,8 @@ from . import colors
 DEFAULT_FRAMEBUFFER = 0
 
 class QChemlabWidget(QGLWidget):
-    '''Extensible and modular OpenGL widget developed using the Qt (PySide)
-    Framework. This widget can be used in other PySide programs.
+    '''Extensible and modular OpenGL widget developed using the Qt (PyQt4)
+    Framework. This widget can be used in other PyQt4 programs.
 
     The widget by itself doesn't draw anything, it delegates the
     writing task to external components called 'renderers' that expose
@@ -49,7 +49,7 @@ class QChemlabWidget(QGLWidget):
         widget.uis.append(TextUI(widget, 200, 200, 'Hello, world!'))
 
     .. warning:: At this point there is only one ui element available.
-                PySide provides a lot of UI elements so there's the
+                PyQt4 provides a lot of UI elements so there's the
                 possibility that UI elements will be converted into renderers.
 
     QChemlabWidget has its own mouse gestures:

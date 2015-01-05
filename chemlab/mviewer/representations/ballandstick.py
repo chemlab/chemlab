@@ -12,7 +12,7 @@ from ...graphics.pickers import SpherePicker, CylinderPicker
 from ...db import ChemlabDB
 from ...graphics.postprocessing import GlowEffect
 
-from PySide import QtCore
+from PyQt4 import QtCore
 
 cdb = ChemlabDB()
 vdw_radii = cdb.get('data', 'vdwdict')

@@ -41,8 +41,8 @@ class Mock(object):
     def __mul__(self, other):
         return Mock()
     
-MOCK_MODULES = ['PySide.QtGui', 'PySide.QtCore', 'PySide',
-                'PySide.QtOpenGL',
+MOCK_MODULES = ['PyQt4.QtGui', 'PyQt4.QtCore', 'PyQt4',
+                'PyQt4.QtOpenGL',
                 'chemlab.molsim.cforces2', 'h5py',
                 'chemlab.libs.pyxdr',
                 'Cython.Distutils', 'numpy', 'numpy.linalg',

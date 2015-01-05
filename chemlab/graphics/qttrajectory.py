@@ -1,6 +1,6 @@
-from PySide.QtGui import QMainWindow, QApplication, QDockWidget
-from PySide import QtGui, QtCore
-from PySide.QtCore import Qt
+from PyQt4.QtGui import QMainWindow, QApplication, QDockWidget
+from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import Qt
 
 import os
 
@@ -243,7 +243,7 @@ class TrajectoryControls(QtGui.QWidget):
         
 
 class QtTrajectoryViewer(QMainWindow):
-    """Bases: `PySide.QtGui.QMainWindow`
+    """Bases: `PyQt4.QtGui.QMainWindow`
 
     Interface for viewing trajectory.
 

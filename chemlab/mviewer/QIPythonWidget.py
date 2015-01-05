@@ -1,6 +1,6 @@
 import atexit
 
-from PySide.QtCore import QTimer
+from PyQt4.QtCore import QTimer
 
 from IPython.kernel.zmq.kernelapp import IPKernelApp
 from IPython.lib.kernel import find_connection_file
