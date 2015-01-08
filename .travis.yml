@@ -11,7 +11,7 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - "sudo apt-get update"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl python-matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq python-numpy python-scipy python-pyside python-opengl python-matplotlib python-pyqt; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get install -qq python3-pyqt; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
 
