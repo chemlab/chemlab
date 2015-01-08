@@ -70,6 +70,7 @@ def test_chemspider():
     print((db.get('mol2d', name)))
     print((db.get('commonname', name)))
 
+@attr('slow')
 def test_toxnet():
     from chemlab.db.toxnetdb import ToxNetDB
     
