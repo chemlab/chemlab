@@ -43,6 +43,15 @@ def noperiodic(r_array, periodic, reference=None):
 
        A (N, 3) array of coordinates, all in the same periodic image.
 
+       Example
+       -------
+
+           >>> coordinates = np.array([[0.1, 0.0, 0.0], [0.9, 0.0, 0.0]])
+           >>> periodic = np.array([1, 1, 1])
+           >>> noperiodic(coordinates, periodic)
+           [[ 0.1, 0.0, 0.0],
+            [-0.1, 0.0, 0.0]]
+
     '''
     if reference is None:
         center = r_array[0]
