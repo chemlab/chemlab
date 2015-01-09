@@ -149,13 +149,17 @@ def remotefile(url, format=None):
 
     """
 
-    if format is None:
-        
+    if format is None:        
         res = urlparse(url)
         filename, ext = os.path.splitext(res.path)
         
         hc = get_handler_class(ext)
-        fd = urlopen(url)
-        
-        handler = hc(fd)
-        return handler
+    else:
+        hc = _handler_map.get(format)
+        if hc is None:
+            raise ValueError('Format {} not supported.'.format(format))
+
+    fd = urlopen(url)    
+    handler = hc(fd)
+    return handler
+

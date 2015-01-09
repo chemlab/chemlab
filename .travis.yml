@@ -12,7 +12,7 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
   - "sudo apt-get update"
 
-  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq python-numpy python-scipy python-qt4 python-qt4-opengl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq python-numpy python-scipy python-qt4 python-qt4-gl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get install -qq python3-pyqt4; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.3 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
 
