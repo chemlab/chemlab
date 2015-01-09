@@ -321,7 +321,7 @@ class Molecule(object):
             # Get the value from the passed arguments
             val = kwargs.get(attr.name, None)
             
-            if val == None:
+            if val is None:
                 # If the value is None set the attribute to its
                 # default value
                 attr.set(inst, attr.default(inst))
@@ -331,7 +331,7 @@ class Molecule(object):
         
         for field in cls.fields:
             val = kwargs.get(field.name, None)
-            if val == None:
+            if val is None:
                 # If the value is None set the field to its
                 # default value
                 field.set(inst, field.default(inst))

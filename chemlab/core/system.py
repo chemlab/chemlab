@@ -278,7 +278,7 @@ class System(object):
         
     def _setup_empty(self, n_mol, n_atoms, box_vectors):
         # We put a default value for box vectors
-        if box_vectors == None:
+        if box_vectors is None:
             box_vectors = np.array([[1.0, 0.0, 0.0],
                                     [0.0, 1.0, 0.0],
                                     [0.0, 0.0, 1.0]])

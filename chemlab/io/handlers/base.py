@@ -114,6 +114,9 @@ class IOHandler(object):
                                       % (feature, str(type(self).__name__),
                                          str(matches)))
 
+class FormatNotSupported(ValueError):
+    pass
+
 def make_ionotavailable(name, msg, can_read = [], can_write = []):
     def read(self, feature):
         raise Exception(msg)

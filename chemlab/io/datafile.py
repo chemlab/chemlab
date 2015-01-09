@@ -29,6 +29,8 @@ _default_handlers = [
     [CifIO, 'cif', '.cif']
 ]
 
+
+
 _handler_map = {}
 _extensions_map = {}
 
@@ -42,7 +44,7 @@ def add_default_handler(ioclass, format, extension=None):
        
        **Parameters**
 
-       ioclass: IOHandler subclass
+       ioclass: IOHandler subclass  
        format: str
          A string identifier representing the format
        extension: str, optional
@@ -57,13 +59,26 @@ def add_default_handler(ioclass, format, extension=None):
     if extension in _extensions_map:
         print("Warning: extension {} already handled by {} handler."
               .format(extension, _extensions_map[extension]))
-            
-    _extensions_map[extension] = format
+    
+    if extension is not None:
+        _extensions_map[extension] = format
 
 # Registering the default handlers
 for h in _default_handlers:
     add_default_handler(*h)
 
+# We add also the cclib handlers
+load_cclib = False
+try:
+    import cclib
+    load_cclib = True
+except ImportError:
+    print('cclib not found. Install cclib for more handlers.')
+
+if load_cclib:
+    from .handlers._cclib import _cclib_handlers
+    for hclass, format in _cclib_handlers:
+        add_default_handler(hclass, format)
     
 def get_handler_class(ext):
     """Get the IOHandler that can handle the extension *ext*."""
@@ -110,11 +125,11 @@ def datafile(filename, mode="rb", format=None):
     filename = os.path.expanduser(filename)
     base, ext = os.path.splitext(filename)
             
-    if format == None:
+    if format is None:
         hc = get_handler_class(ext)
     else:
         hc = _handler_map.get(format)
-        if hc == None:
+        if hc is None:
             raise ValueError('Format {} not supported.'.format(format))
     
     fd = open(filename, mode)
