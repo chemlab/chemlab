@@ -18,3 +18,8 @@ fontconfig/
 docs/_build
 *.so
 \#*
+*.pyd
+chemlab-bbfreeze.py
+chemlab.spec
+sxstrace.etl
+sxstrace.txt
