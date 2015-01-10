@@ -6,6 +6,7 @@ from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.libs.ckdtree import cKDTree
 from chemlab.utils import distance_matrix
 from chemlab.utils import pbc
+from chemlab.utils import geometry
 
 import time
 from nose_parameterized import parameterized
@@ -72,4 +73,13 @@ def test_pbc():
 
     coordinates_nop = pbc.noperiodic(coordinates, periodic)
     assert np.allclose(mi, np.array([[0.1, 0.0, 0.0], [-0.1, 0.0, 0.0]]))
+
+def test_geometry():
+
+    xyz = np.array([[0.1, 0.2, 12.0],
+                    [0.9, 0.0, -1.0]])
+    rtp = geometry.cartesian_to_spherical(xyz)
+
+    assert np.allclose( rtp, [[ 12.00208315, 1.10714872, 0.01863174],
+                              [  1.3453624 , 0.        , 2.40877755]])
 
