@@ -30,8 +30,13 @@ def _create_cclib_handler(type):
             self.filetype = filetype
             self.data = _types[filetype](fd).parse()
 
-        def read(self, feature):
-            return getattr(self.data, feature)
+        def read(self, feature, *args):
+            if feature == 'molecular orbitals':
+                n = args[0]
+                basis_functions = self.data.gbasis
+                
+            else:
+                return getattr(self.data, feature)
 
         def available_features(self):
             return set(self.data._attrlist) & set(dir(self.data))
