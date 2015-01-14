@@ -54,7 +54,7 @@ MOCK_MODULES = ['PyQt4.QtGui', 'PyQt4.QtCore', 'PyQt4',
                 'scipy.spatial', 'scipy.spatial.distance',
                 'chemlab.libs.ckdtree',
                 'chemlab.utils.cdist', 'chemlab.utils.celllinkedlist',
-                'chemview', 'IPython.display']
+                'chemview', 'IPython', 'IPython.display']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
