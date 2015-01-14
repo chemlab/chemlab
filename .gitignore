@@ -23,3 +23,5 @@ chemlab-bbfreeze.py
 chemlab.spec
 sxstrace.etl
 sxstrace.txt
+
+*.ipynb_checkpoints/

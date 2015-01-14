@@ -115,6 +115,8 @@ Reference Documentation
    api/chemlab.db
    api/chemlab.utils
    api/chemlab.mviewer.api
+   api/chemlab.qc
+   api/chemlab.noteboo
 
 License
 -------

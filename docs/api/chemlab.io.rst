@@ -7,7 +7,7 @@ chemical file formats.
 
 .. autofunction:: chemlab.io.datafile
 
-	  
+.. autofunction:: chemlab.io.remotefile
 
 .. toctree::
    :maxdepth: 2

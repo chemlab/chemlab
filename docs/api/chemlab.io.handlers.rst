@@ -58,3 +58,26 @@ xyz: XYZ coordinate format
 .. autoclass:: chemlab.io.handlers.XyzIO
 		:members:
 
+
+
+``cclib`` integration
+=====================
+
+Those handlers are based on the cclib_ library. The `feature` names extracted match those of 
+the one included in the cclib_ documentation.
+
+Chemlab also extract a :class:`chemlab.core.Molecule` instance from the file through the
+`feature` named ``molecule``.
+
+List of file formats:
+
+- gamess
+- gamessuk
+- gaussian
+- jaguar
+- molpro
+- orca
+
+You can also use the method ``available_properties`` to get the available properties dynamically.
+
+.. _cclib: http://cclib.github.io 

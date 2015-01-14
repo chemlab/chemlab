@@ -44,7 +44,8 @@ def _create_cclib_handler(type):
                 n = args[0]
                 basis_functions = self.data.gbasis
             if feature == 'molecule':
-                return Molecule.from_arrays(r_array=self.data.atomcoords[0], 
+                # Angstrom to nanometers
+                return Molecule.from_arrays(r_array=self.data.atomcoords[0]/10, 
                                             type_array=np.array([symbols[a] for a in self.data.atomnos]))
             else:
                 return getattr(self.data, feature)
