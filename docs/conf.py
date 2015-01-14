@@ -42,7 +42,7 @@ class Mock(object):
         return Mock()
     
 MOCK_MODULES = ['PyQt4.QtGui', 'PyQt4.QtCore', 'PyQt4',
-                'PyQt4.QtOpenGL',
+                'PyQt4.QtOpenGL', 'sip',
                 'chemlab.molsim.cforces2', 'h5py',
                 'chemlab.libs.pyxdr',
                 'Cython.Distutils', 'numpy', 'numpy.linalg',
