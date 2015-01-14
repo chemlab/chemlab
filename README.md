@@ -3,7 +3,7 @@ chemlab - the python chemistry package you were waiting for
 
 [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)
 
-- Version: 0.3
+- Version: 0.4
 - Author: Gabriele Lanaro
 - Contributors: Yotam Y. Avital, Adam Jackson
 - Email: python-chemlab@googlegroups.com
@@ -36,9 +36,17 @@ Installation
 TIP: more updated instructions are located in the docs:
      http://chemlab.readthedocs.org/en/latest/installation.html
 
-chemlab is currently tested on Ubuntu 13.04. First install the dependencies:
+The easiest way to install chemlab is to use the Anaconda python distribution from the following link.
 
-    $ sudo apt-get install python-numpy python-scipy python-pyside python-opengl cython python-matplotlib
+http://continuum.io/downloads
+
+Then you can run the following command:
+
+    conda install -c http://conda.binstar.org/gabrielelanaro chemlab
+
+You can also install chemlab on Ubuntu 14.04 using apt. First install the dependencies:
+
+    $ sudo apt-get install python-numpy python-scipy python-opengl cython python-matplotlib python-qt4-gl python-qt4
 
 Then install chemlab from the setup.py included:
 
