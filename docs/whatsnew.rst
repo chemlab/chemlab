@@ -2,6 +2,24 @@
 What's new
 ==========
 
+Version 0.4
+-----------
+
+chemlab.mviewer:
+    - Added a full-fledged molecular viewer. But it will be gone
+      in favor of the notebook based chemview.
+
+chemlab.io:
+    - Added cclib integration
+
+chemlab.notebook:
+    - New module with functions for the IPython notebook.
+      Requires chemview.
+
+chemlab.qc:
+    - Example module for quantum chemistry calculation. Please
+      file an issue on GitHub if you want to maintain it.
+
 Version 0.3
 -----------
 

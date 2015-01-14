@@ -1,5 +1,7 @@
 import sys
 
+__version__ = '0.4'
+
 # Setup pyqt API
 import sip
 try:

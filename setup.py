@@ -22,7 +22,7 @@ ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
 
 setup(
     name = "chemlab",
-    version = "0.3",
+    version = "0.4",
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
