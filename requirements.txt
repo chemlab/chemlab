@@ -5,3 +5,4 @@ nose==1.2.1
 numpy==1.7.0
 wsgiref==0.1.2
 Cython==0.16
+chemview==0.1
