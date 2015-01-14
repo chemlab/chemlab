@@ -2,30 +2,25 @@
 Installation and Quickstart
 ===========================
 
-chemlab is currently tested on Ubuntu 13.04 and python 2.7, it should
-work on 3.3 too. First install the dependencies::
 
-    $ sudo apt-get install python-numpy python-scipy python-matplotlib python-pyside python-opengl cython 
+The easiest way to install chemlab is to use the Anaconda python distribution from the following link.
 
-`Download
-<https://pypi.python.org/packages/source/c/chemlab/chemlab-0.3.tar.gz>`_
-unpack and install chemlab from the setup.py included in the package::
+http://continuum.io/downloads
 
-    $ wget https://pypi.python.org/packages/source/c/chemlab/chemlab-0.3.tar.gz
-    $ tar xvzf chemlab-0.3.tar.gz
-    $ cd chemlab-0.3
-    $ sudo python setup.py build_ext --inplace
+Then you can run the following command:
+
+    conda install -c http://conda.binstar.org/gabrielelanaro chemlab
+
+You can also install chemlab on Ubuntu 14.04 using apt. First install the dependencies:
+
+    $ sudo apt-get install python-numpy python-scipy python-opengl cython python-matplotlib python-qt4-gl python-qt4
+
+Then install chemlab from the setup.py included:
+
     $ sudo python setup.py install
 
-Test the newly installed package by typing::
-
-    $ chemlab view tests/data/cry.gro
-
-The molecular viewer should display a crystal, if not, file an issue
-on `github <http://github.com/chemlab/chemlab/issues>`_.
-
-.. image:: _static/licl.png
-           :width: 600px
+NOTE: For python3 support install the corresponding python3
+      packages available in your distribution or use pip.
 
 Once you're setup, you're ready to to dig in chemlab's
 features. You may start from the :ref:`user-manual`.
