@@ -13,7 +13,7 @@ def molecular_orbital(coords, mocoeffs, gbasis):
     # Making a closure
     def f(x, y, z, coords=coords, mocoeffs=mocoeffs, gbasis=gbasis):
         # The other functions take nanometers
-        return sum(c * bf(x * 10, y * 10, z * 10) for c, bf in zip(mocoeffs, getbfs(coords, gbasis)))
+        return sum(c * bf(x * 10, y*10, z*10) for c, bf in zip(mocoeffs, getbfs(coords * 10, gbasis)))
 
     return f
 
