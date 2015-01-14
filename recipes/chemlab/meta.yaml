@@ -1,10 +1,10 @@
 package:
   name: chemlab
-  version: 0.4pre
+  version: 0.4
 
 source:
   git_url: git@github.com:chemlab/chemlab.git
-  git_tag: v0.4pre
+  git_tag: v0.4
 
 requirements:
   build:
