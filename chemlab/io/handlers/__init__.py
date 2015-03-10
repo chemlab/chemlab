@@ -7,3 +7,4 @@ from .xtctrr import XtcIO
 from .mol import MolIO
 from .cml import CmlIO
 from .cif import CifIO
+from .hdf import HdfIO

@@ -69,16 +69,28 @@ class XtcIO(IOHandler):
             
             times = []
             xtcreader = XTCReader(self.fd.name)
-            frames = []
+
+            cursize = 0
+
+            # 1 frame, 10 atoms, 3 coordinates each
+            frames = np.empty((0, 10, 3), dtype='float32')
             self._boxes = []
 
             for i, frame in enumerate(xtcreader):
                 if skipframes is None or i%skipframes == 0:
-                    frames.append(frame.coords)
+                    cursize += 1
+                    # Enarge if necessary
+                    if cursize > frames.shape[0]:
+                        frames.resize((cursize * 2, ) + frame.coords.shape)
+
+                    frames[cursize - 1, :] = frame.coords
                     times.append(frame.time)
                     self._boxes.append(frame.box)
-                
-            return times, frames
+            # Shrink if necessary
+            if frames.shape[0] != cursize:
+                frames.resize((cursize, frames.shape[1], frames.shape[2]))
+            
+            return np.array(times), frames
             
         if feature == 'boxes':
             return self._boxes
