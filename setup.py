@@ -62,7 +62,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Multimedia :: Graphics :: Viewers',
                    'Programming Language :: Python :: 2.7'],
-    license = "GPL3",
+    license = "LGPL if parts using PyQt (chemlab.graphics and chemlab.mviewer packages), GPL3 if the PyQt parts are included.",
     keywords = "chemistry molecular_viewer",
     url = "https://chemlab.github.com/chemlab"
 )

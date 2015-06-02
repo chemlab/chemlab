@@ -1,4 +1,4 @@
-include distribute_setup.py Makefile COPYING MANIFEST.in requirements.txt
+include distribute_setup.py Makefile COPYING gpl.txt lgpl.txt MANIFEST.in requirements.txt
 
 recursive-include chemlab *.dat *.txt *.json *.pxd *.vert *.frag
 recursive-exclude __pycache__
