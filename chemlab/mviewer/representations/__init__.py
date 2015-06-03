@@ -11,4 +11,4 @@ try:
 except ValueError as e:
     raise RuntimeError('Could not set API version (%s): did you import PyQt4 directly?' % e)
 
-from ballandstick import BallAndStickRepresentation
+from .ballandstick import BallAndStickRepresentation
