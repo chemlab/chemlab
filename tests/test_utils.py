@@ -1,6 +1,7 @@
 '''Test for generic utils
 
 '''
+from __future__ import print_function
 import numpy as np
 from chemlab.utils.celllinkedlist import CellLinkedList
 from chemlab.libs.ckdtree import cKDTree
@@ -19,18 +20,18 @@ from numpy.random import random as nprandom
 ])
 def test_distances(coords, coords_b, cutoff):
     # Consistency checks
-    print "Simple"
+    print("Simple")
     t = time.time()
     dist_simple = distance_matrix(coords, coords_b, cutoff, method="simple")
-    print -t + time.time()
+    print(-t + time.time())
     
-    print "Cell-lists"
+    print("Cell-lists")
     t = time.time()
     dist_clist = distance_matrix(coords, coords_b, cutoff, method="cell-lists")
-    print -t + time.time()
+    print(-t + time.time())
     
-    print dist_simple
-    print dist_clist.todense()
+    print(dist_simple)
+    print(dist_clist.todense())
     assert np.allclose(dist_simple, dist_clist.todense())
     
 def test_distances_periodic():
@@ -43,17 +44,17 @@ def test_distances_periodic():
     cutoff = 0.1
     
     # Consistency checks
-    print "Simple"
+    print("Simple")
     t = time.time()
     dist_simple = distance_matrix(coords, coords, cutoff, method="simple",
                                    periodic=periodic)
-    print -t + time.time()
+    print(-t + time.time())
 
-    print "Cell-lists"
+    print("Cell-lists")
     t = time.time()
     dist_clist = distance_matrix(coords, coords, cutoff,
                                   method="cell-lists", periodic=periodic)
-    print -t + time.time()
+    print(-t + time.time())
     
     assert np.allclose(dist_simple, dist_clist.todense())
     

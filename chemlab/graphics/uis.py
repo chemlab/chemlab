@@ -4,8 +4,10 @@ from .shaders import compileShader, compileProgram
 from OpenGL.arrays import vbo
 import os
 import numpy as np
-import ImageFont  # From PIL
-
+try:
+    import ImageFont  # From PIL
+except ImportError:
+    from PIL import ImageFont # From Pillow
 
 def setup_textures():
     # Make the text atlas using freetype
