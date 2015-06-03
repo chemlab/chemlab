@@ -1,3 +1,4 @@
+from __future__ import print_function
 from core import *
 from selections import *
 from chemlab.graphics import colors
@@ -139,10 +140,7 @@ def change_hue(amount):
     hsl_cols = colors.rgb_to_hsl(rgb_cols)
     hsl_cols[:, 0] = np.clip(hsl_cols[:, 0] + amount, 0, 254)
     
-    print rgb_cols[0]
-    print hsl_cols[0]
     rgb_cols = colors.hsl_to_rgb(hsl_cols)
-    print rgb_cols[0]
     rep.atom_colors[:, 0:3] = rgb_cols
     
     
@@ -151,12 +149,8 @@ def change_saturation(amount):
     rgb_cols = np.array(rep.atom_colors.array)[:, 0:3]
     hsl_cols = colors.rgb_to_hsl(rgb_cols)
     hsl_cols[:, 1] = np.clip(hsl_cols[:, 1] + amount, 0, 254)
-    
-    print rgb_cols[0]
-    print hsl_cols[0]
 
     rgb_cols = colors.hsl_to_rgb(hsl_cols)
-    print rgb_cols[0]
     
     rep.atom_colors[:, 0:3] = rgb_cols
     

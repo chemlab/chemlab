@@ -1,5 +1,5 @@
 '''Calculate forces between atoms'''
-
+from __future__ import print_function
 from chemlab import Atom, Molecule
 from chemlab.core.system import MonatomicSystem
 from chemlab.molsim.cforces import lennard_jones
@@ -137,7 +137,7 @@ def test_energy():
         
         myens.append(myen)
         arr[1,0] += 0.001e-9
-        print force, myforce
+        print(force, myforce)
     
     import pylab as pl
     pl.plot(rs, ens)
