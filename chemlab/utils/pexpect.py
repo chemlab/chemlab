@@ -79,7 +79,7 @@ try:
     import errno
     import traceback
     import signal
-except ImportError, e:
+except ImportError as e:
     raise ImportError (str(e) + """
 
 A critical module was not found. Probably this operating system does not
@@ -247,10 +247,10 @@ def run (command, timeout=-1, withexitstatus=False, events=None, extra_args=None
             else:
                 raise TypeError ('The callback must be a string or function type.')
             event_count = event_count + 1
-        except TIMEOUT, e:
+        except TIMEOUT as e:
             child_result_list.append(child.before)
             break
-        except EOF, e:
+        except EOF as e:
             child_result_list.append(child.before)
             break
     child_result = ''.join(child_result_list)
@@ -526,7 +526,7 @@ class spawn (object):
         if self.use_native_pty_fork:
             try:
                 self.pid, self.child_fd = pty.fork()
-            except OSError, e:
+            except OSError as e:
                 raise ExceptionPexpect('Error! pty.fork() failed: ' + str(e))
         else: # Use internal __fork_pty
             self.pid, self.child_fd = self.__fork_pty()
@@ -582,11 +582,11 @@ class spawn (object):
 
         parent_fd, child_fd = os.openpty()
         if parent_fd < 0 or child_fd < 0:
-            raise ExceptionPexpect, "Error! Could not open pty with os.openpty()."
+            raise ExceptionPexpect("Error! Could not open pty with os.openpty().")
 
         pid = os.fork()
         if pid < 0:
-            raise ExceptionPexpect, "Error! Failed os.fork()."
+            raise ExceptionPexpect("Error! Failed os.fork().")
         elif pid == 0:
             # Child.
             os.close(parent_fd)
@@ -628,7 +628,7 @@ class spawn (object):
             fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY);
             if fd >= 0:
                 os.close(fd)
-                raise ExceptionPexpect, "Error! We are not disconnected from a controlling tty."
+                raise ExceptionPexpect("Error! We are not disconnected from a controlling tty.")
         except:
             # Good! We are disconnected from a controlling tty.
             pass
@@ -636,14 +636,14 @@ class spawn (object):
         # Verify we can open child pty.
         fd = os.open(child_name, os.O_RDWR);
         if fd < 0:
-            raise ExceptionPexpect, "Error! Could not open child pty, " + child_name
+            raise ExceptionPexpect("Error! Could not open child pty, " + child_name)
         else:
             os.close(fd)
 
         # Verify we now have a controlling tty.
         fd = os.open("/dev/tty", os.O_WRONLY)
         if fd < 0:
-            raise ExceptionPexpect, "Error! Could not open controlling tty, /dev/tty"
+            raise ExceptionPexpect("Error! Could not open controlling tty, /dev/tty")
         else:
             os.close(fd)
 
@@ -831,7 +831,7 @@ class spawn (object):
         if self.child_fd in r:
             try:
                 s = os.read(self.child_fd, size)
-            except OSError, e: # Linux does this
+            except OSError as e: # Linux does this
                 self.flag_eof = True
                 raise EOF ('End Of File (EOF) in read_nonblocking(). Exception style platform.')
             if s == '': # BSD style
@@ -1076,7 +1076,7 @@ class spawn (object):
                 else:
                     return False
             return False
-        except OSError, e:
+        except OSError as e:
             # I think there are kernel timing issues that sometimes cause
             # this to happen. I think isalive() reports True, but the
             # process is dead to the kernel.
@@ -1135,7 +1135,7 @@ class spawn (object):
 
         try:
             pid, status = os.waitpid(self.pid, waitpid_options)
-        except OSError, e: # No child processes
+        except OSError as e: # No child processes
             if e[0] == errno.ECHILD:
                 raise ExceptionPexpect ('isalive() encountered condition where "terminated" is 0, but there was no child process. Did someone else call waitpid() on our process?')
             else:
@@ -1147,7 +1147,7 @@ class spawn (object):
         if pid == 0:
             try:
                 pid, status = os.waitpid(self.pid, waitpid_options) ### os.WNOHANG) # Solaris!
-            except OSError, e: # This should never happen...
+            except OSError as e: # This should never happen...
                 if e[0] == errno.ECHILD:
                     raise ExceptionPexpect ('isalive() encountered condition that should never happen. There was no child process. Did someone else call waitpid() on our process?')
                 else:
@@ -1386,7 +1386,7 @@ class spawn (object):
                 incoming = incoming + c
                 if timeout is not None:
                     timeout = end_time - time.time()
-        except EOF, e:
+        except EOF as e:
             self.buffer = ''
             self.before = incoming
             self.after = EOF
@@ -1399,7 +1399,7 @@ class spawn (object):
                 self.match = None
                 self.match_index = None
                 raise EOF (str(e) + '\n' + str(self))
-        except TIMEOUT, e:
+        except TIMEOUT as e:
             self.buffer = incoming
             self.before = incoming
             self.after = TIMEOUT
@@ -1424,7 +1424,7 @@ class spawn (object):
         """This returns the terminal window size of the child tty. The return
         value is a tuple of (rows, cols). """
 
-        TIOCGWINSZ = getattr(termios, 'TIOCGWINSZ', 1074295912L)
+        TIOCGWINSZ = getattr(termios, 'TIOCGWINSZ', long(1074295912))
         s = struct.pack('HHHH', 0, 0, 0, 0)
         x = fcntl.ioctl(self.fileno(), TIOCGWINSZ, s)
         return struct.unpack('HHHH', x)[0:2]
@@ -1446,7 +1446,7 @@ class spawn (object):
         # Newer versions of Linux have totally different values for TIOCSWINSZ.
         # Note that this fix is a hack.
         TIOCSWINSZ = getattr(termios, 'TIOCSWINSZ', -2146929561)
-        if TIOCSWINSZ == 2148037735L: # L is not required in Python >= 2.2.
+        if TIOCSWINSZ == long(2148037735): # L is not required in Python >= 2.2.
             TIOCSWINSZ = -2146929561 # Same bits, but with sign.
         # Note, assume ws_xpixel and ws_ypixel are zero.
         s = struct.pack('HHHH', r, c, 0, 0)
@@ -1552,7 +1552,7 @@ class spawn (object):
         while True:
             try:
                 return select.select (iwtd, owtd, ewtd, timeout)
-            except select.error, e:
+            except select.error as e:
                 if e[0] == errno.EINTR:
                     # if we loop back we have to subtract the amount of time we already waited.
                     if timeout is not None:
