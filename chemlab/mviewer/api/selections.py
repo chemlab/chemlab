@@ -3,7 +3,7 @@ import numpy as np
 from chemlab.mviewer.representations.state import Selection
 from chemlab.core import subsystem_from_atoms
 
-from core import *
+from .core import *
 
 def select_atom_type(name):
     '''Select atoms by their type.

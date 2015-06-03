@@ -2,10 +2,10 @@ __builtins__['viewer'] = viewer
 viewer.ipython.run_line_magic('load_ext', 'autoreload')
 viewer.ipython.run_line_magic('autoreload', '2')
 
-from core import *
-from selections import *
-from display import *
-from appeareance import *
+from .core import *
+from .selections import *
+from .display import *
+from .appeareance import *
 
 # Ok, now we should add some code that import the thing
 import os, sys
