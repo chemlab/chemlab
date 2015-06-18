@@ -5,7 +5,7 @@ from ..core import System, Molecule
 
 from chemview import MolecularViewer, enable_notebook, TrajectoryControls
 from IPython.display import display
-
+from six.moves.urllib.request import urlretrieve
 
 _state = {'chemview_initialized' : False}
 if not _state['chemview_initialized']:
@@ -59,7 +59,7 @@ def load_system(name, format=None):
     .. seealso:: `chemlab.io.datafile`
 
     '''
-    return datafile(name).read('system')
+    return datafile(name, format=format).read('system')
 
 def load_molecule(name, format=None):
     '''Read a `~chemlab.core.Molecule` from a file.
@@ -96,8 +96,6 @@ def load_remote_molecule(url, format=None):
         load_remote_molecule('https://raw.github.com/chemlab/chemlab-testdata/master/benzene.mol')
 
     '''
-    from urllib import urlretrieve
-
     filename, headers = urlretrieve(url)
     return load_molecule(filename, format=format)
 
@@ -110,8 +108,6 @@ def load_remote_system(url, format=None):
 
         load_remote_system('https://raw.github.com/chemlab/chemlab-testdata/master/naclwater.gro')
     '''
-    from urllib import urlretrieve
-
     filename, headers = urlretrieve(url)
     return load_system(filename, format=format)
 
@@ -121,6 +117,5 @@ def load_remote_trajectory(url, format=None, skip=1):
     .. seealso:: load_remote_system
 
     '''
-    from urllib import urlretrieve
     filename, headers = urlretrieve(url)
     return load_trajectory(filename, format, skip)
