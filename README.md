@@ -3,7 +3,7 @@ chemlab - the python chemistry package you were waiting for
 
 [![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)
 
-- Version: 0.4
+- Version: 0.4.1
 - Author: Gabriele Lanaro
 - Contributors: Yotam Y. Avital, Adam Jackson
 - Email: python-chemlab@googlegroups.com
@@ -68,4 +68,4 @@ Go to http://github.com/chemlab/chemlab or send an email to python-chemlab@googl
 License
 -------
 
-chemlab is released under GNU GPL3 (see COPYING attached).
+chemlab is released under the GNU LGPL license if the PyQt parts are omitted (such as chemlab.graphics and chemlab.mviewer packages) or the GNU GPL3 license otherwise. See lgpl.txt and gpl.txt files attached.

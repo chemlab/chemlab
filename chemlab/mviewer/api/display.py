@@ -1,7 +1,7 @@
 from chemlab.mviewer.representations import BallAndStickRepresentation
 from chemlab.graphics.qttrajectory import format_time
 
-from core import *
+from .core import *
 from chemlab.db import CirDB
 from chemlab.io import datafile
 from chemlab.core import System

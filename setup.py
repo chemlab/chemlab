@@ -22,7 +22,7 @@ ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
 
 setup(
     name = "chemlab",
-    version = "0.4",
+    version = "0.4.1",
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
@@ -62,7 +62,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Multimedia :: Graphics :: Viewers',
                    'Programming Language :: Python :: 2.7'],
-    license = "GPL3",
+    license = "LGPL if parts using PyQt (chemlab.graphics and chemlab.mviewer packages), GPL3 if the PyQt parts are included.",
     keywords = "chemistry molecular_viewer",
     url = "https://chemlab.github.com/chemlab"
 )

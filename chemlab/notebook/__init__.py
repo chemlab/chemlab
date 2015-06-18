@@ -25,7 +25,7 @@ def display_molecule(molecule):
     }
 
     mv = MolecularViewer(molecule.r_array, topology)
-    
+
     if molecule.n_bonds != 0:
         mv.points(size=0.15)
         mv.lines()
@@ -52,12 +52,12 @@ def display_trajectory(system, frames):
     tc.frame = 0
 
     return tc, mv
-    
+
 def load_system(name, format=None):
     '''Read a `~chemlab.core.System` from a file.
 
     .. seealso:: `chemlab.io.datafile`
-    
+
     '''
     return datafile(name).read('system')
 
@@ -65,45 +65,53 @@ def load_molecule(name, format=None):
     '''Read a `~chemlab.core.Molecule` from a file.
 
     .. seealso:: `chemlab.io.datafile`
-    
-    '''    
+
+    '''
     return datafile(name, format=format).read('molecule')
 
 def load_trajectory(name, format=None, skip=1):
     '''Read a trajectory from a file.
 
     .. seealso:: `chemlab.io.datafile`
-    
-    '''    
-    return datafile(name, format=format).read('trajectory', skip=1)
 
+    '''
+    df = datafile(name, format=format)
+
+    ret = {}
+    t, coords = df.read('trajectory', skip=skip)
+    boxes = df.read('boxes')
+    ret['t'] = t
+    ret['coords'] = coords
+    ret['boxes'] = boxes
+
+    return ret
 
 def load_remote_molecule(url, format=None):
     '''Load a molecule from the remote location specified by *url*.
-    
+
     **Example**
 
     ::
-    
+
         load_remote_molecule('https://raw.github.com/chemlab/chemlab-testdata/master/benzene.mol')
-    
+
     '''
     from urllib import urlretrieve
-    
+
     filename, headers = urlretrieve(url)
     return load_molecule(filename, format=format)
-    
+
 def load_remote_system(url, format=None):
     '''Load a system from the remote location specified by *url*.
-    
+
     **Example**
-    
+
     ::
-    
+
         load_remote_system('https://raw.github.com/chemlab/chemlab-testdata/master/naclwater.gro')
     '''
     from urllib import urlretrieve
-    
+
     filename, headers = urlretrieve(url)
     return load_system(filename, format=format)
 
@@ -111,7 +119,7 @@ def load_remote_trajectory(url, format=None, skip=1):
     '''Load a trajectory file from a remote location specified by *url*.
 
     .. seealso:: load_remote_system
-    
+
     '''
     from urllib import urlretrieve
     filename, headers = urlretrieve(url)

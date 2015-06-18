@@ -1,5 +1,6 @@
 """Texture data structures
 """
+from __future__ import print_function
 from OpenGL.GL import *
 
 class Texture(object):
@@ -9,12 +10,12 @@ class Texture(object):
         self.kind = kind
         self.intformat = intformat
         self.format = format
-        self.id = glGenTextures(1)
+        self.id = int(glGenTextures(1)) # Avoid returning a numpy array
         self.width, self.height = width, height
         self.dtype = dtype
         self.data = data
         self.empty()
-        
+
     def empty(self):
         self.bind()
         glTexImage2D(self.kind, 0, self.intformat, self.width, self.height, 0,
@@ -24,7 +25,6 @@ class Texture(object):
 
     def set_parameter(self, par, value):
         glTexParameteri(self.kind, par, value)
-    
+
     def delete(self):
-        glDeleteTextures(self.id)
-        
+        glDeleteTextures(1, self.id)
