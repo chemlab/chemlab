@@ -24,4 +24,4 @@ install:
   - "python setup.py build_ext --inplace"
   - "python setup.py install"
 
-script: "nosetests -a '!slow' tests.test_core tests.test_db tests.test_io"
+script: "nosetests -a '!slow' tests.test_core tests.test_io"
