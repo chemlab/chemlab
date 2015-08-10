@@ -71,7 +71,7 @@ class TestSystem(object):
                                               0.0, 0.0, 0.0,
                                               0.0, 0.0, 0.0,
                                               0.0, 0.0, 0.0])
-        
+
         # Test mol indices
         assert_npequal(system.mol_indices, [0, 3, 6, 9])
 
@@ -83,10 +83,10 @@ class TestSystem(object):
 
         # Test derived property -- center of mass
         assert_allclose(system.get_derived_molecule_array('center_of_mass'),
-                        [[-1.00621917, 0.05572538, 0.02237967],
-                         [-0.73978867, 0.07251013, 0.03916442],
-                         [-0.47335818, 0.08929488, 0.05594917],
-                         [-0.20692768, 0.10607963, 0.07273392]])
+                        [[-0.39541923, 0.34614659, 0.10559492],
+                         [-0.29541923, 0.44614659, 0.20559492],
+                         [-0.19541923, 0.54614659, 0.30559492],
+                         [-0.09541923, 0.64614659, 0.40559492]])
 
         # Test bonds
         assert_eqbonds(system.bonds, [[0, 1], [0, 2],
@@ -95,7 +95,7 @@ class TestSystem(object):
                                       [9, 10], [9, 11]])
 
         # Test bond orders
-        
+
         #print 'Test Indexing of system.molecule'
         #print s.molecules[0]
         #print s.molecules[:], s.molecules[:-5]
@@ -117,7 +117,7 @@ class TestSystem(object):
         mols = self._make_molecules()
         system = System([])
         [system.add(mol) for mol in mols]
-        
+
     def test_from_arrays(self):
         mols = self._make_molecules()
         r_array = np.concatenate([m.r_array for m in mols])
@@ -229,11 +229,11 @@ def test_bonds():
     assert_npequal(s.bonds, bz.bonds)
     assert_npequal(bz.bond_orders, [1, 2, 2, 1, 1, 2])
     assert_npequal(s.bond_orders, bz.bond_orders)
-    
+
     s.add(bz)
     assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
     #assert_npequal(s.bond_orders)
-    
+
     # Reordering
     orig = np.array([[0, 1], [6, 8]])
     s.bonds = orig
@@ -248,7 +248,7 @@ def test_bonds():
     import inspect
     ss2 = System.from_arrays(**dict(inspect.getmembers(ss)))
     ss2.r_array += 10.0
-    
+
     ms = merge_systems(ss, ss2)
     assert_npequal(ms.bonds, np.array([[0, 1], [6, 7]]))
     assert_npequal(ms.bond_orders, np.array([1, 1]))
@@ -257,7 +257,7 @@ def test_bonds():
     s = System.from_arrays(mol_indices=[0], bonds=bz.bonds, **bz.__dict__)
     assert_npequal(s.bonds, bz.bonds)
     assert_npequal(s.bond_orders, bz.bond_orders)
-    
+
     # Get molecule entry
     # Test the bonds when they're 0
     s.bonds = np.array([])
@@ -285,7 +285,7 @@ def test_bond_orders():
     assert_npequal(s.bond_orders , np.array([1, 1, 2]))
     s.reorder_molecules([1, 0]) # We don't actually sort bonds again
     assert_npequal(s.bond_orders , np.array([1, 1, 2]))
-    
+
     s.bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5]])
     assert_npequal(s.bond_orders, np.array([1, 1, 2, 1]))
 

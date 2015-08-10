@@ -4,19 +4,20 @@ from chemlab.io import datafile, add_default_handler
 from chemlab.io.handlers import GromacsIO
 from chemlab.io.handlers import EdrIO
 from nose.tools import assert_raises
+from nose.plugins.skip import SkipTest
 
 import numpy as np
-    
+
 def test_datafile():
     add_default_handler(GromacsIO, 'gro', '.gro')
-    df = datafile("tests/data/cry.gro") # It guesses 
+    df = datafile("tests/data/cry.gro") # It guesses
     sys = df.read("system")
     assert sys.n_atoms == 1728
 
 def test_read_pdb():
     df = datafile('tests/data/3ZJE.pdb')
     s = df.read('system')
-    
+
 def test_write_pdb():
     water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'pdb.type': 'O'}),
                       Atom('H', [0.1, 0.0, 0.0], export={'pdb.type': 'H'}),
@@ -27,10 +28,10 @@ def test_write_pdb():
     for i in range(200):
         water.r_array += 0.1
         sys.add(water.copy())
-    
+
     df = datafile('/tmp/dummy.pdb', mode="w")
     df.write("system", sys)
-    
+
 def test_read_gromacs():
     '''Test reading a gromacs file'''
     df = datafile('tests/data/cry.gro')
@@ -45,26 +46,26 @@ def test_write_gromacs():
     sys = System.empty(200, 3*200, box_vectors = np.eye(3)*2.0)
     for i in range(200):
         sys.add(water.copy())
-    
+
     df = datafile('/tmp/dummy.gro', mode="w")
     df.write('system', sys)
-    
+
     with assert_raises(Exception):
         df = datafile('/tmp/dummy.gro')
         df.write('system', sys)
-    
+
     df = datafile('/tmp/dummy.gro')
     sread = df.read('system')
-    
+
     assert all(sread.type_array == sys.type_array)
-    
+
 def test_read_edr():
     df = datafile('tests/data/ener.edr')
     #df.read('frames')
-    
+
     dt, temp = df.read('quantity', 'Temperature')
     unit = df.read('units', 'Temperature')
-    
+
     try:
         df.read('quantity', 'NonExistent')
     except:
@@ -73,22 +74,22 @@ def test_read_edr():
 def test_read_xyz():
     df = datafile('tests/data/sulphoxide.xyz')
     mol1 = df.read('molecule')
-    
-    
+
+
     df = datafile('/tmp/t.xyz', mode="w")
     df.write('molecule', mol1)
-    
+
     df = datafile('/tmp/t.xyz', mode="rb")
     mol2 = df.read('molecule')
-    
+
     assert np.allclose(mol1.r_array, mol2.r_array)
     assert all(mol1.type_array == mol2.type_array)
-    
-    
+
+
 def test_read_mol():
     df = datafile('tests/data/benzene.mol')
     mol1 = df.read('molecule')
-    
+
 def test_read_xtc():
     df = datafile('tests/data/trajout.xtc')
     t, coords = df.read('trajectory')
@@ -101,11 +102,15 @@ def test_read_cml():
 def test_write_cml():
     df = datafile('tests/data/mol.cml')
     mol = df.read("molecule")
-    
+
     df = datafile('/tmp/sadf.cml', 'w')
     df.write('molecule', mol)
-    
+
 def test_read_cclib():
+    try:
+        import cclib
+    else:
+        raise SkipTest
     df = datafile('tests/data/cclib/water_mp2.out', format='gamess')
 
     # Reading a properties that does exist
