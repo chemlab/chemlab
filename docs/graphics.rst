@@ -284,7 +284,8 @@ save method to store it as a png::
  
 Once we've got the sample molecule up and running it's very easy to
 automatize the process to produce images of different molecules. In
-the following code we prepare the QtViewer with the effects, and for
+the following code we prepare the QtViewer with the effects,
+we call ``v.widget.initializeGL()`` in place of ``v.show()`` and for
 each molecule we add an AtomRenderer and adjust the camera::
 
     from chemlab.db import CirDB
@@ -299,6 +300,7 @@ each molecule we add an AtomRenderer and adjust the camera::
      
     # Prepare the viewer
     v = QtViewer()
+    v.widget.initalizeGL() # Needed if you don't call show()
     v.add_post_processing(SSAOEffect, kernel_size=128, kernel_radius=1.0)
     v.add_post_processing(FXAAEffect)
      
