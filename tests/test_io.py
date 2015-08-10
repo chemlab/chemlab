@@ -109,7 +109,7 @@ def test_write_cml():
 def test_read_cclib():
     try:
         import cclib
-    else:
+    except:
         raise SkipTest
     df = datafile('tests/data/cclib/water_mp2.out', format='gamess')
 
