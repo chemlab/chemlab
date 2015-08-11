@@ -20,8 +20,10 @@ requirements:
     - scipy
     - pyqt
     - pyopengl
-    - cclib
+    - cclib # No Python3
     - chemview
+    - cython
+    - six
 
 test:
   imports:

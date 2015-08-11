@@ -14,6 +14,8 @@ from .attributes import (NDArrayAttr, AtomicArrayAttr, MoleculeArrayAttr,
 from .serialization import json_to_data, data_to_json
 
 from ..db import ChemlabDB
+from ..utils.pbc import periodic_distance
+
 cdb = ChemlabDB()
 masses = cdb.get("data", "massdict")
 
@@ -642,6 +644,43 @@ class System(object):
                                for sym in sorted(counts))
         return 'system({})'.format(composition)
             
+    def where(self, **kwargs):
+        '''Query interface'''
+        res = np.ones(self.n_atoms, dtype='bool')
+        
+        # We get all the conditions
+        for k, v in kwargs.items():
+            if k == 'type':
+                if not isinstance(v, str):
+                    raise QueryError('type accepts a string.')
+                    
+                local = self.type_array == v
+                
+            elif k == 'type_in':
+                local = np.zeros(self.n_atoms, dtype='bool')
+                if not isinstance(v, list):
+                    raise QueryError('type_in accepts a list of str.')
+                
+                for t in v:
+                    if not isinstance(t, str):
+                        raise QueryError('type_in accepts a list of strings.')
+                    local |= self.type_array == t
+            elif k == 'within_of':
+                if self.box_vectors is None:
+                    raise Exception('Only periodic distance supported')
+                thr, ref = v
+                dist = periodic_distance(self.r_array[ref][:, np.newaxis], 
+                                         self.r_array,
+                                         periodic=self.box_vectors.diagonal())
+                local = (dist <= 0.2).sum(axis=0, dtype='bool')
+            
+            res &= local
+        
+        return res
+
+class QueryError(Exception):
+    pass
+
 # Functions to operate on systems
 def subsystem_from_molecules(orig, selection):
     '''Create a system from the *orig* system by picking the molecules
