@@ -669,10 +669,19 @@ class System(object):
                 if self.box_vectors is None:
                     raise Exception('Only periodic distance supported')
                 thr, ref = v
-                dist = periodic_distance(self.r_array[ref][:, np.newaxis], 
-                                         self.r_array,
+                
+                if isinstance(ref, int):
+                    a = self.r_array[ref][np.newaxis, np.newaxis, :] # (1, 1, 3,)
+                elif len(ref) == 1:
+                    a = self.r_array[ref][np.newaxis, :] # (1, 1, 3)
+                else:
+                    a = self.r_array[ref][:, np.newaxis, :] # (2, 1, 3)
+                
+                b = self.r_array[np.newaxis, :, :]
+                dist = periodic_distance(a, b,
                                          periodic=self.box_vectors.diagonal())
-                local = (dist <= 0.2).sum(axis=0, dtype='bool')
+                
+                local = (dist <= thr).sum(axis=0, dtype='bool')
             
             res &= local
         

@@ -23,3 +23,10 @@ def test_query():
     
     array_eq_(s.where(type_in=['H', 'O'], within_of=(0.2, [8, 9])),
              [False, False, True, True, True, True, True, True, False, False])
+
+    array_eq_(s.where(type_in=['H', 'O'], within_of=(0.2, 8)),
+             [False, False, True, True, True, True, True, True, False, False])
+
+    array_eq_(s.where(type_in=['H', 'O'], within_of=(0.2, [8])),
+             [False, False, True, True, True, True, True, True, False, False])
+    
