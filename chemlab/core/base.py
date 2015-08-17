@@ -3,6 +3,8 @@ Base classes
 """
 import numpy as np
 from pandas.hashtable import Int64HashTable
+import collections
+from itertools import islice
 
 # BASE CLASS
 class EntityProperty(object):
@@ -54,17 +56,20 @@ class InstanceProperty(object):
 
 class InstanceArray(InstanceProperty):
 
-    def empty(self, size):
+    def empty(self, size, inplace=True):
         # If it is its own dimension, we need shape 1
         if size == 0:
-            self.value = None
+            value = None
         else:
-            if size > 0:
-                shape = (size,) + self.shape if self.shape else (size,)
-                self.value = np.zeros(shape, dtype=self.dtype)
-            else:
-                print 'Setting', self.name, 'to', None
-                self.value = None
+            shape = (size,) + self.shape if self.shape else (size,)
+            value = np.zeros(shape, dtype=self.dtype)
+        
+        if inplace:
+            self.value = value
+        else:
+            obj = self.copy()
+            obj.value = value
+            return obj
     
     def copy(self):
         raise NotImplementedError()
@@ -124,14 +129,14 @@ class InstanceAttribute(InstanceArray):
     
     def copy(self):
         obj = type(self)(self.name, self.shape, self.dtype, self.dim, self.alias)
-        obj.value = self.value.copy()
+        obj.value = self.value
         return obj
     
 
 
 class InstanceRelation(InstanceArray):
     
-    def __init__(self, name, map=None, dim=None, shape=None, alias=None):
+    def __init__(self, name, map=None, index=None, dim=None, shape=None, alias=None):
         if not isinstance(dim, str):
             raise ValueError('dim parameter is required and should be a string.')
 
@@ -141,12 +146,15 @@ class InstanceRelation(InstanceArray):
         if not isinstance(name, str):
             raise ValueError('name parameter should be a string')
 
+        if not isinstance(index, (list, np.ndarray)):
+            raise ValueError('index parameter should be an array-like object')
+
         if shape is not None and not isinstance(shape, tuple):
             raise ValueError('shape parameter should be a tuple')
         
-        
         self.name = name
         self.map = map
+        self.index = index
         self.dtype = 'int'
         self.dim = dim
         self.alias = alias
@@ -154,15 +162,20 @@ class InstanceRelation(InstanceArray):
         self.value = None
 
     def copy(self):
-        obj = type(self)(self.name, self.map, self.dim, self.shape, self.alias)
+        obj = type(self)(self.name, self.map, self.index, self.dim, self.shape, self.alias)
         obj.value = self.value
         return obj
     
     def remap(self, from_map, to_map, inplace=True):
         if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, list):
             raise ValueError('from_map and to_map should be either lists or arrays')
+        
         if self.value is None:
-            return #nothing to remap
+            # Nothing to remap
+            if inplace:
+                return 
+            else:
+                return self.copy()
             
         # Remap columns
         hashtable = Int64HashTable()
@@ -187,6 +200,7 @@ class InstanceField(InstanceProperty):
         self.alias = alias
         self.shape = shape
         self.value = None
+        self.empty()
     
     def empty(self):
         if self.shape is None:
@@ -274,6 +288,60 @@ class ChemicalEntity(object):
                                                                   entity_dimensions=[e.dimensions for e in entities],
                                                                   final_dimensions=self.dimensions)
 
+
+
+def concatenate_relations(relations):
+    tpl = relations[0]
+    
+    rel = tpl.copy()
+    rel.index = range(sum(len(r.index) for r in relations)) 
+    
+    arrays = []
+    iterindex = iter(rel.index)
+    for r in relations:
+        # For a molecule e.index['atom'] = [0, 1, 2]
+        from_map = r.index
+        # we remap this to [3, 4, 5]
+        to_map = consume(iterindex, len(r.index))
+        if r.size == 0:
+            continue            
+        arrays.append(r.remap(from_map, to_map, inplace=False).value)
+    
+    if len(arrays) == 0:
+        rel.value = None
+    else:
+        rel.value = np.concatenate(arrays, axis=0)
+    
+    return rel
+
+def concatenate_attributes(attributes):
+    '''Concatenate InstanceAttribute to return a bigger one.'''
+    # We get a template
+    tpl = attributes[0]
+    attr = InstanceAttribute(tpl.name, tpl.shape, 
+                             tpl.dtype, tpl.dim, tpl.alias)
+    # Special case, not a single array has size bigger than 0
+    if all(a.size == 0 for a in attributes):
+        return attr
+    else: 
+        attr.value = np.concatenate([a.value for a in attributes if a.size > 0], axis=0)
+        return attr
+
+def concatenate_fields(fields, dim):
+    'Create an INstanceAttribute from a list of InstnaceFields'
+    if len(fields) == 0:
+        raise ValueError('fields cannot be an empty list')
+    
+    if len(set((f.name, f.shape, f.dtype) for f in fields)) != 1:
+        raise ValueError('fields should have homogeneous name, shape and dtype')
+    tpl = fields[0]
+    attr = InstanceAttribute(tpl.name, shape=tpl.shape, dtype=tpl.dtype, 
+                             dim=dim, alias=tpl.alias)
+    
+    attr.value = np.array([f.value for f in fields], dtype=tpl.dtype)
+    return attr
+
+
 #TODO: move the utilities
 def merge_dicts(*dict_args):
     '''
@@ -284,3 +352,7 @@ def merge_dicts(*dict_args):
     for dictionary in dict_args:
         result.update(dictionary)
     return result
+
+def consume(iterator, n):
+    "Advance the iterator n-steps ahead. If n is none, consume entirely."
+    return list(islice(iterator, 0, n))
