@@ -20,7 +20,7 @@ def test_attribute():
     
     # Initialize error
     assert_raises(ValueError, Attribute)
-
+    
 def test_instance_attribute():
     iattr = InstanceAttribute('type_array', dim='atom', dtype='str')
     eq_(iattr.size, 0)
@@ -47,7 +47,28 @@ def test_instance_attribute():
     # Reordering with wrong input raises ValueError
     assert_raises(ValueError, iattr.reorder, [1, 2])
     assert_raises(ValueError, iattr.reorder, [0, 1, 2, 100])
+    
+    # Test Copy
+    iattr = InstanceAttribute('type_array', dim='atom', dtype='str')
+    iattr.empty(3)
+    iattr.value = ['O', 'H', 'H']
 
+    
+    iattr2 = iattr.copy()
+    assert_npequal(iattr2.value, iattr.value)
+    
+    iattr2.value = ['A', 'B', 'C']
+    assert_npequal(iattr.value, ['O', 'H', 'H'])
+    assert_npequal(iattr2.value, ['A', 'B', 'C'])
+    
+    iattr = InstanceAttribute('type_array', dim='atom', dtype='str')
+    iattr.empty(3)
+    iattr.value = ['O', 'H', 'H']
+    
+    iattr1 = iattr.sub([0, 1]) 
+    assert_npequal(iattr1.value, ['O', 'H'])
+    iattr1 = iattr.sub([False, True, False]) 
+    assert_npequal(iattr1.value, ['H'])
 
 def test_instance_relation():
     irel = InstanceRelation('bonds', map='atoms', index=range(3), dim='bonds', shape=(2,))
@@ -94,7 +115,14 @@ def test_concatenate_fields():
                                                    InstanceField('impostor'),
                                                    InstanceField('mass')], 
                                                   'atom')
-                               
+    
+    a1 = InstanceField('type', dtype='str')
+    a1.value = 'O'
+    a2 = InstanceField('type', dtype='str')
+    a2.value = 'H'
+    attr = concatenate_fields([a1, a2], 'atom')
+    assert_npequal(attr.value, ['O', 'H'])
+    
     # Shape parameter
     r_array = InstanceField('r_array', shape=(3,), dtype='f')
     r_array.value = [0, 1, 2]
@@ -136,3 +164,60 @@ def test_concatenate_relations():
     eq_(newattr.size, 4)
     assert_npequal(newattr.value, [[3, 3], [3, 3], 
                                    [6, 6], [6, 6]])
+    
+
+def test_chemical_entity():
+    
+    class A(ChemicalEntity):
+        __dimension__ = 'a'
+        __attributes__ = {
+            'type_array': Attribute(dim='x', dtype='str')
+        }
+        __relations__ = {
+            'bonds': Relation(dim='y', map='x', shape=(2,))
+        }
+    
+        __fields__ = {
+            'export': Field(dtype=object)
+        }
+    
+    class B(ChemicalEntity):
+        
+        __dimension__ = 'b'
+        __attributes__ = {
+            'type_array': Attribute(dim='x'),
+            'export': Attribute(dtype=object, dim='a')
+        }
+        __relations__ = {
+            'bonds': Relation(dim='y', map='x', shape=(2,))
+        }
+        
+    a = A.empty(x=3, y=2)
+    a.type_array = ['A', 'B', 'C']
+    a.bonds = [[0, 1], [0, 2]]
+    a.export = {}
+    
+    entities = [a for i in range(3)]
+    
+    b = B()
+    b._from_entities(entities, 'a')
+    assert_npequal(b.type_array, ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'])
+    assert_npequal(b.bonds, [[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]])
+    assert_npequal(b.export, [{}, {}, {}])
+    
+    xa_map = b.maps['x', 'a']
+    assert_npequal(xa_map.value, [0, 0, 0, 1, 1, 1, 2, 2, 2])
+    
+    ya_map = b.maps['y', 'a']
+    assert_npequal(ya_map.value, [0, 0, 1, 1, 2, 2])
+    
+    a_sub = b.subentity(A, 2)
+    assert_npequal(a_sub.type_array, ['A', 'B', 'C'])
+    assert_npequal(a_sub.bonds, [[0, 1], [0, 2]])
+    assert_npequal(a_sub.export, {})
+    
+    b.add_entity(a_sub, A)
+    assert_npequal(b.type_array, ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'])
+    assert_npequal(b.bonds, [[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8], [9, 10], [9, 11]])
+    assert_npequal(b.maps['x', 'a'].value, [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3])
+    assert_npequal(b.maps['y', 'a'].value, [0, 0, 1, 1, 2, 2, 3, 3])

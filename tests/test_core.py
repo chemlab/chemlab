@@ -1,28 +1,13 @@
 """Test core types like Molecule and Atom."""
-from chemlab.core import Molecule, Atom
+from chemlab.core.system import Molecule, Atom
 from chemlab.core import System, subsystem_from_molecules, subsystem_from_atoms
 from chemlab.core import merge_systems
 from chemlab.core import crystal, random_lattice_box
 import numpy as np
 from nose.tools import eq_, assert_equals
 from nose.plugins.attrib import attr
-from chemlab.graphics import display_system
-
-
-def assert_npequal(a, b):
-    assert np.array_equal(a, b), '\n{} != {}'.format(a, b)
-
-
-def assert_eqbonds(a, b):
-    # compare bonds by sorting
-    a = np.sort(np.sort(a, axis=0))
-    b = np.sort(np.sort(b, axis=0))
-    assert_npequal(a, b)
-
-
-def assert_allclose(a, b):
-    assert np.allclose(a, b), '\n{} != {}'.format(a, b)
-
+#from chemlab.graphics import display_system
+from .testtools import assert_npequal, assert_eqbonds, assert_allclose
 
 def _make_water():
     mol = Molecule([Atom("O", [-4.99, 2.49, 0.0]),
@@ -32,13 +17,31 @@ def _make_water():
                    export={'hello': 1.0})
     return mol
 
+class TestAtom(object):
+    def test_init(self):
+        a = Atom("O", [-4.99, 2.49, 0.0])
+        eq_(a.type_array, 'O')
+        eq_(a.get_attribute('type_array').value, 'O')
+        assert_npequal(a.r_array, [-4.99, 2.49, 0.0])
+        eq_(a.get_attribute('r_array').value, [-4.99, 2.49, 0.0])
 
 class TestMolecule(object):
     def test_init(self):
         mol = _make_water()
+        eq_(mol.export, {'hello': 1.0})
+        assert_npequal(mol.get_attribute('type_array').value, ['O', 'H', 'H'])
         assert_npequal(mol.type_array, ['O', 'H', 'H'])
+        assert_npequal(mol.bonds, [[0, 1], [0, 2]])
+        
+        mol = Molecule.empty()
+        eq_(mol.dimensions['atom'], 0)
+        eq_(mol.dimensions['bond'], 0)
 
-
+    def test_copy(self):
+        mol = _make_water()
+        mol2 = mol.copy()
+        assert_npequal(mol2.type_array, mol.type_array)
+        
 class TestSystem(object):
     def _make_molecules(self):
         wat = _make_water()
@@ -81,36 +84,29 @@ class TestSystem(object):
         # Test get molecule entry
         assert_npequal(system.molecules[0].type_array, ['O', 'H', 'H'])
 
-        # Test derived property -- center of mass
-        assert_allclose(system.get_derived_molecule_array('center_of_mass'),
-                        [[-0.39541923, 0.34614659, 0.10559492],
-                         [-0.29541923, 0.44614659, 0.20559492],
-                         [-0.19541923, 0.54614659, 0.30559492],
-                         [-0.09541923, 0.64614659, 0.40559492]])
-
         # Test bonds
         assert_eqbonds(system.bonds, [[0, 1], [0, 2],
                                       [3, 4], [3, 5],
                                       [6, 7], [6, 8],
                                       [9, 10], [9, 11]])
 
-        # Test bond orders
-
-        #print 'Test Indexing of system.molecule'
-        #print s.molecules[0]
-        #print s.molecules[:], s.molecules[:-5]
-        #print s.atoms[0]
-        #print s.atoms[:]
-
     def test_init(self):
         mols = self._make_molecules()
         system = System(mols)
         self._assert_init(system)
 
-    def test_from_empty(self):
+    # def test_from_empty(self):
+    #     mols = self._make_molecules()
+    #     system = System.empty(4, 4*3)
+    #     [system.add(mol) for mol in mols]
+    #     self._assert_init(system)
+    def test_from_batch(self):
         mols = self._make_molecules()
-        system = System.empty(4, 4*3)
-        [system.add(mol) for mol in mols]
+        
+        system = System()
+        with system.batch() as batch:            
+            [batch.append(mol) for mol in mols]
+        
         self._assert_init(system)
 
     def test_from_actual_empty(self):

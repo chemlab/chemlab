@@ -4,6 +4,7 @@ Base classes
 import numpy as np
 from pandas.hashtable import Int64HashTable
 import collections
+from contextlib import contextmanager
 from itertools import islice
 
 # BASE CLASS
@@ -37,8 +38,9 @@ class Relation(EntityProperty):
         self.alias = alias
         self.shape = shape
     
-    def create(self, name):
-        return InstanceRelation(name, map=self.map, dim=self.dim, shape=self.shape, alias=self.alias)
+    def create(self, name, index):
+        return InstanceRelation(name, map=self.map, index=index, dim=self.dim, shape=self.shape, alias=self.alias)
+
 
 class Field(EntityProperty):
     
@@ -113,7 +115,19 @@ class InstanceArray(InstanceProperty):
                 obj = self.copy()
                 obj.value = self.value.take(neworder, axis=0)
                 return obj
-                
+    
+    def sub(self, index):
+        """Return a sub-attribute"""
+        inst = self.copy()
+        size = np.count_nonzero(index)
+        inst.empty(size)
+        
+        index = np.asarray(index)
+        if index.dtype == 'bool':
+            index = index.nonzero()[0]
+        
+        inst.value = self.value.take(index, axis=0)
+        return inst
 
 class InstanceAttribute(InstanceArray):
     
@@ -132,6 +146,20 @@ class InstanceAttribute(InstanceArray):
         obj.value = self.value
         return obj
     
+    def field(self, index):
+        obj = InstanceField(name=self.name, dtype=self.dtype, shape=self.shape, alias=self.alias)
+        obj.value = self.value[index]
+        return obj
+    
+    def append(self, attr_or_field):        
+        if isinstance(attr_or_field, InstanceAttribute):
+            self.value = np.append(self.value, attr_or_field.value, axis=0)
+        elif isinstance(attr_or_field, InstanceField):
+            self.value = np.append(self.value, [attr_or_field.value], axis=0)
+        else:
+            raise ValueError('Can append only InstanceAttribute or InstanceField')
+    def __repr__(self):
+        return '<Attribute: {} = {}>'.format(self.name, str(self.value))
 
 
 class InstanceRelation(InstanceArray):
@@ -165,9 +193,17 @@ class InstanceRelation(InstanceArray):
         obj = type(self)(self.name, self.map, self.index, self.dim, self.shape, self.alias)
         obj.value = self.value
         return obj
+
+    def append(self, rel):
+        newix = rel.index + len(self.index)
+        newrel = rel.remap(rel.index, newix, inplace=False)
+        # Extend index
+        self.index = np.append(self.index, newix, axis=0)
+        # Extend value
+        self.value = np.append(self.value, newrel.value, axis=0)
     
     def remap(self, from_map, to_map, inplace=True):
-        if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, list):
+        if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, (list, np.ndarray)):
             raise ValueError('from_map and to_map should be either lists or arrays')
         
         if self.value is None:
@@ -192,6 +228,39 @@ class InstanceRelation(InstanceArray):
             obj.value = mapped.reshape(self.value.shape, order='F')
             return obj
 
+    @property
+    def index(self):
+        return self._index
+    
+    @index.setter
+    def index(self, value):
+        if value is None:
+            self._index = None
+        
+        elif isinstance(value, list):
+            self._index = np.asarray(value, dtype='int')
+        
+        elif isinstance(value, np.ndarray):
+            self._index = np.asarray(value, dtype='int')
+    
+    @InstanceArray.value.setter
+    def value(self, value):
+        if value is None:
+            pass
+        else:
+            # We have to check that all the values in the map are in the index
+            # as well
+            ix_value = set(np.asarray(value).flatten())
+            ix_max = set(self.index)
+            
+            if ix_value > ix_max:
+                raise ValueError('Error setting relation "{}". Values {} not present in index'
+                                 .format(self.name, list(ix_value - ix_max)))
+        
+        InstanceArray.value.__set__(self, value)
+
+    def __repr__(self):
+        return '<Relation: {} = {}>'.format(self.name, str(self.value))
 
 class InstanceField(InstanceProperty):
     def __init__(self, name, dtype=None, shape=None, alias=None):
@@ -207,6 +276,14 @@ class InstanceField(InstanceProperty):
             self.value = np.zeros(1, self.dtype)[0]
         else:
             self.value = np.zeros(self.shape, dtype=self.dtype)
+    
+    def copy(self):
+        inst = InstanceField(self.name, self.dtype, self.shape, self.alias)
+        inst.value = self.value
+        return inst
+    
+    def __repr__(self):
+        return '<Field: {} = {}>'.format(self.name, str(self.value))
 
 class ChemicalEntity(object):
     
@@ -219,24 +296,34 @@ class ChemicalEntity(object):
         instance = super(ChemicalEntity, cls).__new__(cls)
         # We create the actual attributes, relations and fields.
         instance.__attributes__ = {name : attr.create(name) 
-                                   for name, attr in cls.__attributes__.items()}
-        instance.__relations__ = {name : attr.create(name) 
+                                   for name, attr in cls.__attributes__.items()} 
+        instance.__relations__ = {name : attr.create(name, index=range(1)) 
                                    for name, attr in cls.__relations__.items()}
         instance.__fields__ = {name: attr.create(name) 
                                    for name, attr in cls.__fields__.items()}
+        
+        instance.dimensions = {}
+        
+        for val in merge_dicts(cls.__attributes__, cls.__relations__).values():
+            instance.dimensions[val.dim] = 0
+            
         return instance
     
-    def __getattr__(self, name):
+    def __getattribute__(self, name):
         try:
-            return super(ChemicalEntity, self).__getattr__(name)
-        except AttributeError:
-            return self.get_attribute(name).value
+            return super(ChemicalEntity, self).__getattribute__(name)
+        except AttributeError as exc:
+            try:
+                return self.get_attribute(name).value
+            except KeyError:
+                pass
+            raise exc
     
     def __setattr__(self, name, value):
         try:
-            super(ChemicalEntity, self).__setattr__(name, value)
-        except AttributeError:
             self.get_attribute(name).value = value
+        except KeyError:
+            super(ChemicalEntity, self).__setattr__(name, value)
     
     def get_attribute(self, name):
         return merge_dicts(self.__attributes__ , self.__fields__, self.__relations__)[name]
@@ -248,17 +335,31 @@ class ChemicalEntity(object):
         cls.initialize_empty(instance, **kwargs)
         return instance
     
+    def copy(self):
+        inst = type(self).empty(**self.dimensions)
+        
+        # Need to copy all attributes, fields, relations
+        inst.__attributes__ = {k: v.copy() for k, v in self.__attributes__.items()}
+        inst.__fields__ = {k: v.copy() for k, v in self.__fields__.items()}
+        inst.__relations__ = {k: v.copy() for k, v in self.__relations__.items()}
+        return inst
+    
     def initialize_empty(self, **kwargs):
-        self.dimensions = {}
-        for attr in merge_dicts(self.__attributes__, self.__relations__).values():
-            self.dimensions[attr.dim] = kwargs.get(attr.dim, 0)
-            attr.empty(**kwargs)
+        self.maps = {}
         
-        for attr in self.__fields__.values():
-            attr.empty()
-        
-        # We need indexes
-        self.index = {k: np.asarray(range(v)) for k,v in kwargs.items()}
+        for attr in self.__attributes__.values():
+            dim = kwargs.get(attr.dim, 0)
+            attr.empty(dim)
+            self.dimensions[attr.dim] = dim
+            
+        for rel in self.__relations__.values():
+            dim = kwargs.get(attr.dim, 0)
+            ixdim = self.dimensions.get(rel.map, 0)
+            rel.index = range(ixdim)
+            rel.empty(dim)
+            
+        for field in self.__fields__.values():
+            field.empty()
 
     def reorder(self, **kwargs):
         for attr in self.__attributes__.values():
@@ -272,23 +373,118 @@ class ChemicalEntity(object):
             attr.remap(from_map, to_map, inplace=True)
 
     def _from_entities(self, entities, newdim):
+        self.dimensions = {}
+        self.maps = {}
+        
+        self.dimensions[newdim] = len(entities)
+        
         for name, attr in self.__attributes__.items():
             child_attr = [e.get_attribute(attr.name) for e in entities]
             if attr.dim == newdim:
-                self.__attributes__[name] = concatenate_fields(child_attr)
+                self.__attributes__[name] = concatenate_fields(child_attr, newdim)
             else:
                 child_attr = [e.get_attribute(attr.name) for e in entities]
                 self.__attributes__[name] = concatenate_attributes(child_attr)
+                self.dimensions[attr.dim] = self.__attributes__[name].size
+                
+                # Creating a value to retrieve old dimension values
+                # from the new dimension values
+                map_ = InstanceRelation('map', map=newdim, dim=attr.dim, index=range(self.dimensions[newdim]))
+                map_.value = np.concatenate([np.repeat(i, c.size) for i,c in enumerate(child_attr)])
+                self.maps[attr.dim, newdim] = map_
         
         for name, attr in self.__relations__.items():
-            if newdim in attr.columns:
-                pass
+            if newdim in attr.map:
+                self.__relations__[name].index = range(self.dimensions[newdim])
             else:
-                self.__relations__[name] = concatenate_relations([e.get_attribute(attr.name) for e in entities], 
-                                                                  entity_dimensions=[e.dimensions for e in entities],
-                                                                  final_dimensions=self.dimensions)
+                child_rel = [e.get_attribute(attr.name) for e in entities]
+                self.__relations__[name] = concatenate_relations(child_rel)
+                self.dimensions[attr.dim] = self.__relations__[name].size
 
+                # Create the maps applies also to relations
+                map_ = InstanceRelation('map', map=newdim, dim=attr.dim, index=range(self.dimensions[newdim]))
+                map_.value = np.concatenate([np.repeat(i, c.size) for i, c in enumerate(child_rel)])
+                self.maps[attr.dim, newdim] = map_
+    
+    def add_entity(self, entity, Entity):
+        # We need to extend various attributes with new entities
+        newdim = Entity.__dimension__
+        
+        for name, attr in self.__attributes__.items():
+            attr.append(entity.get_attribute(name))
+        
+        for name, rel in self.__relations__.items():
+            rel.append(entity.get_attribute(name))
+        
+        # We need to extend the maps
+        for a, b in self.maps:
+            # If destination is the dimension of the entity we are adding
+            # we extend the map relation
+            if newdim == b:
+                # Create a new relation 
+                # index = [0]
+                # value = [0, 0, 0]
+                additional_map = InstanceRelation('map', map=b, dim=a, index=[0])
+                additional_map.value = [0] * entity.dimensions[a]
+                # That get appended and transformed
+                self.maps[a, b].append(additional_map)
+        
+    def subentity(self, Entity, index):
+        """Return child entity"""
+        dim = Entity.__dimension__
+        entity = Entity.empty()
+        
+        if index >= self.dimensions[dim]:
+            raise ValueError('index {} out of bounds for dimension {} (size {})'
+                             .format(index, dim, self.dimensions[dim]))
+        
+        
+        for name, attr in self.__attributes__.items():
+            if attr.dim == dim:
+                # If the dimension of the attributes is the same of the
+                # dimension of the entity, we generate a field
+                entity.__fields__[name] = attr.field(index)
+            elif attr.dim in entity.dimensions:
+                # Else, we generate an subattribute
+                mapped_index = self.maps[attr.dim, dim].value == index
+                entity.__attributes__[name] = attr.sub(mapped_index)
+                entity.dimensions[attr.dim] = np.count_nonzero(mapped_index)
 
+        for name, rel in self.__relations__.items():
+            if rel.map == dim:
+                # The relation is between entities we need to return
+                # which means the entity doesn't know about that
+                pass
+            if rel.map in entity.dimensions:
+                mapped_index = self.maps[rel.dim, dim].value == index
+                entity.__relations__[name] = rel.sub(mapped_index)
+                entity.dimensions[rel.dim] = np.count_nonzero(mapped_index)
+                
+                # We need to remap values
+                convert_index = self.maps[rel.map, dim].value == index
+                entity.__relations__[name].remap(convert_index.nonzero()[0],
+                                                 range(entity.dimensions[rel.map]))
+        
+        return entity
+    
+    @contextmanager
+    def batch(self):
+        """Batch initialization"""
+        _batch = []
+        yield _batch
+        if _batch:
+            self._from_entities(_batch, _batch[0].__dimension__)
+        
+    def __repr__(self):
+        lines = []
+        lines.append('<Entity ' + type(self).__name__ + '>')
+        lines.append('  Attributes:')
+        [lines.append('    ' + str(attr)) for name, attr in sorted(self.__attributes__.items())]
+        lines.append('  Relations:')
+        [lines.append('    ' + str(attr)) for name, attr in sorted(self.__relations__.items())]
+        lines.append('  Fields:')
+        [lines.append('    ' + str(attr)) for name, attr in sorted(self.__fields__.items())]
+        return '\n'.join(lines)
 
 def concatenate_relations(relations):
     tpl = relations[0]
