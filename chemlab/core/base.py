@@ -71,7 +71,7 @@ class InstanceArray(InstanceProperty):
             self.value = value
         else:
             obj = self.copy()
-            obj.value = value
+            obj.value = value.copy()
             return obj
     
     def copy(self):
@@ -105,10 +105,10 @@ class InstanceArray(InstanceProperty):
             return # No reordering
         else:
             if len(neworder) != self.size:
-                raise ValueError("neworder doesn't have enough elements %d (value %d)" % (len(neworder), self.size))
+                raise ValueError("'%s': neworder doesn't have enough elements %d (value %d)" % (self.name, len(neworder), self.size))
             
             if set(neworder) != set(range(self.size)):
-                raise ValueError("The new order is invalid as it doesn't contain all the indices.")
+                raise ValueError("'%s': the new order is invalid as it doesn't contain all the indices." % self.name)
             
             if inplace:
                 self.value = self.value.take(neworder, axis=0)
@@ -122,6 +122,9 @@ class InstanceArray(InstanceProperty):
         index = np.asarray(index)
         if index.dtype == 'bool':
             index = index.nonzero()[0]
+        
+        if self.size == 0:
+            raise ValueError('attribute "%s" has size 0' % self.name)
         
         inst = self.copy()
         size = len(index)
@@ -144,7 +147,7 @@ class InstanceAttribute(InstanceArray):
     
     def copy(self):
         obj = type(self)(self.name, self.shape, self.dtype, self.dim, self.alias)
-        obj.value = self.value
+        obj.value = self.value.copy() if self.value is not None else None
         return obj
     
     def field(self, index):
@@ -205,7 +208,8 @@ class InstanceRelation(InstanceArray):
 
     def copy(self):
         obj = type(self)(self.name, self.map, self.index, self.dim, self.shape, self.alias)
-        obj.value = self.value
+        obj.value = self.value.copy() if self.value is not None else None
+        obj.index = self.index.copy() if self.index is not None else None
         return obj
 
     def append(self, rel):
@@ -382,7 +386,12 @@ class ChemicalEntity(object):
     
     def __setattr__(self, name, value):
         try:
-            self.get_attribute(name).value = value
+            attr = self.get_attribute(name)
+            if isinstance(attr, InstanceArray):
+                if self.dimensions[attr.dim] != len(value):
+                    raise ValueError('Dimension {} needs {} elements.'.format(attr.dim, 
+                                                                              self.dimensions[attr.dim]))            
+            attr.value = value
         except KeyError:
             super(ChemicalEntity, self).__setattr__(name, value)
     
@@ -407,6 +416,14 @@ class ChemicalEntity(object):
         inst.dimensions = self.dimensions.copy()
         
         return inst
+
+    def copy_from(self, other):
+        # Need to copy all attributes, fields, relations
+        self.__attributes__ = {k: v.copy() for k, v in other.__attributes__.items()}
+        self.__fields__ = {k: v.copy() for k, v in other.__fields__.items()}
+        self.__relations__ = {k: v.copy() for k, v in other.__relations__.items()}
+        self.maps = {k: m.copy() for k, m in other.maps.items()}
+        self.dimensions = other.dimensions.copy()
     
     def initialize_empty(self, **kwargs):
         self.dimensions.update(kwargs)
@@ -456,6 +473,11 @@ class ChemicalEntity(object):
                 self.dimensions[dim] = sum(e.dimensions[dim] for e in entities)
         
         for name, attr in self.__attributes__.items():
+            
+            # Copy only existing fields or attributes
+            if attr.name not in tpl.__fields__.keys() + tpl.__attributes__.keys():
+                continue
+            
             # Concatenate fields in new, independent, attributes
             child_attr = [e.get_attribute(attr.name) for e in entities]
             if attr.dim == newdim:
@@ -483,7 +505,7 @@ class ChemicalEntity(object):
 
     @classmethod
     def from_arrays(cls, **kwargs):
-        maps = kwargs.pop('maps')
+        maps = kwargs.pop('maps') if 'maps' in kwargs else {}
         # We need to infer dimensions
         # From attributes
         dimensions = {}
@@ -525,6 +547,11 @@ class ChemicalEntity(object):
     def add_entity(self, entity, Entity):
         # We need to extend various attributes with new entities
         newdim = Entity.__dimension__
+        
+        if self.dimensions[newdim] == 0:
+            # This is not initialized
+            self._from_entities([entity], newdim)
+            return
         
         # Update the dimensions
         self.dimensions[newdim] += 1
@@ -585,17 +612,10 @@ class ChemicalEntity(object):
         return entity
 
     def _propagate_dim(self, index, dimension):
-        #TODO Propagate filter?
-        index = np.asarray(index)
-        if index.dtype == 'bool':
-            index = index.nonzero()[0]
-        elif index.dtype == 'int':
-            pass
-        else:
-            raise ValueError('sub_dimension only supports integer or bool arrays')
+        index = normalize_index(index)
         
+        # Initialize
         result = defaultdict(set)
-        
         for dim in self.dimensions:
             result[dim] |= set(range(self.dimensions[dim]))
         
@@ -605,6 +625,8 @@ class ChemicalEntity(object):
         for (a, b), rel in self.maps.items():
             if a == dimension:
                 result[b] &= set(np.unique(rel.sub(index).value))
+            if b == dimension:
+                result[rel.dim] &= set(rel.argfilter(index))
 
         # Propagate for relations
         for rel in self.__relations__.values():
@@ -618,16 +640,7 @@ class ChemicalEntity(object):
         
         If other dimensions depend on this one those are updated accordingly.
         """
-        index = np.asarray(index)
-        if index.dtype == 'bool':
-            index = index.nonzero()[0]
-        elif index.dtype == 'int':
-            pass
-        else:
-            raise ValueError('sub_dimension only supports integer or bool arrays')
-        
         filter_ = self._propagate_dim(index, dimension)
-        
         inst = self.copy()
         inst.dimensions = {k: len(f) for k, f in filter_.items()}
         
@@ -646,6 +659,43 @@ class ChemicalEntity(object):
         
         return inst
 
+    def _propagate_reorder(self, order, dimension):
+        if len(set(order)) != self.dimensions[dimension]:
+            raise ValueError('order must contain all distinct elements in dimension %s' % dimension)
+        order = np.asarray(order)
+        # Initialize
+        result = { k: range(v) for k, v in self.dimensions.items() }
+        
+        # The actual dimension gets reordered normally
+        result[dimension] = order
+        
+        # Propagate for attribute maps
+        for (a, b), rel in self.maps.items():
+            if rel.map == dimension:
+                rel_new = rel.remap(order, rel.index, inplace=False)
+                result[a] = np.argsort(rel_new.value)
+        
+        return {k: np.array(v, dtype='int') for k,v in result.items()}
+
+        
+    def reorder_dimension(self, order, dimension):
+        reorder = self._propagate_reorder(order, dimension)
+        
+        # Attributes get reordered normally
+        for name, attr in self.__attributes__.items():
+            attr.reorder(reorder[attr.dim])
+        
+        # Relations get reordered and remapped
+        for name, rel in self.__relations__.items():
+            rel.reorder(reorder[rel.dim])
+            rel.remap(reorder[rel.map], rel.index)
+        
+        # Maps get reordered too
+        for name, rel in self.maps.items():
+            rel.remap(rel.index, reorder[rel.map])
+            rel.reorder(reorder[rel.dim])
+        
+        
     def concat(self, other, inplace=False):
         '''Concatenate two ChemicalEntity of the same kind'''
         
@@ -693,6 +743,7 @@ class ChemicalEntity(object):
     def __repr__(self):
         lines = []
         lines.append('<Entity ' + type(self).__name__ + '>')
+        lines.append('  Dimensions: ' + str(self.dimensions))
         lines.append('  Attributes:')
         [lines.append('    ' + str(attr)) for name, attr in sorted(self.__attributes__.items())]
         lines.append('  Relations:')
@@ -767,3 +818,15 @@ def merge_dicts(*dict_args):
 def consume(iterator, n):
     "Advance the iterator n-steps ahead. If n is none, consume entirely."
     return list(islice(iterator, 0, n))
+
+
+def normalize_index(index):
+    """normalize numpy index"""
+    index = np.asarray(index)
+    if index.dtype == 'bool':
+        index = index.nonzero()[0]
+    elif index.dtype == 'int':
+        pass
+    else:
+        raise ValueError('Index should be either integer or bool')
+    return index

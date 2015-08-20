@@ -261,7 +261,60 @@ class TestChemicalEntity(object):
         assert_npequal(result['x'], [2, 6]) 
         assert_npequal(result['a'], [0, 2]) 
         assert_npequal(result['y'], []) 
+
+        result = b._propagate_dim([False, True, False], 'a')
+        assert_npequal(result['x'], [3, 4, 5]) 
+        assert_npequal(result['a'], [1]) 
+        assert_npequal(result['y'], [2, 3]) 
+        
+        c = b.sub_dimension([False, True, False], 'a')
+        eq_(c.dimensions['x'], 3)
+        eq_(c.dimensions['y'], 2)
+        eq_(c.dimensions['a'], 1)
+        assert_npequal(c.bonds, [[0, 1], [0, 2]])
+        assert_npequal(c.type_array, ['A', 'B', 'C'])
+        assert_npequal(c.maps['x', 'a'].value, [0, 0, 0])
+        assert_npequal(c.maps['y', 'a'].value, [0, 0])
     
+    
+    def test_reorder_dimension(self):
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
+                          bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
+                                ('y', 'a'): [0, 1, 1, 2, 2]})
+
+    
+        b.reorder_dimension([1, 0, 2], 'a')
+        # Atoms get reordered accordingly
+        # this implies contingency
+        assert_npequal(b.type_array, ['D', 'E', 'F', 'A', 'B', 'G', 'H', 'I'])
+        assert_npequal(b.maps['x', 'a'].value, [0, 0, 0, 1, 1, 2, 2, 2])
+        assert_npequal(b.maps['y', 'a'].value, [0, 0, 1, 2, 2])    
+        assert_npequal(b.bonds, [[0, 1], [0, 2], [3, 4], [5, 6], [5, 7]])
+        
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
+                          bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
+                                ('y', 'a'): [0, 1, 1, 2, 2]})
+        
+        # This doesn't imply contingency
+        b.reorder_dimension([0, 3, 2, 1, 4, 5, 6, 7], 'x')
+        assert_npequal(b.type_array, ['A', 'E', 'D', 'B', 'F', 'G', 'H', 'I'])
+        assert_npequal(b.maps['x', 'a'].value, [0, 1, 1, 0, 1, 2, 2, 2]) # swapped
+        assert_npequal(b.maps['y', 'a'].value, [0, 1, 1, 2, 2]) # untouched    
+        assert_npequal(b.bonds, [[0, 3], [2, 1], [2, 4], [5, 6], [5, 7]]) # remapped 
+    
+    def test_copy(self):
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
+                          bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
+                                ('y', 'a'): [0, 1, 1, 2, 2]})
+        c = c.copy()
+        
+        c.type_array[0] = 'D'
+        eq_(b.type_array[0]) = 'A'
+        
+        
     def test_all(self):
         a = A.empty(x=3, y=2)
         a.type_array = ['A', 'B', 'C']
@@ -362,3 +415,4 @@ class TestChemicalEntity(object):
         assert_npequal(c.get_attribute('bonds').index, [0, 1])
         assert_npequal(c.maps['x', 'a'].value, [0, 1])
         assert_npequal(c.maps['y', 'a'].value, [])
+        

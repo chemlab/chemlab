@@ -1,4 +1,5 @@
 import numpy as np
+from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
  
 class Atom(ChemicalEntity):
@@ -20,7 +21,8 @@ class Molecule(ChemicalEntity):
     __attributes__ = {
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom'),
         'type_array' : Attribute(dtype='str', dim='atom'),
-        'charge_array' : Attribute(dim='atom')
+        'charge_array' : Attribute(dim='atom'),
+        'bond_orders' : Attribute(dtype='int', dim='bond')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
@@ -33,12 +35,55 @@ class Molecule(ChemicalEntity):
     def __init__(self, atoms, export=None, bonds=None):
         super(Molecule, self).__init__()
         self._from_entities(atoms, 'atom')
-        
-        self.export = export
-        self.bonds = bonds
         if bonds:
             self.dimensions['bond'] = len(bonds)
+            self.bonds = bonds
+            self.get_attribute('bond_orders').empty(len(bonds))
         
+        self.export = export
+        self.molecule_name = make_formula(self.type_array)
+
+    @property
+    def n_atoms(self):
+        return self.dimensions['atom']
+    
+    def move_to(self, r):
+        '''Translate the molecule to a new position *r*.
+        '''
+        dx = r - self.r_array[0]
+        self.r_array += dx
+
+    def tojson(self):
+        """Return a json string representing the Molecule. This is
+        useful for serialization.
+
+        """
+        return data_to_json(self.todict())
+
+    @classmethod
+    def from_json(cls, string):
+        return cls.from_arrays(**json_to_data(string))
+
+def make_formula(elements):
+    c = Counter(elements)
+    formula = ''
+    if c["C"] != 0:
+        formula += "C{}".format(c["C"])
+        del c["C"]
+
+    if c["H"] != 0:
+        formula += "H{}".format(c["H"])
+        del c["H"]
+
+    for item, count in sorted(c.items()):
+        if count ==1:
+            formula += item
+        else:
+            formula += "{}{}".format(item, count)
+
+    return formula
+
+    
 
 class System(ChemicalEntity):
     __dimension__ = 'system'
@@ -46,7 +91,8 @@ class System(ChemicalEntity):
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom'),
         'type_array' : Attribute(dtype='str', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
-        'molecule_name' : Attribute(dtype='str', dim='molecule')
+        'molecule_name' : Attribute(dtype='str', dim='molecule'),
+        'bond_orders' : Attribute(dtype='int', dim='bond'),
     }
     
     __relations__ = {
@@ -65,7 +111,7 @@ class System(ChemicalEntity):
         self.dimensions = {'molecule' : len(molecules),
                            'atom': sum(m.dimensions['atom'] for m in molecules),
                            'bond': sum(m.dimensions['bond'] for m in molecules)}
-        
+
         if molecules:
             self._from_entities(molecules, 'molecule')
 
@@ -103,7 +149,24 @@ class System(ChemicalEntity):
     @property
     def atoms(self):
         return AtomGenerator(self)
-
+        
+    def __setattr__(self, name, value):
+        # TODO: UGLY/HACK Retrocompatibility
+        if name == 'bonds':
+            newsize = len(value)
+            self.dimensions['bond'] = newsize
+            
+            # Change dimensions
+            bonds = self.get_attribute('bonds')
+            if bonds.size >= newsize:
+                bonds.value = value
+                self.maps['bond', 'molecule'] = self.maps['bond', 'molecule'].sub(range(newsize))
+            else:
+                bonds.value = value
+            return
+        
+        super(System, self).__setattr__(name, value)
+        
     @classmethod
     def from_arrays(cls, **kwargs):
         '''Initialize a System from its constituent arrays. It is the
@@ -163,13 +226,66 @@ class System(ChemicalEntity):
     
     def add(self, molecule):
         self.add_entity(molecule, Molecule)
-        
+    
+    def reorder_molecules(self, new_order):
+        """Reorder the molecules in the system according to
+        *new_order*.
+
+        **Parameters**
+
+        new_order: np.ndarray((NMOL,), dtype=int)
+            An array of integers
+            containing the new order of the system.
+
+        """
+        self.reorder_dimension(new_order, 'molecule')
+    
+    def remove_atoms(self, indices):
+        """Remove the atoms positioned at *indices*. The molecule
+        containing the atom is removed as well.
+
+        If you have a system of 10 water molecules (and 30 atoms), if
+        you remove the atoms at indices 0, 1 and 29 you will remove
+        the first and last water molecules.
+
+        **Parameters**
+
+        indices: np.ndarray((N,), dtype=int)
+            Array of integers between 0 and System.n_atoms
+
+        """
+        mol_indices = self.atom_to_molecule_indices(indices)
+        self.copy_from(self.where(molecule_index=mol_indices))
+
+    def atom_to_molecule_indices(self, selection):
+        '''Given the indices over atoms, return the indices over
+        molecules. If an atom is selected, all the containing molecule
+        is selected too.
+
+        **Parameters**
+
+        selection: np.ndarray((N,), dtype=int) | np.ndarray((NATOMS,), dtype=book)
+             Either an index array or a boolean selection array over the atoms
+
+        **Returns**
+
+        np.ndarray((N,), dtype=int) an array of molecular indices.
+
+        '''
+        return np.unique(self.maps['atom', 'molecule'].value[selection])
+
     def where(self, **kwargs):
         """Return a subsystem where the conditions are met"""
         
         for stmt, arg in kwargs.items():
             if stmt is 'molecule_index':
                 return self.sub_dimension(arg, 'molecule')
+            if stmt is 'atom_index':
+                return self.sub_dimension(arg, 'atom')
+
+    def sort(self):
+        self.reorder_dimension(np.argsort(self.molecule_name), 'molecule')
+
 
 # TODO: deprecated
 

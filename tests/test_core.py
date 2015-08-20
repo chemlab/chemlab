@@ -113,6 +113,7 @@ class TestSystem(object):
         mols = self._make_molecules()
         system = System([])
         [system.add(mol) for mol in mols]
+        self._assert_init(system)
 
     def test_from_arrays(self):
         mols = self._make_molecules()
@@ -131,6 +132,7 @@ class TestSystem(object):
     def test_subsystem_from_molecules(self):
         mols = self._make_molecules()
         system = System(mols)
+        
         subsystem = subsystem_from_molecules(system, np.array([0, 2]))
         assert_equals(subsystem.n_mol, 2)
 
@@ -183,10 +185,9 @@ def test_merge_system():
     pos = np.random.random((NWAT, 3)) * bsize
     wat = water.copy()
 
-    s = System.empty(NWAT, NWAT*3, box_vectors=np.eye(3)*bsize)
-    for i in range(NWAT):
-        wat.move_to(pos[i])
-        s.add(wat)
+    s = System()
+    with s.batch() as b:
+        s.append(wat)
 
     prot.r_array += 10
     s = merge_systems(s, prot, 0.5)
@@ -201,7 +202,8 @@ def test_crystal():
 
     # Fract position of Na and Cl, space group 255
     tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[13,13,13])
-
+    eq_(tsys.r_array.min(), 0.0)
+    eq_(tsys.r_array.max(), 12.5)
 
 def test_sort():
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
@@ -209,9 +211,9 @@ def test_sort():
 
     # Fract position of Na and Cl, space group 255
     tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[3,3,3])
-
+    
     tsys.sort()
-    assert np.all(tsys.type_array[:tsys.n_mol/2] == 'Cl')
+    assert_npequal(tsys.type_array[:tsys.n_mol/2], ['Cl'] * (tsys.n_mol/2))
 
 
 def test_bonds():
@@ -220,14 +222,17 @@ def test_bonds():
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
 
     # Adding bonds
-    s = System.empty(2, 2*bz.n_atoms)
-    s.add(bz)
+    s = System()
+    with s.batch() as b:
+        b.append(bz)
+    
     assert_npequal(s.bonds, bz.bonds)
     assert_npequal(bz.bond_orders, [1, 2, 2, 1, 1, 2])
     assert_npequal(s.bond_orders, bz.bond_orders)
 
     s.add(bz)
-    assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 6)))
+    print s.bonds
+    assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 7)))
     #assert_npequal(s.bond_orders)
 
     # Reordering
@@ -264,7 +269,7 @@ def test_bond_orders():
     wat = _make_water()
     wat_o = wat.copy()
     # 0,1 0,2
-    assert_npequal(wat.bond_orders, np.array([1, 1]))
+    assert_npequal(wat.bond_orders, np.array([0, 0]))
 
     # Remove a bond
     wat.bonds = np.array([[0, 1]])
@@ -332,43 +337,6 @@ def test_bond_guessing():
     assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
 
     #display_molecule(mol)
-
-
-def test_extending():
-    from chemlab.core.attributes import NDArrayAttr, MArrayAttr
-    from chemlab.core.fields import AtomicField
-
-    class MySystem(System):
-        attributes = System.attributes + [NDArrayAttr('v_array', 'v_array', np.float, 3)]
-
-    class MyMolecule(Molecule):
-        attributes = Molecule.attributes + [MArrayAttr('v_array', 'v', np.float)]
-
-    class MyAtom(Atom):
-        fields = Atom.fields + [AtomicField('v', default=lambda at: np.zeros(3, np.float))]
-
-    na = MyMolecule([MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])])
-    cl = MyMolecule([MyAtom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
-    s = MySystem([na, cl])
-
-    na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
-    print(na_atom.copy())
-
-    print(s.v_array)
-
-    # Try to adapt
-    orig_s = s.astype(System)
-    s = orig_s.astype(MySystem) # We lost the v information by converting back and forth
-
-    print(orig_s, s)
-    print(s.v_array)
-
-    # Adapt for molecule and atoms
-    print(type(na.astype(Molecule)))
-
-    na_atom = MyAtom.from_fields(type='Na', r=[0.0, 0.0, 0.0], v=[1.0, 0.0, 0.0])
-    print(type(na_atom.astype(Atom)))
-
 
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
