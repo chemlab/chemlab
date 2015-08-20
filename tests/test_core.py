@@ -100,13 +100,13 @@ class TestSystem(object):
     #     system = System.empty(4, 4*3)
     #     [system.add(mol) for mol in mols]
     #     self._assert_init(system)
+    
     def test_from_batch(self):
         mols = self._make_molecules()
         
         system = System()
         with system.batch() as batch:            
             [batch.append(mol) for mol in mols]
-        
         self._assert_init(system)
 
     def test_from_actual_empty(self):
