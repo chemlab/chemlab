@@ -1,421 +1,349 @@
 import numpy as np
-from ..db import ChemlabDB
-cdb = ChemlabDB()
+from pandas.hashtable import Int64HashTable
 
 
-class ArrayAttr(object):
-    def __init__(self, name, fieldname, dtype, default=None):
-        self.name = name
+class EntityProperty(object):
+    '''Main base class for ChemicalEntity property specification'''
+
+
+class Attribute(EntityProperty):
+    def __init__(self, shape=None, dtype=None, dim=None, alias=None):
+        '''An array of values that belong to the current ChemicalEntity.'''
+        
+        if not isinstance(dim, str):
+            raise ValueError('dim parameter is required and should be a string.')
+        
+        self.shape = shape
         self.dtype = dtype
-        self.default = default
-        self.fieldname = fieldname
+        self.dim = dim
+        self.alias = alias
+    
+    def create(self, name):
+        return InstanceAttribute(name, self.shape, self.dtype, self.dim, self.alias)
 
-    def from_array(self, sys, arr):
-        if arr is None:
-            if self.default is not None:
-                setattr(sys, self.name, self.default(sys))
-            elif self.default is False:
-                raise Exception("array {} is required".format(self.name))
-            else:
-                self.on_empty(sys)
+class Relation(EntityProperty):
+    def __init__(self, map=None, dim=None, alias=None, shape=None):
+        '''An array of values that connects items belonging to the same dimension'''
+        
+        if not isinstance(dim, str):
+            raise ValueError('dim parameter is required and should be a string.')
+        if not isinstance(map, str):
+            raise ValueError('map parameter is required and should be a string.')
+        
+        self.map=map
+        self.dtype = 'int'
+        self.dim = dim
+        self.alias = alias
+        self.shape = shape
+    
+    def create(self, name, index):
+        return InstanceRelation(name, map=self.map, index=index, dim=self.dim, shape=self.shape, alias=self.alias)
+
+class Field(EntityProperty):
+    
+    def __init__(self, dtype=None, shape=None, alias=None):
+        '''A single value that belongs to the current ChemicalEntity'''
+        
+        # A one-dimensional attribute
+        self.dtype = dtype
+        self.alias = alias
+        self.shape = shape
+    
+    def create(self, name):
+        return InstanceField(name, self.dtype, self.shape, self.alias)
+
+class InstanceProperty(object):
+    '''Instanced version of EntityProperty'''
+
+class InstanceArray(InstanceProperty):
+
+    def empty(self, size, inplace=True):
+        # If it is its own dimension, we need shape 1
+        if size == 0:
+            value = None
         else:
-            setattr(sys, self.name, np.array(arr))
-
-    def assign(self, sys, arr):
-        getattr(sys, self.name)[:] = arr
-
-    def get(self, sys):
-        return getattr(sys, self.name)
-
-    def concatenate(self, sys, othersys):
-        return np.concatenate([self.get(sys), self.get(othersys)])
-
-    def empty(self, sys, size):
-        raise NotImplementedError()
-
-    def on_empty(self, sys, size):
-        raise NotImplementedError()
-
-    def on_add_molecule(self, sys, mol):
-        raise NotImplementedError()
-
-    def on_get_molecule_entry(self, sys, index):
-        raise NotImplementedError()
-
-    def on_remove_molecule(self, sys, index):
-        raise NotImplementedError()
-
-    def on_reorder_molecules(self, sys, new_order):
-        raise NotImplementedError()
-
-    def selection(self, sys, selection):
-        raise NotImplementedError()
-
-class AtomicArrayAttr(ArrayAttr):
-
-    def empty(self, sys, size):
-        return np.zeros(size, dtype=self.dtype)
-
-    def on_empty(self, sys):
-        size = sys.n_atoms
-        setattr(sys, self.name, self.empty(sys, size))
-
-    def on_add_molecule(self, sys, mol):
-        ac = sys._at_counter
-        attr = getattr(sys, self.name)
+            shape = (size,) + self.shape if self.shape else (size,)
+            value = np.zeros(shape, dtype=self.dtype)
         
-        if len(attr) >= ac + mol.n_atoms: # If there's space
-            attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
+        if inplace:
+            self.value = value
         else:
-            # Append
-            shape = list(attr.shape)
-            setattr(sys, self.name, np.append(attr, getattr(mol, self.fieldname).copy(), axis=0))
-            #shape[0] += mol.n_atoms
-            #attr.resize(shape, refcheck=False)
-            #attr[ac:ac+mol.n_atoms] = getattr(mol, self.fieldname).copy()
-        
-    def on_remove_molecules(self, sys, indices):
-        at_indices = sys.mol_to_atom_indices(indices)
-        setattr(sys, self.name, np.delete(getattr(sys, self.name), at_indices, axis=0))
-
-    def on_reorder_molecules(self, sys, new_order):
-        # Take a copy of the old array
-        old_array = getattr(sys, self.name).copy()
-
-        # The size of the final arrays are the same, just overwrite
-        # with the new order
-        offset = 0
-        for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[new_order],
-                                         sys.mol_n_atoms[new_order])):
-
-            attr = getattr(sys, self.name)
-            attr[offset: offset+o_n] = old_array[o_i: o_i+o_n]
-
-            offset += o_n
-
-    def on_get_molecule_entry(self, sys, index):
-        start_index, end_index = sys._get_start_end_index(index)
-        return getattr(sys, self.name)[start_index:end_index]
-
-    def selection(self, sys, selection):
-        size = np.sum(sys.mol_n_atoms[selection])
-        attr = self.empty(sys, size)
-        o_attr = getattr(sys, self.name)
-
-        offset = 0
-        for k,(o_i,o_n) in enumerate(zip(sys.mol_indices[selection],
-                                         sys.mol_n_atoms[selection])):
-            attr[offset: offset+o_n] = o_attr[o_i: o_i+o_n]
-            offset += o_n
-
-        return attr
-
-class MoleculeArrayAttr(ArrayAttr):
-
-    def empty(self, sys, size):
-        return np.zeros(size, dtype=self.dtype)
-
-    def on_empty(self, sys):
-        size = sys.n_mol
-        setattr(sys, self.name, self.empty(sys, size))
-
-    def on_add_molecule(self, sys, mol):
-        mc = sys._mol_counter
-        attr = getattr(sys, self.name)
-        
-        if mc + 1 > len(attr):
-            # Resize the array
-            shape = list(attr.shape)
-            shape[0] += 1
-            attr.resize(shape, refcheck=False)
-        
-        attr[mc] = getattr(mol, self.fieldname)
-
-    def on_remove_molecules(self, sys, indices):
-        setattr(sys, self.name, np.delete(getattr(sys, self.name), indices, axis=0))
-
-    def on_reorder_molecules(self, sys, new_order):
-        attr = getattr(sys, self.name)
-        attr[:] = attr[new_order]
-
-    def on_get_molecule_entry(self, sys, index):
-        return getattr(sys, self.name)[index]
-
-    def selection(self, sys, selection):
-        o_attr = getattr(sys, self.name)
-        return o_attr[selection]
-
-class MoleculeListAttr(MoleculeArrayAttr):
-    def empty(self, sys, size):
-        return [[] for i in range(size)]
-
-    def on_reorder_molecules(self, sys, new_order):
-        attr = getattr(sys, self.name)
-        attr[:] = [attr[i] for i in new_order]
-
-    def selection(self, sys, selection):
-        o_attr = getattr(sys, self.name)
-        return [o_attr[i] for i in selection]
-
-    def from_array(self, sys, arr):
-        if arr is None:
-            if self.default is not None:
-                setattr(sys, self.name, self.default(sys))
-            elif self.default is False:
-                raise Exception("array {} is required".format(self.name))
-            else:
-                self.on_empty(sys)
+            obj = self.copy()
+            obj.value = value.copy()
+            return obj
+    
+    def copy(self):
+        raise NotImplementedError()
+    
+    @property
+    def size(self):
+        if self.value is None:
+            return 0
         else:
-            setattr(sys, self.name, arr)
+            return len(self.value)
+    
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        if value is None:
+            self._value = None
+        
+        elif isinstance(value, list):
+            self._value = np.asarray(value, dtype=self.dtype)
+        
+        elif isinstance(value, np.ndarray):
+            self._value = np.asarray(value, dtype=self.dtype)
+    
 
-    def concatenate(self, sys, othersys):
-        return self.get(sys) + self.get(othersys)
-
-class NDArrayAttr(AtomicArrayAttr):
-
-    def __init__(self, name, fieldname, dtype, ndim, default=None):
-        super(NDArrayAttr, self).__init__(name, fieldname, dtype, default)
-        self.ndim = ndim
-
-    def empty(self, sys, size):
-        return np.zeros((size, self.ndim), dtype=np.float)
-
-
-class BondsAttr(object):
-    def __init__(self):
-        self.name = 'bonds'
-        self.fieldname = 'bonds'
-
-    def from_array(self, sys, arr):
-        if arr is None:
-            self.on_empty(sys)
+    def reorder(self, neworder, inplace=True):
+        if self.value is None:
+            return # No reordering
         else:
-            sys._bonds = arr
-            sys.bonds = arr
-
-    def assign(self, sys, arr):
-        sys.bonds = arr
-
-    def on_add_molecule(self, sys, mol):
-        if sys.bonds.size == 0:
-            sys.bonds = mol.bonds.copy()
-        else:
-            sys.bonds = np.concatenate((sys.bonds,
-                                        mol.bonds.copy() + sys._at_counter))
-
-    # TODO: this is an hack to access this outside...
-    @staticmethod
-    def get_molecule_bonds(sys, index):
-        if sys.n_bonds == 0:
-            return np.zeros(sys.n_bonds, dtype='bool')
-        
-        sel_ind_start = sys.mol_indices[index]
-        sel_ind_end = sel_ind_start + sys.mol_n_atoms[index]
-        
-        s_arr = sys.bonds[:, 0]
-        e_arr = sys.bonds[:, 1]
-
-        is_start_arr = (s_arr >= sel_ind_start) & (s_arr <= sel_ind_end)
-        is_end_arr = (e_arr >= sel_ind_start) & (e_arr <= sel_ind_end)
-        
-        bond_mask = is_start_arr & is_end_arr
-        
-        return bond_mask
+            if len(neworder) != self.size:
+                raise ValueError("'%s': neworder doesn't have enough elements %d (value %d)" % (self.name, len(neworder), self.size))
             
-    def on_get_molecule_entry(self, sys, index):
-        bond_mask = BondsAttr.get_molecule_bonds(sys, index)
-        return sys.bonds.take(bond_mask) - sys.mol_indices[index]
-
-    def on_remove_molecules(self, sys, indices):
-        # As usual, we should get the mapping from the old to the new
-        # indices
-        prev_indices = np.arange(sys.n_atoms, dtype='int')
-
-        at_indices = sys.mol_to_atom_indices(indices)
-        old_indices = np.delete(prev_indices, at_indices, axis=0)
-
+            if set(neworder) != set(range(self.size)):
+                raise ValueError("'%s': the new order is invalid as it doesn't contain all the indices." % self.name)
+            
+            if inplace:
+                self.value = self.value.take(neworder, axis=0)
+            else:
+                obj = self.copy()
+                obj.value = self.value.take(neworder, axis=0)
+                return obj
+    
+    def sub(self, index):
+        """Return a sub-attribute"""
+        index = np.asarray(index)
+        if index.dtype == 'bool':
+            index = index.nonzero()[0]
         
-        if len(sys.bonds) == 0:
+        if self.size == 0:
+            raise ValueError('attribute "%s" has size 0' % self.name)
+        
+        inst = self.copy()
+        size = len(index)
+        inst.empty(size)
+        
+        inst.value = self.value.take(index, axis=0)
+        return inst
+
+class InstanceAttribute(InstanceArray):
+    
+    def __init__(self, name, shape=None, dtype=None, dim=None, alias=None):
+        if not isinstance(dim, str):
+            raise ValueError('dim parameter is required and should be a string.')
+        self.name = name
+        self.shape = shape
+        self.dtype = dtype
+        self.dim = dim
+        self.alias = alias
+        self.value = None
+    
+    def copy(self):
+        obj = type(self)(self.name,
+                         shape=self.shape,
+                         dtype=self.dtype,
+                         dim=self.dim,
+                         alias=self.alias)
+        obj.value = self.value.copy() if self.value is not None else None
+        return obj
+    
+    def field(self, index):
+        obj = InstanceField(name=self.name, dtype=self.dtype, shape=self.shape, alias=self.alias)
+        obj.value = self.value[index]
+        return obj
+    
+    def append(self, attr_or_field):
+        if attr_or_field.value is None:
             return
+        
+        # We deal also when the values are None
+        if isinstance(attr_or_field, InstanceAttribute):
+            if self.value is None:
+                self.value = attr_or_field.value
+            else:
+                self.value = np.append(self.value, attr_or_field.value, axis=0)
+        elif isinstance(attr_or_field, InstanceField):
+            if self.value is None:
+                self.value = [attr_or_field.value]
+            else:
+                self.value = np.append(self.value, [attr_or_field.value], axis=0)
+        else:
+            raise ValueError('Can append only InstanceAttribute or InstanceField')
+    def __repr__(self):
+        value_str = str(self.value).replace('\n', ' ')
+        if len(value_str) > 52:
+            value_str = value_str[:52] + ' ...'
+        return '<Attribute[{}={}] {} = {}>'.format(self.dim, self.size, self.name, value_str)
+
+
+class InstanceRelation(InstanceArray):
+    
+    def __init__(self, name, map=None, index=None, dim=None, shape=None, alias=None):
+        if not isinstance(dim, str):
+            raise ValueError('dim parameter is required and should be a string.')
+
+        if not isinstance(map, str):
+            raise ValueError('map parameter is required and should be a string.')
+        
+        if not isinstance(name, str):
+            raise ValueError('name parameter should be a string')
+
+        if not isinstance(index, (list, np.ndarray)):
+            raise ValueError('index parameter should be an array-like object')
+
+        if shape is not None and not isinstance(shape, tuple):
+            raise ValueError('shape parameter should be a tuple')
+        
+        self.name = name
+        self.map = map
+        self.index = index
+        self.dtype = 'int'
+        self.dim = dim
+        self.alias = alias
+        self.shape = shape
+        self.value = None
+
+    def copy(self):
+        obj = type(self)(self.name, self.map, self.index, self.dim, self.shape, self.alias)
+        obj.value = self.value.copy() if self.value is not None else None
+        obj.index = self.index.copy() if self.index is not None else None
+        return obj
+
+    def append(self, rel):
+        newix = rel.index + len(self.index)
+        newrel = rel.remap(rel.index, newix, inplace=False)
+        # Extend index
+        self.index = np.append(self.index, newix, axis=0)
+        
+        # Extend value
+        if rel.value is None:
+            return
+        if self.value is None:
+            self.value = rel.value
+        else:
+            self.value = np.append(self.value, newrel.value, axis=0)
+    
+    def remap(self, from_map, to_map, inplace=True):
+        if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, (list, np.ndarray)):
+            raise ValueError('from_map and to_map should be either lists or arrays')
+        
+        if self.value is None:
+            # Nothing to remap
+            if inplace:
+                return 
+            else:
+                return self.copy()
             
-        # Remove the bonds related to the removed atoms
-        bond_mask = np.zeros(sys.n_bonds, 'bool')
-        for ai in at_indices:
-            has_bonds = (sys.bonds[:, 0] == ai) | (sys.bonds[:, 1] == ai)
-            bond_mask |= has_bonds
-
-        sys.bonds = sys.bonds[~bond_mask]
-
-        # Now, readjust all the indices
-        sys.bonds = -sys.bonds
-        for i, j in enumerate(old_indices):
-            sys.bonds[sys.bonds == -j] = i
-
-    def on_empty(self, sys):
-        # No idea how many bonds
-        sys._bonds = np.zeros((0, 2), 'int')
-        sys.bonds = np.zeros((0, 2), 'int')
-
-    def on_reorder_molecules(self, sys, new_order):
-        # old_atomic_indices
-        old_ai = np.arange(sys.n_atoms, dtype='int')
-        new_ai = np.empty(sys.n_atoms, 'int')
-
-        # The size of the final arrays are the same, just overwrite
-        # with the new order
-        offset = 0
-        for k, (o_i, o_n) in enumerate(zip(sys.mol_indices[new_order],
-                                           sys.mol_n_atoms[new_order])):
-
-            new_ai[offset: offset+o_n] = old_ai[o_i: o_i+o_n]
-
-            offset += o_n
-
-        # Replace the old atomic indices with the new ones
-
-        # Nasty trick to ensure uniqueness
-        sys.bonds = -sys.bonds
-        for i, j in enumerate(new_ai):
-            sys.bonds[sys.bonds == -i] = j
-
-    def selection(self, sys, selection):
-        # This is called when selecting some molecules
-        # Special case
-        if sys.bonds.size == 0:
-            return sys.bonds
-
-        # Select which bonds we have to take
-        bond_mask = np.zeros(sys.n_bonds, 'bool')
-
-        #sel_ind_start = sys.mol_indices[selection]
-        #sel_ind_end = sel_ind_start + sys.mol_n_atoms[selection]
-
-        # Reconstruct atom mask
-        atom_indices = sys.mol_to_atom_indices(selection)
-        mp = np.zeros(sys.n_atoms, 'bool')
-        mp[atom_indices] = True
-
-        # Now, see which bonds have their atoms selected , we have to
-        # take this atoms and delete the others
-        bond_mask_2d = mp.take(sys.bonds)
-        bond_mask = bond_mask_2d[:, 0] & bond_mask_2d[:, 1]
-        new_b = np.copy(sys.bonds[bond_mask])
-
-        # We have to change to the new atomic indices
-        old_ai = np.arange(sys.n_atoms, dtype='int')
-        size = sum(sys.mol_n_atoms[selection])
-        new_ai = np.empty(size, 'int')
-
-        offset = 0
-        for k, (o_i, o_n) in enumerate(zip(sys.mol_indices[selection],
-                                           sys.mol_n_atoms[selection])):
-
-            new_ai[offset: offset+o_n] = old_ai[o_i: o_i+o_n]
-            offset += o_n
-
-        # This maps the old indices to old indices in a fast way by
-        # using numpy
-        # http://stackoverflow.com/questions/3403973/f
-        # ast-replacement-of-values-in-a-numpy-array
-        index_map = new_ai
-        mp = np.arange(sys.n_atoms)
-        mp[index_map] = np.arange(index_map.size)
-        new_b = mp.take(new_b)
-
-        return new_b
-
-    def concatenate(self, sys, othersys):
-        # Need to add an offset when concatenating
-        if sys.bonds.size == 0:
-            return othersys.bonds + sys.n_atoms
-        if othersys.bonds.size == 0:
-            return sys.bonds.copy()
+        # Remap columns
+        hashtable = Int64HashTable()
+        hashtable.map(np.asarray(from_map),
+                      np.asarray(to_map))
+        
+        mapped = hashtable.lookup(self.value.flatten('F'))
+        
+        if inplace:
+            # Flatten and back
+            self.value = mapped.reshape(self.value.shape, order='F')
         else:
-            return np.concatenate((sys.bonds, othersys.bonds + sys.n_atoms))
+            obj = self.copy()
+            obj.value = mapped.reshape(self.value.shape, order='F')
+            return obj
 
-    def get(self, sys):
-        return sys.bonds
-
-
-class BondOrderAttr(object):
-    def __init__(self):
-        self.name = 'bond_orders'
-        self.fieldname = 'bond_orders'
-
-    def from_array(self, sys, arr):
-        if arr is None:
-            sys.bond_orders = np.array([1] * len(sys.bonds))
+    def reindex(self, inplace=True):
+        if inplace:
+            obj = self
         else:
-            sys.bond_orders = arr
+            obj = self.copy()
+        
+        newindex = range(len(obj.index))
+        obj.remap(obj.index, newindex)
+        obj.index = newindex
+        return obj
 
-    def assign(self, sys, arr):
-        sys.bond_orders = arr
-
-    def on_add_molecule(self, sys, mol):
-        #print 'Sys bonds, orders',sys.bonds, sys.bond_orders
-        #print 'Mol bonds orders',mol.bonds,  mol.bond_orders
-
-
-        if sys.bonds.size == 0:
-            sys.bond_orders = mol.bond_orders.copy()
-        if mol.bonds.size == 0:
+    def argfilter(self, index):
+        newindex = self.index[index]
+        newrel = self.remap(newindex, newindex, inplace=False)
+        
+        # We select only the values that are in the map
+        mask = newrel.value != -1
+        if len(mask.shape) == 2:
+            mask = np.all(mask, axis=1)
+        elif len(mask.shape) == 1:
             pass
         else:
-            # We assume that BondAttr.on_add_molecules was called
-            # first... OMG THIS IS SO UGLY
-            sys.bond_orders[-mol.n_bonds:] = mol.bond_orders
-
-    def on_get_molecule_entry(self, sys, index):
-        bond_mask = BondsAttr.get_molecule_bonds(sys, index)
-        return sys.bond_orders.take(bond_mask)
-
-    def on_remove_molecules(self, sys, indices):
-        pass
-
-    def on_empty(self, sys):
-        sys.bond_orders = np.array([1] * len(sys.bonds))
-
-    def on_reorder_molecules(self, sys, new_order):
-        pass
+            raise ValueError('filter only works for shapes for lenth 1 or 2')
         
-    def selection(self, sys, selection):
-        pass
-
-    def concatenate(self, sys, othersys):
-        # Need to add an offset when concatenating
-        if sys.bond_orders.size == 0:
-            return othersys.bond_orders.copy()
-        if othersys.bonds.size == 0:
-            return sys.bond_orders.copy()
+        return mask.nonzero()[0]
+    
+    def filter(self, index):
+        mask = self.argfilter(index)
+        newrel = self.sub(mask)
+        newrel.index = newrel.index[index]
+        return newrel
+        
+    @property
+    def index(self):
+        return self._index
+    
+    @index.setter
+    def index(self, value):
+        if value is None:
+            self._index = None
+        
+        elif isinstance(value, list):
+            self._index = np.asarray(value, dtype='int')
+        
+        elif isinstance(value, np.ndarray):
+            self._index = np.asarray(value, dtype='int')
+    
+    @InstanceArray.value.setter
+    def value(self, value):
+        if value is None:
+            pass
         else:
-            return np.concatenate((sys.bond_orders, othersys.bond_orders))
-
-    def get(self, sys):
-        pass
+            # We have to check that all the values in the map are in the index
+            # as well
+            ix_value = set(np.asarray(value).flatten())
+            ix_max = set(self.index)
+            
+            if ix_value > ix_max:
+                raise ValueError('Error setting relation "{}". Values {} not present in index'
+                                 .format(self.name, list(ix_value - ix_max)))
         
-class MArrayAttr(object):
-    def __init__(self, name, fieldname, dtype, default=None):
+        InstanceArray.value.__set__(self, value)
+
+    def __repr__(self):
+        value_str = str(self.value).replace('\n', '')
+        if len(value_str) > 52:
+            value_str = value_str[:52] + ' ...'
+                
+        return '<Relation[{}={}] {} = {} {{Ix[{}={}]: {}}}>'.format(self.dim, self.size, 
+                                           self.name, value_str, self.map, len(self.index), str(self.index))
+
+class InstanceField(InstanceProperty):
+    def __init__(self, name, dtype=None, shape=None, alias=None):
         self.name = name
         self.dtype = dtype
-        self.default = default
-        self.fieldname = fieldname
-
-    def get(self, at):
-        return getattr(at, self.name)
-
-    def set(self, at, value):
-        setattr(at, self.name, value)
-
-
-class MField(object):
-    def __init__(self, name, dtype, default=None):
-        self.name = name
-        self.dtype = dtype
-        self.default = default
-
-    def get(self, at):
-        return getattr(at, self.name)
-
-    def set(self, at, value):
-        setattr(at, self.name, value)
-
+        self.alias = alias
+        self.shape = shape
+        self.value = None
+        self.empty()
+    
+    def empty(self):
+        if self.shape is None:
+            self.value = np.zeros(1, self.dtype)[0]
+        else:
+            self.value = np.zeros(self.shape, dtype=self.dtype)
+    
+    def copy(self):
+        inst = InstanceField(self.name, self.dtype, self.shape, self.alias)
+        inst.value = self.value
+        return inst
+    
+    def __repr__(self):
+        return '<Field: {} = {}>'.format(self.name, str(self.value))

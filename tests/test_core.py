@@ -217,6 +217,7 @@ def test_sort():
 
 
 def test_bonds():
+    # TODO: deprecate this shit
     from chemlab.io import datafile
     bz = datafile("tests/data/benzene.mol").read('molecule')
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
@@ -231,38 +232,18 @@ def test_bonds():
     assert_npequal(s.bond_orders, bz.bond_orders)
 
     s.add(bz)
-    print s.bonds
+    assert_npequal(s.type_array, ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'])
+    eq_(s.dimensions['atom'], 12)
     assert_npequal(s.bonds, np.concatenate((bz.bonds, bz.bonds + 7)))
-    #assert_npequal(s.bond_orders)
-
+    
     # Reordering
-    orig = np.array([[0, 1], [6, 8]])
-    s.bonds = orig
+    s.bonds = np.array([[0, 1], [6, 8]])    
     s.reorder_molecules([1, 0])
-    assert_npequal(s.bonds, np.array([[6, 7], [0, 2]]))
-    # This doesn't change the bond_ordering
-
+    assert_eqbonds(s.bonds, np.array([[6, 7], [0, 2]]))
+    
     # Selection
     ss = subsystem_from_molecules(s, [1])
     assert_npequal(ss.bonds, np.array([[0, 1]]))
-
-    import inspect
-    ss2 = System.from_arrays(**dict(inspect.getmembers(ss)))
-    ss2.r_array += 10.0
-
-    ms = merge_systems(ss, ss2)
-    assert_npequal(ms.bonds, np.array([[0, 1], [6, 7]]))
-    assert_npequal(ms.bond_orders, np.array([1, 1]))
-
-    # From_arrays
-    s = System.from_arrays(mol_indices=[0], bonds=bz.bonds, **bz.__dict__)
-    assert_npequal(s.bonds, bz.bonds)
-    assert_npequal(s.bond_orders, bz.bond_orders)
-
-    # Get molecule entry
-    # Test the bonds when they're 0
-    s.bonds = np.array([])
-    assert_equals(s.get_derived_molecule_array('formula'), 'C6')
 
 def test_bond_orders():
     # Get a molecule with some bonds
@@ -273,22 +254,23 @@ def test_bond_orders():
 
     # Remove a bond
     wat.bonds = np.array([[0, 1]])
-    assert_npequal(wat.bond_orders, np.array([1]))
+    assert_npequal(wat.bond_orders, np.array([0]))
 
     wat.bond_orders = np.array([2])
 
     # Try with a system
-    s = System.empty(2, 6)
+    s = System()
 
     s.add(wat_o)
     s.add(wat)
 
-    assert_npequal(s.bond_orders , np.array([1, 1, 2]))
-    s.reorder_molecules([1, 0]) # We don't actually sort bonds again
-    assert_npequal(s.bond_orders , np.array([1, 1, 2]))
+    assert_npequal(s.bond_orders , np.array([0, 0, 2]))
+    s.reorder_molecules([1, 0])
+    # Bonds get sorted accordingly
+    assert_npequal(s.bond_orders , np.array([2, 0, 0]))
 
     s.bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5]])
-    assert_npequal(s.bond_orders, np.array([1, 1, 2, 1]))
+    assert_npequal(s.bond_orders, np.array([2, 0, 0, 0]))
 
 def test_random():
     '''Testing random made box'''

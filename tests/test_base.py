@@ -183,7 +183,7 @@ class B(ChemicalEntity):
     
     __dimension__ = 'b'
     __attributes__ = {
-        'type_array': Attribute(dim='x'),
+        'type_array': Attribute(dim='x', dtype='str'),
         'export': Attribute(dtype=object, dim='a')
     }
     __relations__ = {
@@ -275,7 +275,51 @@ class TestChemicalEntity(object):
         assert_npequal(c.type_array, ['A', 'B', 'C'])
         assert_npequal(c.maps['x', 'a'].value, [0, 0, 0])
         assert_npequal(c.maps['y', 'a'].value, [0, 0])
+        
+        result = b._propagate_dim([True, True, False, False, False, False], 'y')
+        assert_npequal(result['x'], [0, 1, 2])
+        assert_npequal(result['y'], [0, 1])
+        assert_npequal(result['a'], [0])
+        
+        # Now we do similar tests without cascading through the dependencies
+        c = b.sub_dimension([True, True, False, False, False, False], 'y', propagate=False)
+        assert_npequal(c.bonds, [[0, 1], [0, 2]])
+        assert_npequal(c.type_array, ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'])
+        assert_npequal(c.maps['x', 'a'].value, [0, 0, 0, 1, 1, 1, 2, 2, 2])
+        assert_npequal(c.maps['y', 'a'].value, [0, 0])
     
+    def test_extend_dimension(self):
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
+                          bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
+                                ('y', 'a'): [0, 1, 1, 2, 2]})
+        
+        c = b.copy()
+        c.shrink_dimension(4, 'x')
+        eq_(c.dimensions['x'], 4)
+        eq_(c.dimensions['y'], 2)
+        eq_(c.dimensions['a'], 3)
+        
+        assert_npequal(c.type_array, ['A', 'B', 'D', 'E'])
+        assert_npequal(c.bonds, [[0, 1], [2, 3]])
+        assert_npequal(c.maps['x', 'a'].value, [0, 0, 1, 1])
+        assert_npequal(c.maps['y', 'a'].value, [0, 1])
+        
+        # You won't be allowed to increase size because of the maps
+        c = b.copy()
+        
+        c.expand_dimension(11, 'x', maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2]})
+        eq_(c.dimensions['x'], 11)
+        eq_(c.dimensions['y'], 5)
+        eq_(c.dimensions['a'], 3)
+        
+        assert_npequal(c.type_array, ['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I', '', '', ''])
+        assert_npequal(c.bonds, [[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]])
+        assert_npequal(c.maps['x', 'a'].value, [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2])
+        assert_npequal(c.maps['y', 'a'].value, [0, 1, 1, 2, 2])
+
+
+        
     
     def test_reorder_dimension(self):
         b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
@@ -309,110 +353,14 @@ class TestChemicalEntity(object):
                           bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
                           maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
                                 ('y', 'a'): [0, 1, 1, 2, 2]})
-        c = c.copy()
-        
+        c = b.copy()
         c.type_array[0] = 'D'
-        eq_(b.type_array[0]) = 'A'
+        eq_(b.type_array[0], 'A')
         
-        
-    def test_all(self):
-        a = A.empty(x=3, y=2)
-        a.type_array = ['A', 'B', 'C']
-        a.bonds = [[0, 1], [0, 2]]
-        a.export = {}
-        
-        entities = [a for i in range(3)]
-        
-        b = B()
-        b._from_entities(entities, 'a')
-        assert_npequal(b.type_array, ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'])
-        assert_npequal(b.bonds, [[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]])
-        assert_npequal(b.export, [{}, {}, {}])
-        
-        xa_map = b.maps['x', 'a']
-        assert_npequal(xa_map.value, [0, 0, 0, 1, 1, 1, 2, 2, 2])
-        
-        ya_map = b.maps['y', 'a']
-        assert_npequal(ya_map.value, [0, 0, 1, 1, 2, 2])
-        
-        a_sub = b.subentity(A, 2)
-        assert_npequal(a_sub.type_array, ['A', 'B', 'C'])
-        assert_npequal(a_sub.bonds, [[0, 1], [0, 2]])
-        assert_npequal(a_sub.export, {})
-        
-        b.add_entity(a_sub, A)
-        assert_npequal(b.type_array, ['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'])
-        assert_npequal(b.bonds, [[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8], [9, 10], [9, 11]])
-        assert_npequal(b.maps['x', 'a'].value, [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3])
-        assert_npequal(b.maps['y', 'a'].value, [0, 0, 1, 1, 2, 2, 3, 3])
-        
-        # We concat two entities together
-        a = A.empty(x=2, y=2)
-        a.type_array[:] = '1'
-        assert_npequal(a.bonds, [[0, 0], [0, 0]])
-        
-        a1 = A.empty(x=5, y=2)
-        a1.type_array[:] = '2'
-        assert_npequal(a1.bonds, [[0, 0], [0, 0]])
-        
-        a3 = a.concat(a1)
-        assert_npequal(a3.type_array, ['1', '1', '2', '2', '2', '2', '2'])
-        assert_npequal(a3.bonds, [[0, 0], [0, 0], [2, 2], [2, 2]])
-        eq_(a3.dimensions['x'], 7)
-        eq_(a3.dimensions['y'], 4)
-        
-        # Concat when both are empty
-        a1 = A.empty()
-        a2 = A.empty()
-        a3 = a1.concat(a2)
-        eq_(a3.dimensions['x'], 0)
-        eq_(a3.dimensions['y'], 0)
-
-        # Concat when one of them is empty
-        a1 = A.empty()
-        a2 = A.empty(x=2, y=3)
-        a3 = a1.concat(a2)
-        eq_(a3.dimensions['x'], 2)
-        eq_(a3.dimensions['y'], 3)
-         
-        a1 = A.empty(x=2, y=3)
-        a2 = A.empty()
-        a3 = a1.concat(a2)
-        eq_(a3.dimensions['x'], 2)
-        eq_(a3.dimensions['y'], 3)
-        
-        # Subentity testing
-        a = A.empty(x=3, y=2)
-        a.type_array = ['A', 'B', 'C']
-        a.bonds = [[0, 1], [0, 2]]
-        a.export = {}
-        
-        entities = [a for i in range(3)]
-        
-
-        b = B()
-        b._from_entities(entities, 'a')
-        c = b.sub_dimension([True, True, False, True, False, False, True, False, False], 'x')
-        eq_(c.dimensions['x'], 4)
-        eq_(c.dimensions['y'], 1)
-        eq_(c.dimensions['a'], 3)
-        
-        assert_npequal(c.type_array, ['A', 'B', 'A', 'A']) 
-        assert_npequal(c.bonds, [[0, 1]]) 
-        assert_npequal(c.get_attribute('bonds').index, [0, 1, 2, 3])
-        assert_npequal(c.maps['x', 'a'].value, [0, 0, 1, 2])
-        assert_npequal(c.maps['y', 'a'].value, [0])
-            
-        b = B()
-        b._from_entities(entities, 'a')
-        c = b.sub_dimension([False, False, False, True, False, False, True, False, False], 'x')
-        eq_(c.dimensions['x'], 2)
-        eq_(c.dimensions['y'], 0)
-        eq_(c.dimensions['a'], 2)
-        
-        assert_npequal(c.type_array, ['A', 'A']) 
-        eq_(len(c.bonds), 0) 
-        assert_npequal(c.get_attribute('bonds').index, [0, 1])
-        assert_npequal(c.maps['x', 'a'].value, [0, 1])
-        assert_npequal(c.maps['y', 'a'].value, [])
-        
+    # def test_resize(self):
+    #     # Some attributes will make the dimensions shrink or grow.
+    #     b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
+    #                       bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
+    #                       maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
+    #                             ('y', 'a'): [0, 1, 1, 2, 2]})
+    #     b.dim_resize(3, 'atom', propagate=False)

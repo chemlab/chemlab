@@ -1,350 +1,17 @@
 """
 Base classes
 """
+
 import numpy as np
-from pandas.hashtable import Int64HashTable
 import collections
-from collections import defaultdict
-from contextlib import contextmanager
+
 from itertools import islice
+from contextlib import contextmanager
+from collections import defaultdict
+from .attributes import (InstanceField, InstanceArray, 
+                         InstanceRelation, InstanceAttribute, 
+                         Field, Attribute, Relation)
 
-# BASE CLASS
-class EntityProperty(object):
-    pass
-
-
-class Attribute(EntityProperty):
-    def __init__(self, shape=None, dtype=None, dim=None, alias=None):
-        if not isinstance(dim, str):
-            raise ValueError('dim parameter is required and should be a string.')
-        
-        self.shape = shape
-        self.dtype = dtype
-        self.dim = dim
-        self.alias = alias
-    
-    def create(self, name):
-        return InstanceAttribute(name, self.shape, self.dtype, self.dim, self.alias)
-
-class Relation(EntityProperty):
-    def __init__(self, map=None, dim=None, alias=None, shape=None):
-        if not isinstance(dim, str):
-            raise ValueError('dim parameter is required and should be a string.')
-        if not isinstance(map, str):
-            raise ValueError('map parameter is required and should be a string.')
-        
-        self.map=map
-        self.dtype = 'int'
-        self.dim = dim
-        self.alias = alias
-        self.shape = shape
-    
-    def create(self, name, index):
-        return InstanceRelation(name, map=self.map, index=index, dim=self.dim, shape=self.shape, alias=self.alias)
-
-
-class Field(EntityProperty):
-    
-    def __init__(self, dtype=None, shape=None, alias=None):
-        # A one-dimensional attribute
-        self.dtype = dtype
-        self.alias = alias
-        self.shape = shape
-    
-    def create(self, name):
-        return InstanceField(name, self.dtype, self.shape, self.alias)
-
-class InstanceProperty(object):
-    pass
-
-class InstanceArray(InstanceProperty):
-
-    def empty(self, size, inplace=True):
-        # If it is its own dimension, we need shape 1
-        if size == 0:
-            value = None
-        else:
-            shape = (size,) + self.shape if self.shape else (size,)
-            value = np.zeros(shape, dtype=self.dtype)
-        
-        if inplace:
-            self.value = value
-        else:
-            obj = self.copy()
-            obj.value = value.copy()
-            return obj
-    
-    def copy(self):
-        raise NotImplementedError()
-    
-    @property
-    def size(self):
-        if self.value is None:
-            return 0
-        else:
-            return len(self.value)
-    
-    @property
-    def value(self):
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        if value is None:
-            self._value = None
-        
-        elif isinstance(value, list):
-            self._value = np.asarray(value, dtype=self.dtype)
-        
-        elif isinstance(value, np.ndarray):
-            self._value = np.asarray(value, dtype=self.dtype)
-    
-
-    def reorder(self, neworder, inplace=True):
-        if self.value is None:
-            return # No reordering
-        else:
-            if len(neworder) != self.size:
-                raise ValueError("'%s': neworder doesn't have enough elements %d (value %d)" % (self.name, len(neworder), self.size))
-            
-            if set(neworder) != set(range(self.size)):
-                raise ValueError("'%s': the new order is invalid as it doesn't contain all the indices." % self.name)
-            
-            if inplace:
-                self.value = self.value.take(neworder, axis=0)
-            else:
-                obj = self.copy()
-                obj.value = self.value.take(neworder, axis=0)
-                return obj
-    
-    def sub(self, index):
-        """Return a sub-attribute"""
-        index = np.asarray(index)
-        if index.dtype == 'bool':
-            index = index.nonzero()[0]
-        
-        if self.size == 0:
-            raise ValueError('attribute "%s" has size 0' % self.name)
-        
-        inst = self.copy()
-        size = len(index)
-        inst.empty(size)
-        
-        inst.value = self.value.take(index, axis=0)
-        return inst
-
-class InstanceAttribute(InstanceArray):
-    
-    def __init__(self, name, shape=None, dtype=None, dim=None, alias=None):
-        if not isinstance(dim, str):
-            raise ValueError('dim parameter is required and should be a string.')
-        self.name = name
-        self.shape = shape
-        self.dtype = dtype
-        self.dim = dim
-        self.alias = alias
-        self.value = None
-    
-    def copy(self):
-        obj = type(self)(self.name, self.shape, self.dtype, self.dim, self.alias)
-        obj.value = self.value.copy() if self.value is not None else None
-        return obj
-    
-    def field(self, index):
-        obj = InstanceField(name=self.name, dtype=self.dtype, shape=self.shape, alias=self.alias)
-        obj.value = self.value[index]
-        return obj
-    
-    def append(self, attr_or_field):
-        if attr_or_field.value is None:
-            return
-        
-        # We deal also when the values are None
-        if isinstance(attr_or_field, InstanceAttribute):
-            if self.value is None:
-                self.value = attr_or_field.value
-            else:
-                self.value = np.append(self.value, attr_or_field.value, axis=0)
-        elif isinstance(attr_or_field, InstanceField):
-            if self.value is None:
-                self.value = [attr_or_field.value]
-            else:
-                self.value = np.append(self.value, [attr_or_field.value], axis=0)
-        else:
-            raise ValueError('Can append only InstanceAttribute or InstanceField')
-    def __repr__(self):
-        value_str = str(self.value).replace('\n', ' ')
-        if len(value_str) > 52:
-            value_str = value_str[:52] + ' ...'
-        return '<Attribute[{}={}] {} = {}>'.format(self.dim, self.size, self.name, value_str)
-
-
-class InstanceRelation(InstanceArray):
-    
-    def __init__(self, name, map=None, index=None, dim=None, shape=None, alias=None):
-        if not isinstance(dim, str):
-            raise ValueError('dim parameter is required and should be a string.')
-
-        if not isinstance(map, str):
-            raise ValueError('map parameter is required and should be a string.')
-        
-        if not isinstance(name, str):
-            raise ValueError('name parameter should be a string')
-
-        if not isinstance(index, (list, np.ndarray)):
-            raise ValueError('index parameter should be an array-like object')
-
-        if shape is not None and not isinstance(shape, tuple):
-            raise ValueError('shape parameter should be a tuple')
-        
-        self.name = name
-        self.map = map
-        self.index = index
-        self.dtype = 'int'
-        self.dim = dim
-        self.alias = alias
-        self.shape = shape
-        self.value = None
-
-    def copy(self):
-        obj = type(self)(self.name, self.map, self.index, self.dim, self.shape, self.alias)
-        obj.value = self.value.copy() if self.value is not None else None
-        obj.index = self.index.copy() if self.index is not None else None
-        return obj
-
-    def append(self, rel):
-        newix = rel.index + len(self.index)
-        newrel = rel.remap(rel.index, newix, inplace=False)
-        # Extend index
-        self.index = np.append(self.index, newix, axis=0)
-        
-        # Extend value
-        if rel.value is None:
-            return
-        if self.value is None:
-            self.value = rel.value
-        else:
-            self.value = np.append(self.value, newrel.value, axis=0)
-    
-    def remap(self, from_map, to_map, inplace=True):
-        if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, (list, np.ndarray)):
-            raise ValueError('from_map and to_map should be either lists or arrays')
-        
-        if self.value is None:
-            # Nothing to remap
-            if inplace:
-                return 
-            else:
-                return self.copy()
-            
-        # Remap columns
-        hashtable = Int64HashTable()
-        hashtable.map(np.asarray(from_map),
-                      np.asarray(to_map))
-        
-        mapped = hashtable.lookup(self.value.flatten('F'))
-        
-        if inplace:
-            # Flatten and back
-            self.value = mapped.reshape(self.value.shape, order='F')
-        else:
-            obj = self.copy()
-            obj.value = mapped.reshape(self.value.shape, order='F')
-            return obj
-
-    def reindex(self, inplace=True):
-        if inplace:
-            obj = self
-        else:
-            obj = self.copy()
-        
-        newindex = range(len(obj.index))
-        obj.remap(obj.index, newindex)
-        obj.index = newindex
-        return obj
-
-    def argfilter(self, index):
-        newindex = self.index[index]
-        newrel = self.remap(newindex, newindex, inplace=False)
-        
-        # We select only the values that are in the map
-        mask = newrel.value != -1
-        if len(mask.shape) == 2:
-            mask = np.all(mask, axis=1)
-        elif len(mask.shape) == 1:
-            pass
-        else:
-            raise ValueError('filter only works for shapes for lenth 1 or 2')
-        
-        return mask.nonzero()[0]
-    
-    def filter(self, index):
-        mask = self.argfilter(index)
-        newrel = self.sub(mask)
-        newrel.index = newrel.index[index]
-        return newrel
-        
-    @property
-    def index(self):
-        return self._index
-    
-    @index.setter
-    def index(self, value):
-        if value is None:
-            self._index = None
-        
-        elif isinstance(value, list):
-            self._index = np.asarray(value, dtype='int')
-        
-        elif isinstance(value, np.ndarray):
-            self._index = np.asarray(value, dtype='int')
-    
-    @InstanceArray.value.setter
-    def value(self, value):
-        if value is None:
-            pass
-        else:
-            # We have to check that all the values in the map are in the index
-            # as well
-            ix_value = set(np.asarray(value).flatten())
-            ix_max = set(self.index)
-            
-            if ix_value > ix_max:
-                raise ValueError('Error setting relation "{}". Values {} not present in index'
-                                 .format(self.name, list(ix_value - ix_max)))
-        
-        InstanceArray.value.__set__(self, value)
-
-    def __repr__(self):
-        value_str = str(self.value).replace('\n', '')
-        if len(value_str) > 52:
-            value_str = value_str[:52] + ' ...'
-                
-        return '<Relation[{}={}] {} = {} {{Ix[{}={}]: {}}}>'.format(self.dim, self.size, 
-                                           self.name, value_str, self.map, len(self.index), str(self.index))
-
-class InstanceField(InstanceProperty):
-    def __init__(self, name, dtype=None, shape=None, alias=None):
-        self.name = name
-        self.dtype = dtype
-        self.alias = alias
-        self.shape = shape
-        self.value = None
-        self.empty()
-    
-    def empty(self):
-        if self.shape is None:
-            self.value = np.zeros(1, self.dtype)[0]
-        else:
-            self.value = np.zeros(self.shape, dtype=self.dtype)
-    
-    def copy(self):
-        inst = InstanceField(self.name, self.dtype, self.shape, self.alias)
-        inst.value = self.value
-        return inst
-    
-    def __repr__(self):
-        return '<Field: {} = {}>'.format(self.name, str(self.value))
 
 class ChemicalEntity(object):
     
@@ -555,7 +222,10 @@ class ChemicalEntity(object):
         
         # Update the dimensions
         self.dimensions[newdim] += 1
-        
+            
+        for dim in self.dimensions:
+            self.dimensions[dim] += entity.dimensions.get(dim, 0)
+            
         for dim in self.dimensions:
             if dim in entity.dimensions:
                 # Update the sub-attribute structure to accomodate for
@@ -611,7 +281,8 @@ class ChemicalEntity(object):
         
         return entity
 
-    def _propagate_dim(self, index, dimension):
+
+    def _propagate_dim(self, index, dimension, propagate=True):
         index = normalize_index(index)
         
         # Initialize
@@ -620,28 +291,42 @@ class ChemicalEntity(object):
             result[dim] |= set(range(self.dimensions[dim]))
         
         result[dimension] &= set(index)
+
+        # Propagate for relations
+        for rel in self.__relations__.values():            
+            if rel.map == dimension:
+                result[rel.dim] &= set(rel.argfilter(index))
         
         # Propagate for the attribute maps
         for (a, b), rel in self.maps.items():
+            # This is where the attribute propagation happens
+            if not propagate: continue
+            
             if a == dimension:
-                result[b] &= set(np.unique(rel.sub(index).value))
+                result[b] &= set(np.unique(rel.sub(index).value))                
+                # We need to propagate for the attributes that changed
+                prop = self._propagate_dim(np.array(sorted(result[b]), 'int'), b)
+                for r in result:
+                    result[r] &= set(prop[r])
+            
             if b == dimension:
                 result[rel.dim] &= set(rel.argfilter(index))
 
-        # Propagate for relations
-        for rel in self.__relations__.values():
-            if rel.map == dimension:
-                result[rel.dim] &= set(rel.argfilter(index))
 
         return {k: np.array(sorted(v), 'int') for k, v in result.items()}
         
-    def sub_dimension(self, index, dimension):
+    def sub_dimension(self, index, dimension, propagate=True, inplace=False):
         """Return a ChemicalEntity sliced through a dimension.
         
         If other dimensions depend on this one those are updated accordingly.
         """
-        filter_ = self._propagate_dim(index, dimension)
-        inst = self.copy()
+        filter_ = self._propagate_dim(index, dimension, propagate)
+        
+        if not inplace:
+            inst = self.copy()
+        else:
+            inst = self
+        
         inst.dimensions = {k: len(f) for k, f in filter_.items()}
         
         for name, attr in self.__attributes__.items():
@@ -651,14 +336,65 @@ class ChemicalEntity(object):
             inst.__relations__[name] = rel.sub(filter_[rel.dim])
             inst.__relations__[name].index = rel.index[filter_[rel.map]]
             inst.__relations__[name].reindex()
-            
+
         for (a, b), rel in self.maps.items():
             inst.maps[a, b] = rel.sub(filter_[a])
             inst.maps[a, b].index = rel.index[filter_[b]]
             inst.maps[a, b].reindex()
         
         return inst
+    
+    def shrink_dimension(self, newdim, dimension):
+        return self.sub_dimension(range(newdim),
+                                  dimension, 
+                                  propagate=False,
+                                  inplace=True)
 
+    def expand_dimension(self, newdim, dimension, maps={}, relations={}):
+        ''' When we expand we need to provide new maps and relations as those
+        can't be inferred '''
+        
+        for name, attr in self.__attributes__.items():
+            if attr.dim == dimension:
+                newattr = attr.copy()
+                newattr.empty(newdim - attr.size)
+                self.__attributes__[name] = concatenate_attributes([attr, newattr])
+
+        for name, rel in self.__relations__.items():
+            if dimension == rel.dim:
+                # We need the new relation from the user
+                if not rel.name in relations:
+                    raise ValueError('You need to provide the relation {} for this resize'.format(rel.name))
+                else:
+                    if len(relations[name]) != newdim:
+                        raise ValueError('New relation {} should be of size {}'.format(rel.name, newdim))
+                    else:
+                        self.__relations__[name].value = relations[name]
+            
+            elif dimension == rel.map:
+                # Extend the index
+                rel.index = range(newdim)
+                
+        for (a, b), rel in self.maps.items():
+            if dimension == rel.dim:
+                # We need the new relation from the user
+                if not (a, b) in maps:
+                    raise ValueError('You need to provide the map {}->{} for this resize'.format(a,  b))
+                else:
+                    if len(maps[a, b]) != newdim:
+                        raise ValueError('New map {} should be of size {}'.format(rel.name, newdim))
+                    else:
+                        rel.value = maps[a, b]
+            
+            elif dimension == rel.map:
+                # Extend the index
+                rel.index = range(newdim)
+        
+        # Update dimensions
+        self.dimensions[dimension] = newdim
+        
+        return self
+        
     def _propagate_reorder(self, order, dimension):
         if len(set(order)) != self.dimensions[dimension]:
             raise ValueError('order must contain all distinct elements in dimension %s' % dimension)

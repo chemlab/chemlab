@@ -36,13 +36,22 @@ class Molecule(ChemicalEntity):
         super(Molecule, self).__init__()
         self._from_entities(atoms, 'atom')
         if bonds:
-            self.dimensions['bond'] = len(bonds)
             self.bonds = bonds
-            self.get_attribute('bond_orders').empty(len(bonds))
         
         self.export = export
         self.molecule_name = make_formula(self.type_array)
 
+    def __setattr__(self, name, value):
+        if name == 'bonds': #TODO UGLY HACK
+            bonds = self.get_attribute('bonds')
+            if bonds.size < len(value):
+                self.expand_dimension(len(value), 'bond', relations={'bonds': value})
+            elif bonds.size > len(value):
+                print self.dimensions, len(value)
+                self.shrink_dimension(len(value), 'bond')
+            print self.dimensions
+        super(Molecule, self).__setattr__(name, value)
+        
     @property
     def n_atoms(self):
         return self.dimensions['atom']
@@ -149,21 +158,32 @@ class System(ChemicalEntity):
     @property
     def atoms(self):
         return AtomGenerator(self)
+    
+    def _bonds_belongs_to(self, value):
+        mbelong = self.maps['atom', 'molecule'].value.take(value)
+        # Check if some bonds belong to cross-stuff
+        if not ((mbelong - mbelong[:, 0, np.newaxis]) == 0).all():
+            raise ValueError('Some bonds belong to more than one molecule')    
+        return mbelong[:, 0]
         
+    
     def __setattr__(self, name, value):
         # TODO: UGLY/HACK Retrocompatibility
-        if name == 'bonds':
-            newsize = len(value)
-            self.dimensions['bond'] = newsize
-            
-            # Change dimensions
+        if name == 'bonds': #TODO UGLY HACK
             bonds = self.get_attribute('bonds')
-            if bonds.size >= newsize:
-                bonds.value = value
-                self.maps['bond', 'molecule'] = self.maps['bond', 'molecule'].sub(range(newsize))
-            else:
-                bonds.value = value
-            return
+            map_ = self.maps['bond', 'molecule']
+            
+            if bonds.size < len(value):
+                # We have to infer for each bond which molecule it is
+                belong = self._bonds_belongs_to(value)
+                self.expand_dimension(len(value), 'bond', 
+                                      relations={'bonds': value}, 
+                                      maps={('bond', 'molecule') : belong.tolist()})
+                
+            elif bonds.size > len(value):
+                belong = self._bonds_belongs_to(value)
+                self.shrink_dimension(len(value), 'bond')
+                self.maps['bond', 'molecule'].value = belong
         
         super(System, self).__setattr__(name, value)
         
