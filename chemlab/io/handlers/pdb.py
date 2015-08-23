@@ -1,7 +1,7 @@
 from ...core import Atom, Molecule, System
 from .base import IOHandler
 from io import BytesIO
-from itertools import groupby
+from itertools import groupby, count
 import numpy as np
 from ...db import ChemlabDB
 import operator
@@ -122,26 +122,28 @@ class PdbIO(IOHandler):
     def get_system(self):
         r_array = np.array([a.r for a in self.atoms])
         type_array = np.array([a.type for a in self.atoms])
-        atom_export_array = np.array([a.export for a in self.atoms])
-        mol_indices = []
-        mol_names = []
-
+        atom_export = np.array([a.export for a in self.atoms])
         
-        for key, group in groupby(enumerate(self.atom_res), lambda x: x[1]):
-            group = iter(group)
-            first_element = next(group)
-            mol_indices.append(first_element[0])
-            mol_names.append(first_element[1])
+        maps = { ('atom', 'molecule') : [] }
+        c = count()
+        
+        mol_names = []
+        
+        for key, group in groupby(self.atom_res):
+            molidx = next(c)
+            maps['atom', 'molecule'].extend([molidx]* len(list(group)))
+            mol_names.append(key)
         
         mol_export = [{'pdb.residue': res} for res in mol_names]
             
         s =  System.from_arrays(r_array=r_array,
-                                  type_array=type_array,
-                                  mol_indices=mol_indices,
-                                  atom_export_array=atom_export_array,
-                                  mol_formula=mol_names,
-                                  mol_export=mol_export)
-        s.box_vectors = self._box_vectors
+                                type_array=type_array,
+                                maps=maps,
+                                atom_export=atom_export,
+                                molecule_name=mol_names,
+                                molecule_export=mol_export, 
+                                box_vectors=self._box_vectors)
+
         return s
     
     def get_molecule(self):
@@ -255,12 +257,9 @@ def write_pdb(sys,fd,header,title,expdta):
     for i in range (sys.n_mol):
         amol = sys.molecules[i]
         offset = sys.mol_indices[i]
-        kwargs = amol.todict()
-        bonds = kwargs['bonds']
-        if len(bonds) == 0:
-            #No bonds are listed, we should generate those.
-            amol.guess_bonds()
-            bonds = amol.todict()['bonds']
+        kwargs = amol.to_dict()
+        bonds = kwargs['bonds'] or []
+        
         for bond in bonds:
             #Creating a dictionary with all the bonds
             a = bond[0] + offset
@@ -271,12 +270,12 @@ def write_pdb(sys,fd,header,title,expdta):
         for j in range (sys.mol_n_atoms[i]):
             #Atom name. 
             try:
-                at_name = sys.atom_export_array[offset+j]['pdb.type']
+                at_name = sys.atom_export[offset+j]['pdb.type']
             except KeyError:
                 raise Exception('Atom type not provided')
             #Group name
             try:
-                het_name = sys.atom_export_array[offset+j]['pdb.het_name']
+                het_name = sys.atom_export[offset+j]['pdb.het_name']
             except KeyError:
                 het_name = at_name
             # Charge
@@ -350,7 +349,7 @@ def checkWater(molIn):
     # First the function check if there are 3 atoms in it, if not, return False
     # Second, we check that there are exactly 1 oxygene and two hydrogene atoms
     # Third we check that the bonds are correct. 
-    kwargs = molIn.todict()
+    kwargs = molIn.to_dict()
     atoms = kwargs['type_array']
     bonds = kwargs['bonds']
 
@@ -373,7 +372,7 @@ def checkWater(molIn):
     #Now we check the bonds. 
     if len(bonds) == 0: #It is possible to define a moleucle without bonds. If this is so, we guess them.
         molIn.guess_bonds()
-    bonds = molIn.todict()['bonds']
+    bonds = molIn.to_dict()['bonds']
     for bond in bonds:
         if posO in bond and posH1 in bond: bondOH1 = True
         elif posO in bond and posH2 in bond: bondOH2 = True

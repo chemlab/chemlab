@@ -46,14 +46,14 @@ class ChemicalEntity(object):
             return super(ChemicalEntity, self).__getattribute__(name)
         except AttributeError as exc:
             try:
-                return self.get_attribute(name).value
+                return self.get_attribute(name, alias=True).value
             except KeyError:
                 pass
             raise exc
     
     def __setattr__(self, name, value):
         try:
-            attr = self.get_attribute(name)
+            attr = self.get_attribute(name, alias=True)
             if isinstance(attr, InstanceArray):
                 if self.dimensions[attr.dim] != len(value):
                     raise ValueError('Dimension {} needs {} elements.'.format(attr.dim, 
@@ -62,8 +62,14 @@ class ChemicalEntity(object):
         except KeyError:
             super(ChemicalEntity, self).__setattr__(name, value)
     
-    def get_attribute(self, name):
-        return merge_dicts(self.__attributes__ , self.__fields__, self.__relations__)[name]
+    def get_attribute(self, name, alias=False):
+        prop_dict = merge_dicts(self.__attributes__,
+                                self.__fields__,
+                                self.__relations__)
+        if alias:
+            prop_dict.update({v.alias : v for v in prop_dict.values() if v.alias is not None})
+        
+        return prop_dict[name]
     
     @classmethod
     def empty(cls, **kwargs):
@@ -302,7 +308,10 @@ class ChemicalEntity(object):
                 # dimension of the entity, we generate a field
                 entity.__fields__[name] = attr.field(index)
             elif attr.dim in entity.dimensions:
-                # Else, we generate an subattribute
+                # Special case, we don't need to do anything
+                if self.dimensions[attr.dim] == 0:
+                    continue
+                # Else, we generate a subattribute
                 mapped_index = self.maps[attr.dim, dim].value == index
                 entity.__attributes__[name] = attr.sub(mapped_index)
                 entity.dimensions[attr.dim] = np.count_nonzero(mapped_index)
@@ -313,6 +322,9 @@ class ChemicalEntity(object):
                 # which means the entity doesn't know about that
                 pass
             if rel.map in entity.dimensions:
+                # Special case, we don't need to do anything
+                if self.dimensions[rel.dim] == 0:
+                    continue
                 mapped_index = self.maps[rel.dim, dim].value == index
                 entity.__relations__[name] = rel.sub(mapped_index)
                 entity.dimensions[rel.dim] = np.count_nonzero(mapped_index)
@@ -538,6 +550,7 @@ def concatenate_relations(relations):
     tpl = relations[0]
     
     rel = tpl.copy()
+    rel.alias = None
     rel.index = range(sum(len(r.index) for r in relations)) 
     
     arrays = []
@@ -560,10 +573,11 @@ def concatenate_relations(relations):
 
 def concatenate_attributes(attributes):
     '''Concatenate InstanceAttribute to return a bigger one.'''
-    # We get a template
+    # We get a template/
     tpl = attributes[0]
     attr = InstanceAttribute(tpl.name, tpl.shape, 
-                             tpl.dtype, tpl.dim, tpl.alias)
+                             tpl.dtype, tpl.dim, alias=None)
+    
     # Special case, not a single array has size bigger than 0
     if all(a.size == 0 for a in attributes):
         return attr
@@ -580,7 +594,7 @@ def concatenate_fields(fields, dim):
         raise ValueError('fields should have homogeneous name, shape and dtype')
     tpl = fields[0]
     attr = InstanceAttribute(tpl.name, shape=tpl.shape, dtype=tpl.dtype, 
-                             dim=dim, alias=tpl.alias)
+                             dim=dim, alias=None)
     
     attr.value = np.array([f.value for f in fields], dtype=tpl.dtype)
     return attr

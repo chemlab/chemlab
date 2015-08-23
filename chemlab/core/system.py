@@ -7,14 +7,16 @@ class Atom(ChemicalEntity):
     __dimension__ = 'atom'
     __fields__ = {
         'r_array' : Field(alias='r', shape=(3,), dtype='float'),
-        'type_array' : Field(dtype='S4'),
-        'charge_array' : Field(dtype='float'),
+        'type_array' : Field(dtype='S4', alias='type'),
+        'charge_array' : Field(dtype='float', alias='charge'),
+        'atom_export' : Field(dtype=object, alias='export'),
     }
 
-    def __init__(self, type, r_array):
+    def __init__(self, type, r_array, export=None):
         super(Atom, self).__init__()
         self.r_array = r_array
         self.type_array = type
+        self.export = export or {}
     
     @classmethod
     def from_fields(cls, **kwargs):
@@ -44,14 +46,15 @@ class Molecule(ChemicalEntity):
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom'),
         'type_array' : Attribute(dtype='str', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
-        'bond_orders' : Attribute(dtype='int', dim='bond')
+        'bond_orders' : Attribute(dtype='int', dim='bond'),
+        'atom_export' : Attribute(dtype=object, dim='atom')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
     }
     __fields__ = {
         'molecule_name' : Field(dtype='str'),
-        'export': Field(dtype=object)
+        'molecule_export': Field(dtype=object, alias='export')
     }
     
     def __init__(self, atoms, export=None, bonds=None):
@@ -60,7 +63,7 @@ class Molecule(ChemicalEntity):
         if bonds:
             self.bonds = bonds
         
-        self.export = export if export is not None else {}
+        self.export = export or {}
         self.molecule_name = make_formula(self.type_array)
 
     def __setattr__(self, name, value):
@@ -113,6 +116,8 @@ class System(ChemicalEntity):
         'charge_array' : Attribute(dim='atom'),
         'molecule_name' : Attribute(dtype='str', dim='molecule'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
+        'atom_export' : Attribute(dtype=object, dim='atom'),
+        'molecule_export' : Attribute(dtype=object, dim='molecule')
     }
     
     __relations__ = {
@@ -120,7 +125,8 @@ class System(ChemicalEntity):
     }
     
     __fields__ = {
-        'cell_lengths' : Field(dtype='float', shape=(3,))
+        'cell_lengths' : Field(dtype='float', shape=(3,)),
+        'box_vectors' : Field(dtype='float', shape=(3, 3))
     }
     
     def __init__(self, molecules=None):

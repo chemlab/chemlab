@@ -5,7 +5,7 @@ from .base import IOHandler, FeatureNotAvailable
 
 from .gro_map import gro_to_cl
 
-from ...core.system import System
+from ...core.system import System, make_formula
 from ...db import ChemlabDB
 
 
@@ -115,14 +115,17 @@ def parse_gro_lines(lines):
 
     # Molecule indices: unique elements in molidx
     mol_id, mol_indices = np.unique(dataarr['f0'], return_index=True)
+    
+    maps = {('atom', 'molecule') : dataarr['f0']}
+    
     r_array = np.vstack([dataarr['f3'],
                          dataarr['f4'],
                          dataarr['f5']]).transpose()
     grotype_array = dataarr['f2']
 
-    mol_export = np.array([dict(groname=g)
+    molecule_export = np.array([dict(groname=g)
                            for g in dataarr['f1'][mol_indices]])
-    atom_export_array = np.array([dict(grotype=g) for g in grotype_array])
+    atom_export = np.array([dict(grotype=g) for g in grotype_array])
 
     # Gromacs Defaults to Unknown Atom type
     
@@ -136,18 +139,17 @@ def parse_gro_lines(lines):
     for i, _ in enumerate(mol_indices):
         s = mol_indices[i]
         e = mol_indices[i+1] if i+1 < len(mol_indices) else end
-        from chemlab.core.molecule import make_formula
         mol_formula.append(make_formula(type_array[s:e]))
 
     mol_formula = np.array(mol_formula)
 
     # n_mol, n_at
     sys = System.from_arrays(r_array=r_array,
-                             mol_indices=mol_indices,
+                             maps=maps,
                              type_array=type_array,
-                             atom_export_array=atom_export_array,
-                             mol_export=mol_export,
-                             mol_formula=mol_formula,
+                             atom_export=atom_export,
+                             molecule_export=molecule_export,
+                             molecule_name=mol_formula,
                              box_vectors=box_vectors)
     return sys
 
@@ -163,7 +165,7 @@ def write_gro(sys, fd):
         res_n = i + 1
 
         try:
-            res_name = sys.mol_export[i]['groname']
+            res_name = sys.molecule_export[i]['groname']
         except KeyError:
             raise Exception('Gromacs exporter need the '
                             'residue name as groname')
@@ -172,7 +174,7 @@ def write_gro(sys, fd):
             offset = sys.mol_indices[i]
 
             try:
-                at_name = sys.atom_export_array[offset+j]['grotype']
+                at_name = sys.atom_export[offset+j]['grotype']
             except KeyError:
                 raise Exception('Gromacs exporter needs'
                                 'the atom type as grotype')

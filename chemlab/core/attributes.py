@@ -344,6 +344,22 @@ class InstanceField(InstanceProperty):
         inst = InstanceField(self.name, self.dtype, self.shape, self.alias)
         inst.value = self.value
         return inst
+    @property
+    def value(self):
+        return self._value
+    
+    @value.setter
+    def value(self, value):
+        if self.shape is None:
+            self._value = value
+        else:
+            if value is None:
+                self.empty()
+            else:
+                value = np.asarray(value)
+                if self.shape != value.shape:
+                    raise ValueError('Field {}, shape mismatch: got {} instead of {}'.format(self.name, value.shape, self.shape))
+                self._value = value
     
     def __repr__(self):
         return '<Field: {} = {}>'.format(self.name, str(self.value))
