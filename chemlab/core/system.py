@@ -1,19 +1,41 @@
 import numpy as np
 from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
- 
+from .serialization import json_to_data, data_to_json
+
 class Atom(ChemicalEntity):
     __dimension__ = 'atom'
     __fields__ = {
         'r_array' : Field(alias='r', shape=(3,), dtype='float'),
         'type_array' : Field(dtype='S4'),
-        'charge_array' : Field(dtype='float')
+        'charge_array' : Field(dtype='float'),
     }
 
     def __init__(self, type, r_array):
         super(Atom, self).__init__()
         self.r_array = r_array
         self.type_array = type
+    
+    @classmethod
+    def from_fields(cls, **kwargs):
+        '''
+        Create an `Atom` instance from a set of fields. This is a
+        slightly faster way to initialize an Atom.
+        
+        **Example**
+
+        >>> Atom.from_fields(type='Ar',
+                             r_array=np.array([0.0, 0.0, 0.0]),
+                             mass=39.948,
+                             export={})
+        '''
+        obj = cls.__new__(cls)
+        
+        for name, field in obj.__fields__.items():
+            if name in kwargs:
+                field.value = kwargs[name]
+        
+        return obj
 
 class Molecule(ChemicalEntity):
     __dimension__ = 'molecule'
@@ -38,7 +60,7 @@ class Molecule(ChemicalEntity):
         if bonds:
             self.bonds = bonds
         
-        self.export = export
+        self.export = export if export is not None else {}
         self.molecule_name = make_formula(self.type_array)
 
     def __setattr__(self, name, value):
@@ -61,17 +83,6 @@ class Molecule(ChemicalEntity):
         '''
         dx = r - self.r_array[0]
         self.r_array += dx
-
-    def tojson(self):
-        """Return a json string representing the Molecule. This is
-        useful for serialization.
-
-        """
-        return data_to_json(self.todict())
-
-    @classmethod
-    def from_json(cls, string):
-        return cls.from_arrays(**json_to_data(string))
 
 def make_formula(elements):
     c = Counter(elements)
@@ -126,9 +137,16 @@ class System(ChemicalEntity):
 
     
     @classmethod
-    def empty(cls, molecule, atom):
-        inst = super(System, cls).empty(atom=atom, molecule=molecule)
-        return inst
+    def empty(cls, **kwargs):
+        """Create an empty, uninitialized System.
+        
+        **Example**
+        ::
+            System.empty(atom=9, molecule=3, bonds=6)
+        
+        """
+        
+        return super(System, cls).empty(**kwargs)
 
     @property
     def n_mol(self):
@@ -186,7 +204,7 @@ class System(ChemicalEntity):
                 self.maps['bond', 'molecule'].value = belong
         
         super(System, self).__setattr__(name, value)
-        
+    
     @classmethod
     def from_arrays(cls, **kwargs):
         '''Initialize a System from its constituent arrays. It is the
@@ -197,49 +215,41 @@ class System(ChemicalEntity):
         
         The following parameters are required:
         
-        - type_array
-        - mol_indices
-
-        To further speed up the initialization process you optionally      
-        pass the other derived arrays:
-
-        - r_array
-        - m_array
-        - mol_n_atoms
-        - atom_export_array
-        - mol_export
-
+        - type_array: An array of the types
+        - maps: A dictionary that describes the relationships between 
+                molecules in the system and atoms and bonds.
+        
         **Example**
         
-        Our classic example of 3 water molecules::
+        This is how to initialize a System made of 3 water molecules::
 
+                # Initialize the arrays that contain 9 atoms
                 r_array = np.random.random((3, 9))
                 type_array = ['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H']
-                mol_indices = [0, 3, 6]
-                System.from_arrays(r_array=r_array, type_array=type_array,
-                                   mol_indices=mol_indices)
+                
+                # The maps tell us to which molecule each atom belongs to. In this 
+                # example first 3 atoms belong to molecule 0, second 3 atoms
+                # to molecule 1 and last 3 atoms to molecule 2.
+                maps = {('atom', 'molecule') : [0, 0, 0, 1, 1, 1, 2, 2, 2]}
+                System.from_arrays(r_array=r_array, 
+                                   type_array=type_array,
+                                   maps=maps)
+                
+                # You can also specify bonds, again with the its map that specifies
+                # to to which molecule each bond belongs to.
+                bonds = [[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]]
+                maps[('bond', 'molecule')] = [0, 0, 1, 1, 2, 2]
+                System.from_arrays(r_array=r_array, 
+                                   type_array=type_array,
+                                   bonds=bonds,
+                                   maps=maps)
+                
 
         '''
+        if 'mol_indices' in kwargs:
+            raise DeprecationWarning('The mol_indices argument is deprecated, use maps instead. (See from_arrays docstring)')
         
-        if 'mol_indices' not in kwargs:
-            raise Exception('mol_indices is a required argument.')
-        
-        if 'type_array' not in kwargs:
-            raise Exception('type_array is a required argument.')
-        
-        inst = cls.empty(len(kwargs['mol_indices']), len(kwargs['type_array']))
-        # We need to setup the proper maps
-        inst.maps['atom', 'molecule'] = InstanceRelation('map', dim='atom', map='molecule', index=range(inst.n_atoms))
-        mol_sizes = np.ediff1d(np.concatenate([kwargs['mol_indices'], [inst.n_atoms]]))
-        inst.maps['atom', 'molecule'].value = sum([[i] * m for i, m in enumerate(mol_sizes)], [])
-        
-        inst.maps['bond', 'molecule'] = InstanceRelation('map', dim='bond', map='molecule', index=[0])
-        kwargs.pop('mol_indices')
-        
-        for arg, val in kwargs.items():
-            setattr(inst, arg, val)
-        
-        return inst
+        return super(System, cls).from_arrays(**kwargs)
 
     def get_molecule(self, index):
         return self.subentity(Molecule, index)
@@ -308,7 +318,6 @@ class System(ChemicalEntity):
 
 
 # TODO: deprecated
-
 class MoleculeGenerator(object):
     def __init__(self, system):
         self.system = system

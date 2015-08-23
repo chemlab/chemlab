@@ -11,7 +11,7 @@ from collections import defaultdict
 from .attributes import (InstanceField, InstanceArray, 
                          InstanceRelation, InstanceAttribute, 
                          Field, Attribute, Relation)
-
+from .serialization import data_to_json, json_to_data
 
 class ChemicalEntity(object):
     
@@ -72,7 +72,41 @@ class ChemicalEntity(object):
         cls.initialize_empty(instance, **kwargs)
         return instance
     
+    @classmethod
+    def from_dict(cls, dict_):
+        """Read a ChemicalEntity that was exported using to_dict
+        
+        """
+        return cls.from_arrays(**dict_)
+    
+    def to_dict(self):
+        """Return a dict representing the ChemicalEntity that can be read back
+        using from_dict.
+        
+        """
+        
+        ret = merge_dicts(self.__attributes__, self.__relations__, self.__fields__)
+        ret = {k : v.value for k,v in ret.items()}
+        ret['maps'] = {k : v.value for k,v in self.maps.items()}
+        return ret 
+
+    @classmethod
+    def from_json(cls, string):
+        """Create a ChemicalEntity from a json string 
+        """
+        return cls.from_dict(json_to_data(string))
+    
+    def to_json(self):
+        """Return a json string representing the ChemicalEntity. This is
+        useful for serialization.
+
+        """
+        return data_to_json(self.to_dict())
+    
     def copy(self):
+        """Create a copy of this ChemicalEntity
+        
+        """
         inst = super(type(self), type(self)).empty(**self.dimensions)
         
         # Need to copy all attributes, fields, relations
@@ -85,6 +119,9 @@ class ChemicalEntity(object):
         return inst
 
     def copy_from(self, other):
+        """Copy properties from another ChemicalEntity
+        
+        """
         # Need to copy all attributes, fields, relations
         self.__attributes__ = {k: v.copy() for k, v in other.__attributes__.items()}
         self.__fields__ = {k: v.copy() for k, v in other.__fields__.items()}
@@ -179,8 +216,10 @@ class ChemicalEntity(object):
         for dim in cls._dimensions():
             for attr_name in cls._attr_by_dimension(dim):
                 if attr_name in kwargs:
-                    dimensions[dim] = len(kwargs[attr_name])
-        
+                    
+                    val = kwargs[attr_name]
+                    dimensions[dim] = len(val) if val is not None else 0
+
         # From maps
         map_pool = defaultdict(set)
         for a, b in maps:
@@ -189,10 +228,14 @@ class ChemicalEntity(object):
         for dim in map_pool:
             dimensions[dim] = len(map_pool[dim])
 
-        obj = cls.empty(**dimensions)
+        obj = cls._empty(**dimensions)
         
         # Set the map structures
         for a, b in maps:
+            if len(maps[a, b]) != dimensions[a]:
+                raise ValueError('Map for {}->{} has wrong dimension ({}) should be ({})'
+                                 .format(a, b, len(maps[a, b]), dimensions[a]))
+            
             obj.maps[a, b] = InstanceRelation('map', 
                                               map=b, 
                                               dim=a,
@@ -202,15 +245,15 @@ class ChemicalEntity(object):
         # Initialize attributes
         for k in kwargs:
             attr = obj.get_attribute(k)
-            if isinstance(attr, InstanceAttribute):
+            if isinstance(attr, (InstanceAttribute, InstanceField)):
                 attr.value = kwargs[k]
             elif isinstance(attr, InstanceRelation):
                 attr.index = range(obj.dimensions[attr.map])
                 attr.value = kwargs[k]
         
-        
         return obj
     
+
     def add_entity(self, entity, Entity):
         # We need to extend various attributes with new entities
         newdim = Entity.__dimension__
@@ -487,6 +530,9 @@ class ChemicalEntity(object):
         lines.append('  Fields:')
         [lines.append('    ' + str(attr)) for name, attr in sorted(self.__fields__.items())]
         return '\n'.join(lines)
+
+    _from_arrays = from_arrays
+    _empty = empty
 
 def concatenate_relations(relations):
     tpl = relations[0]

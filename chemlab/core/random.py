@@ -34,7 +34,6 @@ def spaced_lattice(size, spacing):
     return positions
     
     
-
 def random_lattice_box(mol_list, mol_number, size,
                        spacing=np.array([0.3, 0.3, 0.3])):
     '''Make a box by placing the molecules specified in *mol_list* on
@@ -88,16 +87,15 @@ def random_lattice_box(mol_list, mol_number, size,
     box_vectors[2,2] = size[2]
     
     # Initialize a system
-    s = System.empty(n_mol, n_atoms, box_vectors=box_vectors)
-
-    mol_list = [m.copy() for m in mol_list]
-    # Add the molecules
-    pi = 0
-    for i, mol in enumerate(mol_list):
-        for j in range(mol_number[i]):
-            mol.move_to(positions[pi])
-            s.add(mol)
-            pi += 1
+    s = System.empty()
+    with s.batch() as b:
+        mol_list = [m.copy() for m in mol_list]
+        # Add the molecules
+        pi = 0
+        for i, mol in enumerate(mol_list):
+            for j in range(mol_number[i]):
+                mol.move_to(positions[pi])
+                b.append(mol.copy())
+                pi += 1
             
     return s
-

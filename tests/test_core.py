@@ -46,12 +46,10 @@ class TestSystem(object):
     def _make_molecules(self):
         wat = _make_water()
         wat.r_array *= 0.1
-        # Initialization from empty
-        s = System.empty(4, 4*3)
-
+        
         mols = []
         # Array to be compared
-        for _ in range(s.n_mol):
+        for _ in range(4):
             wat.r_array += 0.1
             mols.append(wat.copy())
         return mols
@@ -61,13 +59,6 @@ class TestSystem(object):
                                            'O', 'H', 'H',
                                            'O', 'H', 'H',
                                            'O', 'H', 'H',])
-
-        # Test atom coordinates
-        #print "Atom Coordinates"
-        #print s.r_array
-
-        # Test atom masses
-        #print s.m_array
 
         # Test charges
         assert_allclose(system.charge_array, [0.0, 0.0, 0.0,
@@ -94,12 +85,6 @@ class TestSystem(object):
         mols = self._make_molecules()
         system = System(mols)
         self._assert_init(system)
-
-    # def test_from_empty(self):
-    #     mols = self._make_molecules()
-    #     system = System.empty(4, 4*3)
-    #     [system.add(mol) for mol in mols]
-    #     self._assert_init(system)
     
     def test_from_batch(self):
         mols = self._make_molecules()
@@ -109,6 +94,11 @@ class TestSystem(object):
             [batch.append(mol) for mol in mols]
         self._assert_init(system)
 
+    def test_from_empty(self):
+        s = System.empty(molecule=3, atom=9, bonds=6)
+        assert_npequal(s.type_array, [''] * 9)
+        assert_npequal(s.molecule_name, [''] * 3)
+
     def test_from_actual_empty(self):
         mols = self._make_molecules()
         system = System([])
@@ -117,16 +107,11 @@ class TestSystem(object):
 
     def test_from_arrays(self):
         mols = self._make_molecules()
-        r_array = np.concatenate([m.r_array for m in mols])
-        type_array = np.concatenate([m.type_array for m in mols])
-        mol_indices = [0, 3, 6, 9]
-        bonds = np.concatenate([m.bonds + 3*i for i, m in enumerate(mols)])
-
-        system = System.from_arrays(r_array=r_array,
-                                    type_array=type_array,
-                                    mol_indices=mol_indices,
-                                    bonds=bonds)
-
+        system = System.from_arrays(r_array=np.concatenate([m.r_array for m in mols]),
+                                    type_array=np.concatenate([m.type_array for m in mols]),
+                                    bonds=np.concatenate([m.bonds + 3*i for i, m in enumerate(mols)]),
+                                    maps={('atom', 'molecule') : [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+                                          ('bond', 'molecule') : [0, 0, 1, 1, 2, 2, 3, 3]})
         self._assert_init(system)
 
     def test_subsystem_from_molecules(self):
@@ -165,35 +150,6 @@ class TestSystem(object):
         system.reorder_molecules([1, 0, 2, 3])
         assert_eqbonds(system.bonds, [[0, 2],
                                       [3, 4]])
-
-
-@attr('slow')
-def test_merge_system():
-    # take a protein
-    from chemlab.io import datafile
-    from chemlab.graphics import display_system
-
-    from chemlab.db import ChemlabDB
-
-    water = ChemlabDB().get("molecule", "example.water")
-
-    prot = datafile("tests/data/3ZJE.pdb").read("system")
-
-    # Take a box of water
-    NWAT = 50000
-    bsize = 20.0
-    pos = np.random.random((NWAT, 3)) * bsize
-    wat = water.copy()
-
-    s = System()
-    with s.batch() as b:
-        s.append(wat)
-
-    prot.r_array += 10
-    s = merge_systems(s, prot, 0.5)
-
-    display_system(s, 'ball-and-stick')
-
 
 def test_crystal():
     '''Building a crystal by using spacegroup module'''
@@ -274,27 +230,15 @@ def test_bond_orders():
 
 def test_random():
     '''Testing random made box'''
-    from chemlab.db import ChemlabDB
-    cdb = ChemlabDB()
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
-    wat = cdb.get("molecule", 'gromacs.spce')
+    wat = Molecule.from_arrays(type_array=['O', 'H', 'H'])
 
     s = random_lattice_box([na, cl, wat], [160, 160, 160], [4, 4, 4])
-
-    #display_system(s)
-
+    eq_(s.dimensions['molecule'], 160 * 3)
+    eq_(s.dimensions['atom'], 160 * 5)
 
 def test_bond_guessing():
-    from chemlab.db import ChemlabDB, CirDB
-    from chemlab.graphics import display_molecule
-    from chemlab.io import datafile
-
-    mol = datafile('tests/data/3ZJE.pdb').read('molecule')
-    print(mol.r_array)
-    mol.guess_bonds()
-    assert mol.bonds.size > 0
-
     # We should find the bond guessing also for systems
 
     # System Made of two benzenes
@@ -322,14 +266,15 @@ def test_bond_guessing():
 
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
-    jsonstr =  cl.tojson()
-    assert Molecule.from_json(jsonstr).tojson() == jsonstr
+    jsonstr =  cl.to_json()
+    m = Molecule.from_json(jsonstr)
+    eq_(Molecule.from_json(jsonstr).to_json(), jsonstr)
 
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
     cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
 
     # Fract position of Na and Cl, space group 255
     tsys = crystal([[0.0, 0.0, 0.0],[0.5, 0.5, 0.5]], [na, cl], 225, repetitions=[3,3,3])
-    jsonstr = tsys.tojson()
-
-    assert System.from_json(jsonstr).tojson() == jsonstr
+    jsonstr = tsys.to_json()
+    
+    eq_(System.from_json(jsonstr).to_json(), jsonstr)

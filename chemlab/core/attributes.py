@@ -10,7 +10,7 @@ class Attribute(EntityProperty):
     def __init__(self, shape=None, dtype=None, dim=None, alias=None):
         '''An array of values that belong to the current ChemicalEntity.'''
         
-        if not isinstance(dim, str):
+        if not isinstance(dim, basestring):
             raise ValueError('dim parameter is required and should be a string.')
         
         self.shape = shape
@@ -25,9 +25,9 @@ class Relation(EntityProperty):
     def __init__(self, map=None, dim=None, alias=None, shape=None):
         '''An array of values that connects items belonging to the same dimension'''
         
-        if not isinstance(dim, str):
+        if not isinstance(dim, basestring):
             raise ValueError('dim parameter is required and should be a string.')
-        if not isinstance(map, str):
+        if not isinstance(map, basestring):
             raise ValueError('map parameter is required and should be a string.')
         
         self.map=map
@@ -134,7 +134,7 @@ class InstanceArray(InstanceProperty):
 class InstanceAttribute(InstanceArray):
     
     def __init__(self, name, shape=None, dtype=None, dim=None, alias=None):
-        if not isinstance(dim, str):
+        if not isinstance(dim, basestring):
             raise ValueError('dim parameter is required and should be a string.')
         self.name = name
         self.shape = shape
@@ -184,13 +184,13 @@ class InstanceAttribute(InstanceArray):
 class InstanceRelation(InstanceArray):
     
     def __init__(self, name, map=None, index=None, dim=None, shape=None, alias=None):
-        if not isinstance(dim, str):
+        if not isinstance(dim, basestring):
             raise ValueError('dim parameter is required and should be a string.')
 
-        if not isinstance(map, str):
+        if not isinstance(map, basestring):
             raise ValueError('map parameter is required and should be a string.')
         
-        if not isinstance(name, str):
+        if not isinstance(name, basestring):
             raise ValueError('name parameter should be a string')
 
         if not isinstance(index, (list, np.ndarray)):

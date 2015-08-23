@@ -318,8 +318,6 @@ class TestChemicalEntity(object):
         assert_npequal(c.maps['x', 'a'].value, [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2])
         assert_npequal(c.maps['y', 'a'].value, [0, 1, 1, 2, 2])
 
-
-        
     
     def test_reorder_dimension(self):
         b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
@@ -357,10 +355,3 @@ class TestChemicalEntity(object):
         c.type_array[0] = 'D'
         eq_(b.type_array[0], 'A')
         
-    # def test_resize(self):
-    #     # Some attributes will make the dimensions shrink or grow.
-    #     b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
-    #                       bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
-    #                       maps={('x', 'a'): [0, 0, 1, 1, 1, 2, 2, 2],
-    #                             ('y', 'a'): [0, 1, 1, 2, 2]})
-    #     b.dim_resize(3, 'atom', propagate=False)
