@@ -151,6 +151,35 @@ class TestSystem(object):
         assert_eqbonds(system.bonds, [[0, 2],
                                       [3, 4]])
 
+class TestWhere(object):
+    
+    def setup(self):
+        self.s = System.from_arrays(type_array=['O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H'],
+                                    maps = {('atom', 'molecule'): [0, 0, 0, 1, 1, 1, 2, 2, 2]})
+
+    def teardown(self):
+        pass
+
+    def test_molecule(self):
+        idx = self.s.where(molecule_index=[0, 2])
+        assert_npequal(idx['atom'], [True, True, True, False, False, False, True, True, True])
+        assert_npequal(idx['molecule'], [True, False, True])
+
+    def test_atom_type(self):
+        self.s = System.from_arrays(type_array=['Cl', 'Cl', 'O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H', 'Na', 'Na'],
+                                    maps = {('atom', 'molecule'): [0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6]})
+                                    
+        idx = self.s.where(atom_type='O')
+        assert_npequal(idx['atom'], [False, False, True, False, False, True, False, False, True, False, False, False, False])
+        assert_npequal(idx['molecule'], [False, False, True, True, True, False, False])
+    
+        self.s = System.from_arrays(type_array=['Cl', 'Cl', 'O', 'H', 'H', 'O', 'H', 'H', 'O', 'H', 'H', 'Na', 'Na'],
+                                    maps = {('atom', 'molecule'): [0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6]})
+                                    
+        idx = self.s.where(atom_type=['Na', 'Cl'])
+        assert_npequal(idx['atom'], [True, True, False, False, False, False, False, False, False, False, False, True, True])
+    
+
 def test_crystal():
     '''Building a crystal by using spacegroup module'''
     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])

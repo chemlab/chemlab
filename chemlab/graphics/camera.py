@@ -276,6 +276,7 @@ class Camera:
              Array of points.
         
         '''
+        points = np.asarray(points)
         extraoff = 0.01
         
         # Project points on the plane defined by camera up and right

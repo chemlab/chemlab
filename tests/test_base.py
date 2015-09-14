@@ -288,6 +288,23 @@ class TestChemicalEntity(object):
         assert_npequal(c.maps['x', 'a'].value, [0, 0, 0, 1, 1, 1, 2, 2, 2])
         assert_npequal(c.maps['y', 'a'].value, [0, 0])
     
+        # Try without bonds
+        b = B.from_arrays(type_array=['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'],
+                          maps={('x', 'a'): [0, 1, 2, 3, 4, 5, 6, 6, 6]})
+        
+    
+        c = b.sub_dimension([0, 1], 'x')
+        assert_npequal(c.type_array, ['A', 'B'])
+        
+        
+    # def test_query(self):
+    #     b = B.from_arrays(type_array=['A', 'B', 'C', 'A', 'B', 'C', 'A', 'B', 'C'],
+    #                       bonds=[[0, 1], [0, 2], [3, 4], [3, 5], [6, 7], [6, 8]],
+    #                       maps={('x', 'a'): [0, 0, 0, 1, 1, 1, 2, 2, 2],
+    #                             ('y', 'a'): [0, 0, 1, 1, 2, 2]})
+    #     Query(b).select(type_array='A')
+    #     
+        
     def test_extend_dimension(self):
         b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I'],
                           bonds=[[0, 1], [2, 3], [2, 4], [5, 6], [5, 7]],
@@ -354,4 +371,17 @@ class TestChemicalEntity(object):
         c = b.copy()
         c.type_array[0] = 'D'
         eq_(b.type_array[0], 'A')
+    
+    def test_concat(self):
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F'],
+                          bonds=[[0, 1], [2, 3], [2, 4]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1,],
+                                ('y', 'a'): [0, 1, 1]})
         
+        c = b.concat(b)
+        eq_(c.dimensions['x'], 10)
+        eq_(c.dimensions['a'], 4)
+        eq_(c.dimensions['y'], 6)
+        
+        assert_npequal(c.type_array, ['A', 'B', 'D', 'E', 'F', 'A', 'B', 'D', 'E', 'F'])
+        assert_npequal(c.bonds, [[0, 1], [2, 3], [2, 4], [5, 6], [7, 8], [7, 9]])

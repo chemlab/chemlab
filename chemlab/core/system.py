@@ -1,7 +1,11 @@
 import numpy as np
+import operator
+
 from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
 from .serialization import json_to_data, data_to_json
+from ..utils.pbc import periodic_distance
+from .. import config
 
 class Atom(ChemicalEntity):
     __dimension__ = 'atom'
@@ -80,6 +84,10 @@ class Molecule(ChemicalEntity):
     @property
     def n_atoms(self):
         return self.dimensions['atom']
+
+    @property
+    def n_bonds(self):
+        return self.dimensions['bond']
     
     def move_to(self, r):
         '''Translate the molecule to a new position *r*.
@@ -162,6 +170,10 @@ class System(ChemicalEntity):
     def n_atoms(self):
         return self.dimensions['atom']
 
+    @property
+    def n_bonds(self):
+        return self.dimensions['bond']
+    
     # Old API
     @property
     def mol_indices(self):
@@ -175,6 +187,15 @@ class System(ChemicalEntity):
         idx = np.append(idx, len(self.maps['atom', 'molecule'].value))
         return np.ediff1d(idx)
 
+
+    @property
+    def molecule_index(self):
+        return np.arange(0, self.dimensions['molecule'], dtype='int')
+    
+    @property
+    def atom_index(self):
+        return np.arange(0, self.dimensions['atom'], dtype='int')
+    
     @property
     def molecules(self):
         return MoleculeGenerator(self)
@@ -310,15 +331,95 @@ class System(ChemicalEntity):
         '''
         return np.unique(self.maps['atom', 'molecule'].value[selection])
 
-    def where(self, **kwargs):
-        """Return a subsystem where the conditions are met"""
+    def where(self, molecule_index=None, molecule_name=None, atom_index=None, 
+              atom_type=None, within_of=None, inplace=False):
+        """Return indices that met the conditions"""
+        masks = {k: np.ones(v, dtype='bool') for k,v in self.dimensions.items()} 
         
-        for stmt, arg in kwargs.items():
-            if stmt is 'molecule_index':
-                return self.sub_dimension(arg, 'molecule')
-            if stmt is 'atom_index':
-                return self.sub_dimension(arg, 'atom')
+        def index_to_mask(index, n):
+            val = np.zeros(n, dtype='bool')
+            val[index] = True
+            return val
+        
+        def masks_and(dict1, dict2):
+            return {k: dict1[k] & index_to_mask(dict2[k], len(dict1[k])) for k in dict1 }
+            
+        if molecule_index is not None:
+            m = self._propagate_dim(molecule_index, 'molecule')
+            masks = masks_and(masks, m)
+        
+        if molecule_name is not None:
+            if isinstance(molecule_name, list):
+                mask = reduce(operator.or_, [self.molecule_name == m for m in molecule_name])
+            else:
+                mask = self.molecule_name == molecule_name
+            
+            m = self._propagate_dim(mask, 'molecule')
+            masks = masks_and(masks, m)
+        
+        if within_of is not None:
+            if self.box_vectors is None:
+                raise Exception('Only periodic distance supported')
+            thr, ref = within_of
+            
+            if isinstance(ref, int):
+                a = self.r_array[ref][np.newaxis, np.newaxis, :] # (1, 1, 3,)
+            elif len(ref) == 1:
+                a = self.r_array[ref][np.newaxis, :] # (1, 1, 3)
+            else:
+                a = self.r_array[ref][:, np.newaxis, :] # (2, 1, 3)
+            
+            b = self.r_array[np.newaxis, :, :]
+            dist = periodic_distance(a, b,
+                                     periodic=self.box_vectors.diagonal())
+            
+            atoms = (dist <= thr).sum(axis=0, dtype='bool')
+            m = self._propagate_dim(atoms, 'atom')
+            masks = masks_and(masks, m)
+        
+        if atom_type is not None:
+            if isinstance(atom_type, list):
+                mask = reduce(operator.or_, [self.type_array == a for a in atom_type])
+            else:
+                mask = self.type_array == atom_type
+            
+            m = self._propagate_dim(mask, 'atom')
+            masks = masks_and(masks, m)
+        
+        if atom_index is not None:
+            if isinstance(atom_index, int):
+                atom_index = [atom_index]
+            masks = masks_and(masks, self._propagate_dim(atom_index, 'atom'))
+        
+        return masks
 
+    def sub(self, inplace=False, **kwargs):
+        """Return a subsystem where the conditions are met"""
+        filter_ = self.where(**kwargs)
+        return self.subindex(filter_, inplace)
+        
+    def display(self, backend='chemview', **kwargs):
+        if backend == 'chemview':
+            from ..notebook import display_system
+            mv = display_system(self, **kwargs)
+            return mv
+        
+        if backend == 'povray':
+            from ..graphics import Scene
+            from chemview.render import render_povray
+            from chemview.utils import get_atom_color
+            
+            scene = Scene()
+            scene.add_representation('points', {'coordinates' : self.r_array,
+                                                'sizes': [1] * self.n_atoms,
+                                                'colors': [get_atom_color(t) for t in self.type_array]})
+            extra_opts = {}
+            if "radiosity" in kwargs:
+                extra_opts.update({'radiosity' : kwargs['radiosity']})
+            
+            scene.camera.autozoom(self.r_array)
+            return render_povray(scene.to_dict(), extra_opts=extra_opts)
+            
     def sort(self):
         self.reorder_dimension(np.argsort(self.molecule_name), 'molecule')
 
@@ -393,7 +494,7 @@ def subsystem_from_molecules(orig, selection):
               looping and using System.get_molecule.
     
     '''
-    return orig.where(molecule_index=selection)
+    return orig.sub(molecule_index=selection, inplace=True)
 
 
 def subsystem_from_atoms(orig, selection):
@@ -424,7 +525,7 @@ def subsystem_from_atoms(orig, selection):
     A new System instance.
 
     '''
-    return orig.where(atom_index=selection)
+    return orig.sub(atom_index=selection, inplace=True)
 
 def merge_systems(sysa, sysb, bounding=0.2):
     '''Generate a system by merging *sysa* and *sysb*.

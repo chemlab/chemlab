@@ -121,14 +121,16 @@ class InstanceArray(InstanceProperty):
         if index.dtype == 'bool':
             index = index.nonzero()[0]
         
-        if self.size == 0:
-            raise ValueError('attribute "%s" has size 0' % self.name)
+        if self.size < len(index):
+            raise ValueError('Can\'t subset "{}": index ({}) is bigger than the number of elements ({})'.format(self.name, len(index), self.size))
         
         inst = self.copy()
         size = len(index)
         inst.empty(size)
         
-        inst.value = self.value.take(index, axis=0)
+        if len(index) > 0:
+            inst.value = self.value.take(index, axis=0)
+        
         return inst
 
 class InstanceAttribute(InstanceArray):
@@ -266,6 +268,10 @@ class InstanceRelation(InstanceArray):
         return obj
 
     def argfilter(self, index):
+        if self.size == 0:
+            # No relations are defined here, we don't have to filter anything
+            return index
+        
         newindex = self.index[index]
         newrel = self.remap(newindex, newindex, inplace=False)
         

@@ -18,7 +18,7 @@ def download_molecule(name):
     return CirDB().get('molecule', name)
 
 
-def display_molecule(molecule):
+def display_molecule(molecule, highlight=None):
     topology = {
         'atom_types': molecule.type_array,
         'bonds': molecule.bonds
@@ -27,15 +27,15 @@ def display_molecule(molecule):
     mv = MolecularViewer(molecule.r_array, topology)
 
     if molecule.n_bonds != 0:
-        mv.points(size=0.15)
+        mv.points(size=0.15, highlight=highlight)
         mv.lines()
     else:
-        mv.points()
+        mv.points(highlight=highlight)
 
     return mv
 
-def display_system(system):
-    return display_molecule(system)
+def display_system(system, **kwargs):
+    return display_molecule(system, **kwargs)
 
 def display_trajectory(system, frames):
     mv = display_molecule(system)

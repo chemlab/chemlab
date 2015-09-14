@@ -346,7 +346,7 @@ class ChemicalEntity(object):
             result[dim] |= set(range(self.dimensions[dim]))
         
         result[dimension] &= set(index)
-
+        
         # Propagate for relations
         for rel in self.__relations__.values():            
             if rel.map == dimension:
@@ -369,20 +369,14 @@ class ChemicalEntity(object):
 
 
         return {k: np.array(sorted(v), 'int') for k, v in result.items()}
-        
-    def sub_dimension(self, index, dimension, propagate=True, inplace=False):
-        """Return a ChemicalEntity sliced through a dimension.
-        
-        If other dimensions depend on this one those are updated accordingly.
-        """
-        filter_ = self._propagate_dim(index, dimension, propagate)
-        
+    
+    def subindex(self, filter_, inplace=False):
         if not inplace:
             inst = self.copy()
         else:
             inst = self
         
-        inst.dimensions = {k: len(f) for k, f in filter_.items()}
+        inst.dimensions = {k: len(normalize_index(f)) for k, f in filter_.items()}
         
         for name, attr in self.__attributes__.items():
             inst.__attributes__[name] = attr.sub(filter_[attr.dim])
@@ -398,6 +392,15 @@ class ChemicalEntity(object):
             inst.maps[a, b].reindex()
         
         return inst
+            
+    
+    def sub_dimension(self, index, dimension, propagate=True, inplace=False):
+        """Return a ChemicalEntity sliced through a dimension.
+        
+        If other dimensions depend on this one those are updated accordingly.
+        """
+        filter_ = self._propagate_dim(index, dimension, propagate)
+        return self.subindex(filter_, inplace)
     
     def shrink_dimension(self, newdim, dimension):
         return self.sub_dimension(range(newdim),
@@ -505,8 +508,8 @@ class ChemicalEntity(object):
             rel.append(other.__relations__[name])
         
         # Update maps
-        # Update dimensions
         
+        # Update dimensions
         if obj.is_empty():
             obj.maps = {k: m.copy() for k, m in other.maps.items()}
             obj.dimensions = other.dimensions.copy()
@@ -545,6 +548,12 @@ class ChemicalEntity(object):
 
     _from_arrays = from_arrays
     _empty = empty
+
+
+class Query(object):
+    
+    def select(self):
+        pass
 
 def concatenate_relations(relations):
     tpl = relations[0]
@@ -619,6 +628,7 @@ def consume(iterator, n):
 def normalize_index(index):
     """normalize numpy index"""
     index = np.asarray(index)
+    
     if index.dtype == 'bool':
         index = index.nonzero()[0]
     elif index.dtype == 'int':

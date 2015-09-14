@@ -116,7 +116,7 @@ def parse_gro_lines(lines):
     # Molecule indices: unique elements in molidx
     mol_id, mol_indices = np.unique(dataarr['f0'], return_index=True)
     
-    maps = {('atom', 'molecule') : dataarr['f0']}
+    maps = {('atom', 'molecule') : dataarr['f0'] - 1}
     
     r_array = np.vstack([dataarr['f3'],
                          dataarr['f4'],
