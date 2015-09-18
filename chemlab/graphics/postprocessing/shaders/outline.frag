@@ -5,6 +5,7 @@ uniform sampler2D s_color;
 uniform vec2 texcoordOffset;
 uniform mat4 inv_projection;
 uniform int whichoutline; // 0 - depthnormal; 1 - depthonly; 0 - normalonly;
+uniform vec3 outline_color;
 
 vec2 offsets [8];
 
@@ -78,6 +79,6 @@ void main() {
     illum = 1.0 - darkness_norm;
   }
   
-  gl_FragColor.rgb = texture2D(s_color, pos).rgb * illum;
+  gl_FragColor.rgb = mix(outline_color.rgb, texture2D(s_color, pos).rgb, illum);
   gl_FragColor.a = 1.0;
 }
