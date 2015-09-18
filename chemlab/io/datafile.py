@@ -17,6 +17,7 @@ from .handlers import MolIO
 from .handlers import CmlIO
 from .handlers import CifIO
 from .handlers import HdfIO
+from .handlers import Mol2IO
 
 # NOTE: We are adding the default handlers at the end of the file
 _default_handlers = [
@@ -28,7 +29,8 @@ _default_handlers = [
     [MolIO, 'mol', '.mol'],
     [CmlIO, 'cml', '.cml'],
     [CifIO, 'cif', '.cif'],
-    [HdfIO, 'hdf', '.h5']
+    [HdfIO, 'hdf', '.h5'],
+    [Mol2IO, 'mol2', '.mol2']
 ]
 
 _handler_map = {}

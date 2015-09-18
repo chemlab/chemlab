@@ -8,3 +8,4 @@ from .mol import MolIO
 from .cml import CmlIO
 from .cif import CifIO
 from .hdf import HdfIO
+from .mol2 import Mol2IO
