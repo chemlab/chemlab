@@ -11,7 +11,7 @@ import numpy as np
 import os
 
 class OutlineEffect(object):
-    """Add a black, cartoon-like outline.
+    """Add a colored, cartoon-like outline.
 
     This effect analyzes each point to be drawn and check if it's at a
     point of discontinuity, either because there's a change in surface normal
@@ -27,11 +27,14 @@ class OutlineEffect(object):
     
         Set the edge-determination test to both depth and normal
         discontinuity or either one of the two.
-
+    color: 3d vectors
+    
+        Set the color to the rgb value specified (each value between 0 and 1)
+    
     """
 
     
-    def __init__(self, widget, kind='depthnormal'):
+    def __init__(self, widget, kind='depthnormal', color=(0, 0, 0)):
         self.widget = widget
         curdir = os.path.dirname(__file__)
         vert = open(os.path.join(curdir, 'shaders', 'noeffect.vert')).read()
@@ -44,7 +47,7 @@ class OutlineEffect(object):
             raise Exception('The kind of outline should be choosen between depthnormal, depthonly and normalonly')
         
         self.kind = kind
-        
+        self.outline_color = np.array(color)
         self.quad_program = shaders.compileProgram(vertex, fragment)
 
     def render(self, fb, texturedict):
@@ -61,6 +64,8 @@ class OutlineEffect(object):
         
         set_uniform(self.quad_program, 'inv_projection', 'mat4fv',
                     inv_projection)
+        
+        set_uniform(self.quad_program, "outline_color", "3f", self.outline_color)
         
         normal_id = glGetUniformLocation(self.quad_program, b"s_norm")
         glUniform1i(normal_id, 0)        
