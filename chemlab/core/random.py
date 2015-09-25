@@ -1,6 +1,8 @@
 # Random boxes
 import numpy as np
 from .system import System
+from ..utils.covertree import CoverTree
+from ..table import vdw_radius
 
 def meshgrid2(*arrs):
     arrs = tuple(arrs)  #edit
@@ -99,3 +101,63 @@ def random_lattice_box(mol_list, mol_number, size,
                 pi += 1
             
     return s
+
+
+
+def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtries=100):
+    '''Create a System made of a series of random molecules.
+    
+    Parameters:
+    
+    total:
+    molecules:
+    proportions:
+    '''
+    
+    # Setup proportions to be right
+    if proportions is None:
+        proportions = np.ones(len(molecules)) / len(molecules)
+    else:
+        proportions = np.array(proportions)
+    
+    size = np.array(size)
+    
+    tree = CoverTree(metric="periodic", metric_args={'cell_lengths': size})
+    
+    type_array = []
+    result = []
+    vdw_radii = []
+    max_vdw = max(vdw_radius(np.concatenate([m.type_array for m in molecules])))
+    
+    first = True
+    for l, n in enumerate((proportions * total).astype(int)):
+        
+        # We try to insert each molecule
+        for i in range(n):
+            
+            # Attempt
+            for k in range(maxtries):
+                template = molecules[l].copy()
+                reference = np.random.uniform(0, 1, 3) * size
+                r_array = template.r_array + reference
+
+                # Find all collision candidates
+                pts_list, distances_list = tree.query_ball_many(r_array, vdw_radius(template.type_array) + max_vdw)
+                # print pts_list, distances_list
+                # Check if there is any collision
+                ok = True
+                for i, (dist, pts) in enumerate(zip(distances_list, pts_list)):
+                    if len(dist) == 0:
+                        break
+                    found_vdw = np.array([vdw_radii[p] for p in pts])
+                    ok &= all(dist > found_vdw + vdw_radius(template.type_array[i]))
+
+                if ok:
+                    tree.insert_many(r_array)
+                    template.r_array = r_array
+                    result.append(template)
+                    vdw_radii.extend(vdw_radius(template.type_array))
+                    break
+            if not ok:
+                raise Exception("Trials exceeded")
+    return System(result)

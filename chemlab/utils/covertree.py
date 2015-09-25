@@ -178,6 +178,8 @@ class CoverTree(object):
         return self.ids - 1
 
     def query_ball(self, point, r):
+        if self.root == None:
+            return [], []
         level = self.maxlevel
         candidates = [self.root]
 
@@ -196,9 +198,14 @@ class CoverTree(object):
 
             level -= 1
         result = list(result)
-        return [r.index for r in result], [self.distance(r.data, point)
-                                           for r in result]
-
+        return np.array([r.index for r in result]), np.array([self.distance(r.data, point)
+                                           for r in result])
+    def query_ball_many(self, points, radii):
+        if len(points) == 0:
+            return np.array([]), np.array([])
+        
+        return zip(*[self.query_ball(p, r) for p, r in zip(points, radii)])
+    
     def visit(self, node, level, callback):
         callback(node, level)
         if level <= self.minlevel:
