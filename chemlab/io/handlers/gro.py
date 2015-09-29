@@ -122,7 +122,8 @@ def parse_gro_lines(lines):
                          dataarr['f4'],
                          dataarr['f5']]).transpose()
     grotype_array = dataarr['f2']
-
+    grores_array = dataarr['f1'][mol_indices]
+    
     molecule_export = np.array([dict(groname=g)
                            for g in dataarr['f1'][mol_indices]])
     atom_export = np.array([dict(grotype=g) for g in grotype_array])
@@ -147,9 +148,10 @@ def parse_gro_lines(lines):
     sys = System.from_arrays(r_array=r_array,
                              maps=maps,
                              type_array=type_array,
+                             atom_name=grotype_array,
                              atom_export=atom_export,
                              molecule_export=molecule_export,
-                             molecule_name=mol_formula,
+                             molecule_name=grores_array,
                              box_vectors=box_vectors)
     return sys
 
@@ -164,20 +166,22 @@ def write_gro(sys, fd):
     for i in range(sys.n_mol):
         res_n = i + 1
 
-        try:
-            res_name = sys.molecule_export[i]['groname']
-        except KeyError:
-            raise Exception('Gromacs exporter need the '
-                            'residue name as groname')
+        res_name = sys.molecule_name[i]
+        # try:
+        #     res_name = sys.molecule_export[i]['groname']
+        # except KeyError:
+        #     raise Exception('Gromacs exporter need the '
+        #                     'residue name as groname')
 
         for j in range(sys.mol_n_atoms[i]):
             offset = sys.mol_indices[i]
-
-            try:
-                at_name = sys.atom_export[offset+j]['grotype']
-            except KeyError:
-                raise Exception('Gromacs exporter needs'
-                                'the atom type as grotype')
+            
+            at_name = sys.atom_name[offset + j]
+            # try:
+            #     at_name = sys.atom_export[offset+j]['grotype']
+            # except KeyError:
+            #     raise Exception('Gromacs exporter needs'
+            #                     'the atom type as grotype')
 
             at_n += 1
             x, y, z = sys.r_array[offset+j]

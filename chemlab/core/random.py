@@ -132,7 +132,7 @@ def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtrie
     first = True
     for l, n in enumerate((proportions * total).astype(int)):
         
-        # We try to insert each molecule
+        # We try to insert each molecule    
         for i in range(n):
             
             # Attempt
@@ -160,4 +160,8 @@ def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtrie
                     break
             if not ok:
                 raise Exception("Trials exceeded")
-    return System(result)
+    system = System(result)
+    system.box_vectors[0, 0] = size[0]
+    system.box_vectors[1, 1] = size[1]
+    system.box_vectors[2, 2] = size[2]
+    return system

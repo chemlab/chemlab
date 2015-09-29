@@ -14,6 +14,7 @@ class Atom(ChemicalEntity):
         'type_array' : Field(dtype='S4', alias='type'),
         'charge_array' : Field(dtype='float', alias='charge'),
         'atom_export' : Field(dtype=object, alias='export'),
+        'atom_name' : Field(dtype='str', alias='name')
     }
 
     def __init__(self, type, r_array, export=None):
@@ -51,13 +52,14 @@ class Molecule(ChemicalEntity):
         'type_array' : Attribute(dtype='str', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
-        'atom_export' : Attribute(dtype=object, dim='atom')
+        'atom_export' : Attribute(dtype=object, dim='atom'),
+        'atom_name' : Attribute(dtype='str', dim='atom')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
     }
     __fields__ = {
-        'molecule_name' : Field(dtype='str'),
+        'molecule_name' : Field(dtype='str', alias='name'),
         'molecule_export': Field(dtype=object, alias='export')
     }
     
@@ -125,7 +127,8 @@ class System(ChemicalEntity):
         'molecule_name' : Attribute(dtype='str', dim='molecule'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
-        'molecule_export' : Attribute(dtype=object, dim='molecule')
+        'molecule_export' : Attribute(dtype=object, dim='molecule'),
+        'atom_name' : Attribute(dtype='str', dim='atom')
     }
     
     __relations__ = {
