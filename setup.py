@@ -5,6 +5,7 @@ from Cython.Distutils import build_ext
 import numpy as np
 
 ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
+               Extension('chemlab.utils._covertree', ['chemlab/utils/_covertree.pyx']),
                Extension('chemlab.utils.celllinkedlist',
                          ['chemlab/utils/celllinkedlist.pyx']),
                Extension('chemlab.utils.cdist',

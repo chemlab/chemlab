@@ -55,29 +55,20 @@ def crystal(positions, molecules, group,
 
     nx, ny, nz = repetitions
     reptot = nx*ny*nz
-
-    # Calculate the number of atoms etc.
-
-    c = Counter(kind)
-    n_at = 0
-    n_mol = 0
-    for el in c.keys():
-        n_at += c[el]*molecules[el].n_atoms 
-        n_mol += c[el]
-
-    cry = System.empty(reptot*n_mol,
-                       reptot*n_at)
     
     # Unit cell parameters
     a,b,c = cellpar_to_cell(cellpar)
     
-    for x in range(nx):
-        for y in range(ny):
-            for z in range(nz):
-                for s, ki in zip(sites, kind):
-                    tpl = molecules[ki]
-                    tpl.move_to(s[0]*a +s[1]*b + s[2]*c + a*x + b*y + c*z)
-                    cry.add(tpl)
+    cry = System()
+    i = 0
+    with cry.batch() as batch:
+        for x in range(nx):
+            for y in range(ny):
+                for z in range(nz):
+                    for s, ki in zip(sites, kind):
+                        tpl = molecules[ki]
+                        tpl.move_to(s[0]*a +s[1]*b + s[2]*c + a*x + b*y + c*z)
+                        batch.append(tpl.copy())
 
     # Computing the box_vectors
     cry.box_vectors = np.array([a*nx, b*ny, c*nz])

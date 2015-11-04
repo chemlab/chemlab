@@ -10,7 +10,7 @@ def isnamedtuple(obj):
            and callable(obj._asdict)
 
 def serialize(data):
-    if data is None or isinstance(data, (bool, int, float, str)):
+    if data is None or isinstance(data, (bool, int, float, str, unicode)):
         return data
     if isinstance(data, list):
         return [serialize(val) for val in data]

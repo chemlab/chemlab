@@ -18,27 +18,34 @@ def download_molecule(name):
     return CirDB().get('molecule', name)
 
 
-def display_molecule(molecule):
+def display_molecule(molecule, highlight=None, **kwargs):
     topology = {
         'atom_types': molecule.type_array,
         'bonds': molecule.bonds
     }
 
-    mv = MolecularViewer(molecule.r_array, topology)
+    mv = MolecularViewer(molecule.r_array.astype('float32'), topology)
 
-    if molecule.n_bonds != 0:
-        mv.points(size=0.15)
-        mv.lines()
+    kind = kwargs.get('kind', 'wireframe')
+    if kind == 'wireframe':
+        if molecule.n_bonds != 0:
+            mv.points(size=0.15, highlight=highlight)
+            mv.lines()
+        else:
+            mv.points(highlight=highlight)
+    elif kind == 'ball_and_sticks':
+        mv.ball_and_sticks()
     else:
-        mv.points()
-
+        raise ValueError("kind {} not found".format(kind))
+    
     return mv
 
-def display_system(system):
-    return display_molecule(system)
+def display_system(system, **kwargs):
+    return display_molecule(system, **kwargs)
 
-def display_trajectory(system, frames):
-    mv = display_molecule(system)
+def display_trajectory(system, frames, **kwargs):
+    
+    mv = display_molecule(system, **kwargs)
     tc = TrajectoryControls(len(frames))
 
     def update():

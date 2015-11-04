@@ -1,110 +1,110 @@
-'''A set of utilities to interact with gromacs'''
-
-# Need to add a parser to insert this contrib script
-
-# $ chemlab gromacs energy
-# it should show a little interface to view the energy
-
-# Let's launch the program and determine what happens
+'''Some gromacs utilities'''
 from chemlab.io import datafile
-from pylab import *
-from chemlab.molsim.analysis import rdf
+import os
+import shutil
 
-import difflib
-import sys, re
-import numpy as np
+import subprocess
+from chemlab.md.simulation import to_mdp
+from chemlab.md.potential import to_top
+import logging
+import fcntl
+import time
 
-def setup_commands(subparsers):
-    groparser = subparsers.add_parser("gromacs")
-    
-    subparsers2 = groparser.add_subparsers()
-    eparser = subparsers2.add_parser("energy")
-    
-    eparser.add_argument('filenames', metavar='filenames', type=str, nargs='+')
-    eparser.add_argument('-e', metavar='energies', type=str, nargs='+',
-                        help='Properties to display in the energy viewer.')
-    
+kernel = get_ipython().kernel
 
-    eparser.add_argument('-o', help='Do not display GUI and save the plot')
-    
-    eparser.set_defaults(func=lambda args: energy(args, args.o))
+def _set_process_async(process):
+    """Make the process read/write methods unblocking"""
+    for fd in [process.stderr.fileno(), process.stdout.fileno()]:
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-    rdfparser = subparsers2.add_parser("rdf")
-    rdfparser.add_argument('selection', metavar='selection', type=str)
-    rdfparser.add_argument('filename', metavar='filename', type=str)
-    rdfparser.add_argument('trajectory', metavar='trajectory', type=str)
-    rdfparser.add_argument('-t', metavar='t', type=str) 
-    rdfparser.set_defaults(func=rdffunc)
+class AsyncCalculation(object):
     
-def energy(args, output=None):
-    ens = args.e
-    fns = args.filenames
-    
-    datafiles = [datafile(fn) for fn in fns] 
-    
-    quants = datafiles[0].read('avail quantities')
-    for i,e in enumerate(ens):
-        if e not in quants:
-            match = difflib.get_close_matches(e, quants)
-            print('Quantity %s not present, taking close match: %s'
-                  % (e, match[0]))
-            ens[i] = match[0]
-    
-    toplot = []
-    for df in datafiles:
-        for e in ens:
-            plotargs = {}
-            plotargs['points'] = df.read('quantity', e)
-            plotargs['filename'] = df.fd.name
-            plotargs['quantity'] = e
-            
-            toplot.append(plotargs)
-    plots = []
-    legends = []
-    for arg in toplot:
-        p, = plot(arg['points'][0], arg['points'][1])
-        plots.append(p)
-        legends.append(arg['filename'])
-    xlabel('Time(ps)')
-    ylabel(ens[0])
-    
-    ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    grid()
-    figlegend(plots, legends, 'upper right')
-    show()
+    def __init__(self, process, simulation, directory, output_function):
+        self.process = process
+        _set_process_async(process)
+        self.directory = directory
+        self.simulation = simulation
+        self.output_function = output_function
+        from tornado.ioloop import PeriodicCallback
+        self._timer = PeriodicCallback(self._produce_output, 100)
+        self._timer.start()
 
-def get_rdf(arguments):
-    return rdf(arguments[0], arguments[1], periodic=arguments[2])
+    def wait(self, poll=0.1):
+        kernel = get_ipython().kernel
+        while self.process.poll() is None:
+            kernel.do_one_iteration()
+        
+    def _produce_output(self):
+        # kernel = get_ipython().kernel
+        try:
+            line = self.process.stderr.read(512)
+            self.output_function(line)
+        except IOError:
+            pass
+        try:
+            line = self.process.stdout.read(512)
+            self.output_function(line)
+        except IOError:
+            pass
+        
+        if self.process.poll() is not None:
+            self._timer.stop()
+            self.output_function("\n### Process terminated {} ###".format(self.process.returncode))
+            # kernel.do_one_iteration()
+        
+    def get_system(self):
+        out = datafile(os.path.join(self.directory, 'confout.gro')).read('system')
+        ret = self.simulation.system.copy()
+        ret.r_array = out.r_array
+        return ret
+    
+    def cancel(self):
+        self.process.kill()
+    
+    def __del__(self):
+        if self.process.poll() is None:
+            self.cancel()
 
-def rdffunc(args):
+from ipywidgets.widgets import Textarea
+from IPython.display import display  
 
-    import multiprocessing
-    type_a, type_b = args.selection.split('-')
-    syst = datafile(args.filename).read("system")
-    sel_a = syst.type_array == type_a
-    sel_b = syst.type_array == type_b
+def run_gromacs(simulation, directory, clean=False):
+    if clean is False and os.path.exists(directory):
+        raise ValueError('Cannot override {}, use option clean=True'.format(directory))
+    else:
+        shutil.rmtree(directory, ignore_errors=True)
+        os.mkdir(directory)
     
-    df = datafile(args.trajectory)
-    t, coords = df.read("trajectory")
-    boxes = df.read("boxes")
+    # Parameter file
+    mdpfile = to_mdp(simulation)
+    with open(os.path.join(directory, 'grompp.mdp'), 'w') as fd:
+        fd.write(mdpfile)
     
-    times = [int(tim) for tim in args.t.split(',')]
-    ind = np.searchsorted(t, times)
-    arguments = ((coords[i][sel_a], coords[i][sel_b], boxes[i]) for i in ind) 
+    # Topology file
+    topfile = to_top(simulation.system, simulation.potential)
+    with open(os.path.join(directory, 'topol.top'), 'w') as fd:
+        fd.write(topfile)
     
-    rds = map(get_rdf, arguments)
+    # Simulation file
+    datafile(os.path.join(directory, 'conf.gro'), 'w').write('system', simulation.system)
     
-    for rd in rds:
-        plot(rd[0], rd[1])
     
-    ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    
-    xlabel('Time(ps)')
-    ylabel(args.selection)
+    process = subprocess.Popen('cd {} && grompp_d && exec mdrun_d -v'.format(directory), 
+                               shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               universal_newlines=True)
 
-    grid()
-    show()
+    output_box = Textarea()
+    output_box.height = '200px'
+    output_box.font_family = 'monospace'
+    output_box.color = '#AAAAAA'
+    output_box.background_color = 'black'
+    output_box.width = '800px'
+    display(output_box)
+    def output_function(text, output_box=output_box):
+        output_box.value += text.decode('utf8')
+        output_box.scroll_to_bottom()
     
-
-if __name__ == '__main__':
-    main(['pressure'])
+    return AsyncCalculation(process, simulation, directory, output_function)
+    
+    

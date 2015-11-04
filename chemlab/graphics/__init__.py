@@ -10,6 +10,25 @@ from .uis import TextUI
 import numpy as np
 from .postprocessing import FXAAEffect, SSAOEffect, GammaCorrectionEffect
 
+class Scene(object):
+    
+    def __init__(self):
+        self._dict = {'representations': [], 'background': 0}
+        self.camera = Camera()
+    
+    def add_representation(self, rep, args):
+        self._dict["representations"].append({'type' : 'points', 
+                                              'options' : args})
+        
+    def to_dict(self):
+        camera_dict = {'aspect': self.camera.aspectratio,
+                       'vfov': self.camera.fov,
+                       'quaternion': [0.0, 1.0, 0.0, 0.0],
+                       'target': self.camera.pivot, 
+                       'location': self.camera.position}
+        self._dict['camera'] = camera_dict
+        return self._dict
+
 def display_molecule(mol, style='ball-and-stick'):
     '''Display the molecule *mol* with the default viewer.
 

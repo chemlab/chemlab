@@ -1,22 +1,26 @@
+import numpy as np
+
 from chemlab.core import System, Atom, Molecule
 from chemlab.io import datafile, add_default_handler
 
 from chemlab.io.handlers import GromacsIO
 from chemlab.io.handlers import EdrIO
-from nose.tools import assert_raises
+from nose.tools import assert_raises, eq_
 from nose.plugins.skip import SkipTest
 
-import numpy as np
+from .testtools import assert_npequal, assert_eqbonds, assert_allclose
 
 def test_datafile():
-    add_default_handler(GromacsIO, 'gro', '.gro')
     df = datafile("tests/data/cry.gro") # It guesses
     sys = df.read("system")
-    assert sys.n_atoms == 1728
+    eq_(sys.n_atoms, 1728)
+    assert_npequal(sys.type_array[:3], ['Li', 'Li', 'Li'])
+    assert_npequal(sys.type_array[-3:], ['Cl', 'Cl', 'Cl'])
 
 def test_read_pdb():
     df = datafile('tests/data/3ZJE.pdb')
     s = df.read('system')
+    assert_npequal(s.type_array[:3], ['N', 'C', 'C'])
 
 def test_write_pdb():
     water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'pdb.type': 'O'}),
@@ -24,10 +28,11 @@ def test_write_pdb():
                       Atom('H', [-0.03333, 0.09428, 0.0], export={'pdb.type': 'H'})],
                       export={'groname': 'SOL'})
 
-    sys = System.empty(200, 3*200, box_vectors = np.eye(3) * 2.0)
-    for i in range(200):
-        water.r_array += 0.1
-        sys.add(water.copy())
+    sys = System.empty()
+    with sys.batch() as b:
+        for i in range(200):
+            water.r_array += 0.1
+            b.append(water.copy())
 
     df = datafile('/tmp/dummy.pdb', mode="w")
     df.write("system", sys)
@@ -43,10 +48,12 @@ def test_write_gromacs():
                       Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
                       export={'groname': 'SOL'})
 
-    sys = System.empty(200, 3*200, box_vectors = np.eye(3)*2.0)
-    for i in range(200):
-        sys.add(water.copy())
-
+    sys = System.empty()
+    with sys.batch() as b:
+        for i in range(200):
+            b.append(water.copy())
+    sys.box_vectors = [[2, 0, 0], [0, 2, 0], [0, 0, 2]]
+    
     df = datafile('/tmp/dummy.gro', mode="w")
     df.write('system', sys)
 
