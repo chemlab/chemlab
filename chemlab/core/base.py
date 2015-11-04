@@ -378,15 +378,15 @@ class ChemicalEntity(object):
         
         inst.dimensions = {k: len(normalize_index(f)) for k, f in filter_.items()}
         
-        for name, attr in self.__attributes__.items():
+        for name, attr in inst.__attributes__.items():
             inst.__attributes__[name] = attr.sub(filter_[attr.dim])
 
-        for name, rel in self.__relations__.items():
+        for name, rel in inst.__relations__.items():
             inst.__relations__[name] = rel.sub(filter_[rel.dim])
             inst.__relations__[name].index = rel.index[filter_[rel.map]]
             inst.__relations__[name].reindex()
 
-        for (a, b), rel in self.maps.items():
+        for (a, b), rel in inst.maps.items():
             inst.maps[a, b] = rel.sub(filter_[a])
             inst.maps[a, b].index = rel.index[filter_[b]]
             inst.maps[a, b].reindex()
@@ -467,7 +467,8 @@ class ChemicalEntity(object):
         for (a, b), rel in self.maps.items():
             if rel.map == dimension:
                 rel_new = rel.remap(order, rel.index, inplace=False)
-                result[a] = np.argsort(rel_new.value)
+                # We can't use quicksort because it is not a stable sort
+                result[a] = np.argsort(rel_new.value, kind='mergesort')
         
         return {k: np.array(v, dtype='int') for k,v in result.items()}
 

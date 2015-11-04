@@ -1,7 +1,7 @@
 # Random boxes
 import numpy as np
 from .system import System
-from ..utils.covertree import CoverTree
+from ..utils._covertree import cCoverTree as CoverTree
 from ..table import vdw_radius
 
 def meshgrid2(*arrs):

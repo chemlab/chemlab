@@ -1,9 +1,12 @@
 
 class Simulation(object):
     
-    def __init__(self, length, integrator='md', dt=2e-6, dt_io=2e-4, 
+    def __init__(self, system, potential, length=1.0, integrator='md', dt=2e-6, dt_io=2e-4, 
                  cutoff=0.9, pme=True, temperature=300, thermostat='v-rescale',
-                 pressure=1.0, barostat='berendsen'):
+                 pressure=1.0, barostat='berendsen', constraints='none'):
+        
+        self.system = system
+        self.potential = potential
         
         self.integrator = integrator
         self.dt = dt
@@ -18,6 +21,7 @@ class Simulation(object):
         
         self.pressure = pressure
         self.barostat = barostat
+        self.constraints = constraints
 
 def to_mdp(simulation):
     
@@ -36,7 +40,7 @@ def to_mdp(simulation):
     r += 'vdwtype = Cut-off\n'
     r += 'rlist = {:f}\n'.format(simulation.cutoff)
     
-    r += 'coulombtype = pme\n'
+    r += 'coulombtype = {}\n'.format("pme" if simulation.pme else "Cut-off")
     r += 'rcoulomb = {:f}\n'.format(simulation.cutoff)
     r += 'rvdw = {:f}\n'.format(simulation.cutoff)
     r += 'tcoupl = v-rescale\n'
@@ -44,11 +48,11 @@ def to_mdp(simulation):
     r += 'ref_t = {:f}\n'.format(simulation.temperature)
     r += 'tau_t = {:f}\n'.format(0.1)
     
-    r += 'pcoupl = berendsen\n'
+    r += 'pcoupl = {}\n'.format(simulation.barostat)
     r += 'compressibility = 4.5e-5\n'
-    r += 'ref_p = 1.0\n'
+    r += 'ref_p = {}\n'.format(simulation.pressure)
     
-    r += 'constraints = all-bonds\n'
+    r += 'constraints = {}\n'.format(simulation.constraints)
     
     return r
     

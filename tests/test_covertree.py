@@ -5,6 +5,7 @@ import numpy as np
 from nose.tools import assert_raises, eq_, ok_
 
 from chemlab.utils.covertree import CoverTree
+from chemlab.utils._covertree import cCoverTree
 from chemlab.utils.pbc import periodic_distance
 
 # Reproducibility
@@ -39,8 +40,8 @@ def test_insert():
     K = 100
 
     positions = np.random.uniform(0, 5, (K, 3))
-    tree = CoverTree(metric='periodic',
-                     metric_args={'cell_lengths': [10, 10, 10]})
+    tree = cCoverTree(metric='periodic',
+                      metric_args={'cell_lengths': [10, 10, 10]})
 
     # Insert single value
     tree.insert(positions[0])
@@ -52,12 +53,38 @@ def test_insert():
         tree.insert(p)
         check_invariant(tree)
 
+def test_insert_c():
+    K = 100
 
+    positions = np.random.uniform(0, 5, (K, 3))
+    tree = cCoverTree(metric='periodic',
+                     metric_args={'cell_lengths': [10, 10, 10]})
+
+    # Insert single value
+    for p in positions[1:]:
+        tree.insert(p)
+    
+    check_invariant(tree)
+    
 def test_speed():
-    tree = CoverTree()
+    tree = CoverTree(metric='periodic',
+                     metric_args={'cell_lengths': [10, 10, 10]})
     positions = np.random.uniform(0, 10, (10000, 3))
     for p in positions:
         tree.insert(p)
+
+def test_speed_c():
+    tree = cCoverTree(metric='periodic',
+                      metric_args={'cell_lengths': [10, 10, 10]})
+    positions = np.random.uniform(0, 10, (10000, 3))
+    for p in positions:
+        tree.insert(p)
+    
+    positions = np.random.uniform(0, 10, (10000, 3))
+    for p in positions:
+        tree.query_ball(p, 0.5)
+    
+    
 
 
 def test_find():
