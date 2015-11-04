@@ -1,5 +1,7 @@
 import numpy as np
-
+import dask.array as da
+from multipledispatch import dispatch
+from collections import Sequence
 
 def minimum_image(coords, pbc):
     """
@@ -88,14 +90,14 @@ def add_vectors(vec_a, vec_b, periodic):
     return vec_a + vec_b
 
 
-def distance_matrix(coordinates, periodic):
+def distance_matrix(a, b, periodic):
+    '''Calculate a distrance matrix between coordinates sets a and b
     '''
-
-    '''
-    a = coordinates
-    b = coordinates[:, np.newaxis]
+    a = a
+    b = b[:, np.newaxis]
     return periodic_distance(a, b, periodic)
 
+@dispatch(np.ndarray, np.ndarray, np.ndarray)
 def periodic_distance(a, b, periodic):
     '''Periodic distance between two arrays. Periodic is a 3
     dimensional array containing the 3 box sizes.
@@ -104,6 +106,16 @@ def periodic_distance(a, b, periodic):
     delta = np.abs(a - b)
     delta = np.where(delta > 0.5 * periodic, periodic - delta, delta)
     return np.sqrt((delta ** 2).sum(axis=-1))
+
+@dispatch(da.Array, da.Array, da.Array)
+def periodic_distance(a, b, periodic):
+    '''Periodic distance between two arrays. Periodic is a 3
+    dimensional array containing the 3 box sizes.
+
+    '''
+    delta = abs(a - b)
+    delta = da.where(delta > 0.5 * periodic, periodic - delta, delta)
+    return da.sqrt((delta ** 2).sum(axis=-1))
 
 
 def geometric_center(coords, periodic):

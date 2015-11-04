@@ -2,37 +2,16 @@
 
 '''
 import numpy as np
-from chemlab.utils.celllinkedlist import CellLinkedList
-from chemlab.libs.ckdtree import cKDTree
-from chemlab.utils import distance_matrix
-from chemlab.utils import pbc
-from chemlab.utils import geometry
-from chemlab.utils import neighbors
+import dask.array as da
+# from chemlab.utils.celllinkedlist import CellLinkedList
+# from chemlab.libs.ckdtree import cKDTree
+from chemlab.utils.pbc import distance_matrix
+# from chemlab.utils import pbc
+# from chemlab.utils import geometry
+# from chemlab.utils import neighbors
 
 import time
-from nose_parameterized import parameterized
-
-from numpy.random import random as nprandom
-
-@parameterized([
-    (nprandom((5, 3)) * 2, nprandom((5, 3)) * 2, 0.5),
-    (nprandom((4,3)) - 0.5, nprandom((4,3)) - 0.5, 0.5) # negative nums
-])
-def test_distances(coords, coords_b, cutoff):
-    # Consistency checks
-    print "Simple"
-    t = time.time()
-    dist_simple = distance_matrix(coords, coords_b, cutoff, method="simple")
-    print -t + time.time()
-
-    print "Cell-lists"
-    t = time.time()
-    dist_clist = distance_matrix(coords, coords_b, cutoff, method="cell-lists")
-    print -t + time.time()
-
-    print dist_simple
-    print dist_clist.todense()
-    assert np.allclose(dist_simple, dist_clist.todense())
+# from nose_parameterized import parameterized
 
 def test_distances_periodic():
     coords = np.array([[0.0, 0.0, 0.0],
@@ -44,19 +23,12 @@ def test_distances_periodic():
     cutoff = 0.1
 
     # Consistency checks
-    print "Simple"
-    t = time.time()
-    dist_simple = distance_matrix(coords, coords, cutoff, method="simple",
-                                   periodic=periodic)
-    print -t + time.time()
-
-    print "Cell-lists"
-    t = time.time()
-    dist_clist = distance_matrix(coords, coords, cutoff,
-                                  method="cell-lists", periodic=periodic)
-    print -t + time.time()
-
-    assert np.allclose(dist_simple, dist_clist.todense())
+    dist_simple = distance_matrix(coords, coords, periodic=periodic)
+    
+    dist_dask = distance_matrix(da.from_array(coords, chunks=100), 
+                                da.from_array(coords, chunks=100),
+                                da.from_array(periodic, chunks=3))
+    assert np.allclose(dist_dask, dist_simple)
 
 
 def test_pbc():

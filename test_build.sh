@@ -1,4 +1,4 @@
-conda remove -y -n test_install --all  > /dev/null
+#!/bin/bash
 conda create -y -n test_install python > /dev/null
 
 source activate test_install > /dev/null 
@@ -9,7 +9,7 @@ python setup.py develop
 
 python -c 'import chemview'
 
-conda install -y -c http://conda.binstar.org/gabrielelanaro cclib pyopengl
+conda install -y -c http://conda.binstar.org/gabrielelanaro 
 conda install -y pyqt cython scipy
 
 cd /home/gabriele/workspace/chemlab
