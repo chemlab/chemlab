@@ -97,12 +97,16 @@ def distance_matrix(a, b, periodic):
     b = b[:, np.newaxis]
     return periodic_distance(a, b, periodic)
 
-@dispatch(np.ndarray, np.ndarray, np.ndarray)
+@dispatch(list, list, list)
 def periodic_distance(a, b, periodic):
     '''Periodic distance between two arrays. Periodic is a 3
     dimensional array containing the 3 box sizes.
 
     '''
+    return periodic_distance(np.array(a), np.array(b), np.array(periodic))
+
+@dispatch(np.ndarray, np.ndarray, np.ndarray)
+def periodic_distance(a, b, periodic):
     delta = np.abs(a - b)
     delta = np.where(delta > 0.5 * periodic, periodic - delta, delta)
     return np.sqrt((delta ** 2).sum(axis=-1))
