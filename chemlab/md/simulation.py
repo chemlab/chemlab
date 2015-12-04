@@ -3,7 +3,8 @@ class Simulation(object):
     
     def __init__(self, system, potential, length=1.0, integrator='md', dt=2e-6, dt_io=2e-4, 
                  cutoff=0.9, pme=True, temperature=300, thermostat='v-rescale',
-                 pressure=1.0, barostat='berendsen', constraints='none'):
+                 pressure=1.0, barostat='berendsen', constraints='none',
+                 annealing=[]):
         
         self.system = system
         self.potential = potential
@@ -22,12 +23,15 @@ class Simulation(object):
         self.pressure = pressure
         self.barostat = barostat
         self.constraints = constraints
+        
+        self.annealing = annealing
 
 def to_mdp(simulation):
     
     length = simulation.length * 1000
     dt = simulation.dt * 1000
     dt_io = simulation.dt_io * 1000
+    annealing = simulation.annealing
     
     r = ''
     r += 'integrator = {}\n'.format(simulation.integrator)
@@ -47,6 +51,14 @@ def to_mdp(simulation):
     r += 'tc-grps = System\n'
     r += 'ref_t = {:f}\n'.format(simulation.temperature)
     r += 'tau_t = {:f}\n'.format(0.1)
+    
+    if annealing:
+        
+        r += "annealing = single\n"
+        r += "annealing-npoints = {}\n".format(len(annealing))
+        # Time from ns to ps
+        r += "annealing-time = {}\n".format(" ".join(str(a[0] * 1000) for a in annealing))
+        r += "annealing-temp = {}\n".format(" ".join(str(a[1]) for a in annealing)) 
     
     r += 'pcoupl = {}\n'.format(simulation.barostat)
     r += 'compressibility = 4.5e-5\n'

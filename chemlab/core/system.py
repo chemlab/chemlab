@@ -48,7 +48,7 @@ class Molecule(ChemicalEntity):
     __dimension__ = 'molecule'
     
     __attributes__ = {
-        'r_array' : Attribute(shape=(3,), dtype='float', dim='atom'),
+        'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
         'type_array' : Attribute(dtype='str', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
@@ -121,7 +121,7 @@ def make_formula(elements):
 class System(ChemicalEntity):
     __dimension__ = 'system'
     __attributes__ = {
-        'r_array' : Attribute(shape=(3,), dtype='float', dim='atom'),
+        'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
         'type_array' : Attribute(dtype='str', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
         'molecule_name' : Attribute(dtype='str', dim='molecule'),

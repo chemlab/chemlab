@@ -9,7 +9,7 @@ from chemlab.core.system import Atom, Molecule
 from chemlab.table import vdw_radius
 
 #from chemlab.graphics import display_system
-from .testtools import assert_allclose, assert_eqbonds, assert_npequal
+from .testtools import assert_allclose, assert_eqbonds, assert_npequal, npeq_
 
 
 def _make_water():
@@ -27,7 +27,7 @@ class TestAtom(object):
         eq_(a.type_array, 'O')
         eq_(a.get_attribute('type_array').value, 'O')
         assert_npequal(a.r_array, [-4.99, 2.49, 0.0])
-        eq_(a.get_attribute('r_array').value, [-4.99, 2.49, 0.0])
+        npeq_(a.get_attribute('r_array').value, [-4.99, 2.49, 0.0])
 
 
 class TestMolecule(object):

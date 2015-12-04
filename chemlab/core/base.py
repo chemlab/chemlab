@@ -135,6 +135,15 @@ class ChemicalEntity(object):
         self.maps = {k: m.copy() for k, m in other.maps.items()}
         self.dimensions = other.dimensions.copy()
     
+    def update(self, dictionary):
+        """Update the current chemical entity from a dictionary of attributes"""
+        allowed_attrs = self.__attributes__.keys()
+        allowed_attrs += [a.alias for a in self.__attributes__.values()]
+        for k in dictionary:
+            # We only update existing attributes
+            if k in allowed_attrs:
+                setattr(self, k, dictionary[k])
+        
     def initialize_empty(self, **kwargs):
         self.dimensions.update(kwargs)
         
