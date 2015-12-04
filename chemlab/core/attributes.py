@@ -242,12 +242,18 @@ class InstanceRelation(InstanceArray):
                 return self.copy()
             
         # Remap columns
-        hashtable = Int64HashTable()
-        hashtable.map(np.asarray(from_map),
-                      np.asarray(to_map))
+        # hashtable = Int64HashTable()
+        # hashtable.map(np.asarray(from_map),
+        #               np.asarray(to_map))
+        # mapped = hashtable.lookup(self.value.flatten('F'))
         
-        mapped = hashtable.lookup(self.value.flatten('F'))
-        
+        # This is quite a clever trick to efficiently remap column,
+        # the idea is similar to an hashmap.
+        stupidhash = np.empty(max(from_map) + 2)
+        stupidhash.fill(-1)
+        stupidhash[np.array(from_map)] = to_map
+        mapped = stupidhash.take(self.value.flatten('F'), mode='clip')
+
         if inplace:
             # Flatten and back
             self.value = mapped.reshape(self.value.shape, order='F')
