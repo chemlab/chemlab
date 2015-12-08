@@ -1,15 +1,18 @@
 """Handlers for GROMACS trajectories xtc and trr formats
 
 """
-from .base import IOHandler
-from ...core import Trajectory
-import numpy as np
-from ...libs.pyxdr import XTCReader
+import itertools
 import os
 import shutil
-import itertools
 import time
-import bcolz
+
+import h5py
+import numpy as np
+
+from ...core import Trajectory
+from ...libs.pyxdr import XTCReader
+from .base import IOHandler
+
 
 class XtcIO(IOHandler):
     '''Reader for GROMACS XTC trajectories.
@@ -98,7 +101,6 @@ class _NumpyFrameHandler:
         self.boxes = np.array(self.boxes)
         self.times = np.array(self.times)
 
-import h5py
 
 
 class _HDF5FrameHandler:
