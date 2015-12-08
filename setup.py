@@ -28,6 +28,7 @@ setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
     include_dirs = [np.get_include()],
+    install_requires = ['dask', 'multidipledispatch'],
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.graphics.postprocessing.shaders': ['*.vert', '*.frag'],
