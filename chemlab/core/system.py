@@ -5,7 +5,6 @@ from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
 from .serialization import json_to_data, data_to_json
 from ..utils.pbc import periodic_distance
-from .. import config
 
 class Atom(ChemicalEntity):
     __dimension__ = 'atom'

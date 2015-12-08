@@ -1,6 +1,4 @@
 import numpy as np
-from pandas.hashtable import Int64HashTable
-
 
 class EntityProperty(object):
     '''Main base class for ChemicalEntity property specification'''
@@ -241,7 +239,7 @@ class InstanceRelation(InstanceArray):
             else:
                 return self.copy()
             
-        # Remap columns
+        # Remap columns -- pandas version
         # hashtable = Int64HashTable()
         # hashtable.map(np.asarray(from_map),
         #               np.asarray(to_map))
