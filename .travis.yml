@@ -2,7 +2,7 @@ language: python
 
 python:
   - "2.7"
-  - "3.5"
+  - "3.4"
 
 virtualenv:
   system_site_packages: true
@@ -13,13 +13,13 @@ before_install:
   - "sudo apt-get update"
 
   - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq libhdf5-serial-dev python-numpy python-scipy python-qt4 python-qt4-gl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then sudo apt-get install -qq python3-pyqt4 libhdf5-serial-dev; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then sudo apt-get install -qq python3-pyqt4 libhdf5-serial-dev; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
   - "pip install --upgrade pip"
 
 install:
   - "pip install -U cython"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then pip install -U numpy h5py scipy pyopengl nose matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.4 ]]; then pip install -U numpy h5py scipy pyopengl nose matplotlib; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install -U h5py; fi"
   - "python setup.py build_ext --inplace"
   - "python setup.py install"
