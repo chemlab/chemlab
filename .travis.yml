@@ -12,8 +12,8 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
   - "sudo apt-get update"
 
-  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq libhdf5-dev python-numpy python-scipy python-qt4 python-qt4-gl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then sudo apt-get install -qq python3-pyqt4 libhdf5-dev; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq libhdf5-serial-dev python-numpy python-scipy python-qt4 python-qt4-gl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then sudo apt-get install -qq python3-pyqt4 libhdf5-serial-dev; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
 
 install:
