@@ -1,7 +1,7 @@
 chemlab - the python chemistry package you were waiting for
 ===========================================================
 
-[![Downloads](https://pypip.in/d/chemlab/badge.png)](https://crate.io/package/chemlab)
+[![Downloads](https://img.shields.io/pypi/dm/chemlab.svg)](https://crate.io/package/chemlab)
 [![Build Status](https://travis-ci.org/chemlab/chemlab.svg?branch=master)](https://travis-ci.org/chemlab/chemlab)
 
 - Version: 0.4.1
