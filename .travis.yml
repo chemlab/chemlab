@@ -18,7 +18,7 @@ before_install:
   - "pip install --upgrade pip"
 
 install:
-  - "pip install -U --use-mirrors cython"
+  - "pip install -U cython"
   - "if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then pip install -U --use-mirrors numpy h5py scipy pyopengl nose matplotlib; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install -U --use-mirrors h5py; fi"
   - "python setup.py build_ext --inplace"
