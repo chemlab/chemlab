@@ -1,4 +1,5 @@
 # Random boxes
+from __future__ import print_function
 import numpy as np
 from .system import System
 from ..utils._covertree import cCoverTree as CoverTree
@@ -135,7 +136,7 @@ def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtrie
         # We try to insert each molecule    
         for i in range(n):
             
-            # Attempt
+            # Attempts
             for k in range(maxtries):
                 template = molecules[l].copy()
                 reference = np.random.uniform(0, 1, 3) * size
@@ -149,6 +150,7 @@ def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtrie
                 for i, (dist, pts) in enumerate(zip(distances_list, pts_list)):
                     if len(dist) == 0:
                         break
+
                     found_vdw = np.array([vdw_radii[p] for p in pts])
                     ok &= all(dist > found_vdw + vdw_radius(template.type_array[i]))
 
@@ -160,6 +162,7 @@ def random_box(molecules, total=None, proportions=None, size=[1.,1.,1.], maxtrie
                     break
             if not ok:
                 raise Exception("Trials exceeded")
+    
     system = System(result)
     system.box_vectors[0, 0] = size[0]
     system.box_vectors[1, 1] = size[1]

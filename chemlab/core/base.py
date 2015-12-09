@@ -1,7 +1,7 @@
 """
 Base classes
 """
-
+from __future__ import print_function
 import numpy as np
 import collections
 
@@ -638,6 +638,9 @@ def consume(iterator, n):
 def normalize_index(index):
     """normalize numpy index"""
     index = np.asarray(index)
+    
+    if len(index) == 0:
+        return index.astype('int')
     
     if index.dtype == 'bool':
         index = index.nonzero()[0]

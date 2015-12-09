@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import operator
 
@@ -74,12 +75,13 @@ class Molecule(ChemicalEntity):
     def __setattr__(self, name, value):
         if name == 'bonds': #TODO UGLY HACK
             bonds = self.get_attribute('bonds')
-            if bonds.size < len(value):
+            if len(value) == 0:
+                self.shrink_dimension(0, 'bond')
+            elif bonds.size < len(value):
                 self.expand_dimension(len(value), 'bond', relations={'bonds': value})
             elif bonds.size > len(value):
-                print self.dimensions, len(value)
                 self.shrink_dimension(len(value), 'bond')
-            print self.dimensions
+
         super(Molecule, self).__setattr__(name, value)
         
     @property
@@ -314,7 +316,7 @@ class System(ChemicalEntity):
 
         """
         mol_indices = self.atom_to_molecule_indices(indices)
-        self.copy_from(self.where(molecule_index=mol_indices))
+        self.copy_from(self.sub(molecule_index=mol_indices))
 
     def atom_to_molecule_indices(self, selection):
         '''Given the indices over atoms, return the indices over

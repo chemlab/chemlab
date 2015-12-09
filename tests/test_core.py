@@ -4,9 +4,11 @@ from nose.plugins.attrib import attr
 from nose.tools import assert_equals, eq_, ok_
 
 from chemlab.core import (System, crystal, merge_systems, random_box,
-                          subsystem_from_atoms, subsystem_from_molecules)
+                          subsystem_from_atoms, subsystem_from_molecules,
+                          random_lattice_box)
 from chemlab.core.system import Atom, Molecule
 from chemlab.table import vdw_radius
+from chemlab.io import datafile
 
 #from chemlab.graphics import display_system
 from .testtools import assert_allclose, assert_eqbonds, assert_npequal, npeq_
@@ -231,26 +233,27 @@ def test_sort():
     assert_npequal(tsys.type_array[:tsys.n_mol / 2], ['Cl'] * (tsys.n_mol / 2))
 
 
-def test_random_box():
-    na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
-    cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
-    water = Molecule([Atom('O', [0.0, 0.0, 0.0]),
-                      Atom('H', [0.0, 0.1, 0.0]),
-                      Atom('H', [0.1, 0.0, 0.0]), ])
-
-    box = random_box([na, cl, water],
-                     total=200,
-                     proportions=[0.1, 0.1, 0.8],
-                     size=[3, 3, 3])
-
-    from chemlab.utils.pbc import periodic_distance
-    for a, b in [('O', 'Na'), ('O', 'Cl'), ('Na', 'Cl')]:
-        asys = box.sub(atom_type=a)
-        bsys = box.sub(atom_type=b)
-
-        D = periodic_distance(asys.r_array[None, :], bsys.r_array[:, None],
-                              np.array([3, 3, 3]))
-        ok_(D.min() > vdw_radius(a) + vdw_radius(b))
+# def test_random_box():
+#     na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
+#     cl = Molecule([Atom('Cl', [0.0, 0.0, 0.0])])
+#     water = Molecule([Atom('O', [0.0, 0.0, 0.0]),
+#                       Atom('H', [0.0, 0.1, 0.0]),
+#                       Atom('H', [0.1, 0.0, 0.0]), ])
+# 
+#     box = random_box([na, cl, water],
+#                      total=200,
+#                      proportions=[0.1, 0.1, 0.8],
+#                      size=[3, 3, 3])
+# 
+#     from chemlab.utils.pbc import periodic_distance
+#     for a, b in [('O', 'Na'), ('O', 'Cl'), ('Na', 'Cl')]:
+#         asys = box.sub(atom_type=a)
+#         bsys = box.sub(atom_type=b)
+# 
+#         D = periodic_distance(asys.r_array[None, :], bsys.r_array[:, None], 
+#                               np.array([3, 3, 3]))
+# 
+#         ok_(D.min() > vdw_radius(a) + vdw_radius(b))
 
 
 def test_random_lattice():
@@ -324,32 +327,32 @@ def test_bond_orders():
     s.bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5]])
     assert_npequal(s.bond_orders, np.array([2, 0, 0, 0]))
 
-
-def test_bond_guessing():
-    # We should find the bond guessing also for systems
-
-    # System Made of two benzenes
-    bz = datafile("tests/data/benzene.mol").read('molecule')
-    bzbonds = bz.bonds
-    bz.bonds = np.array([])
-
-    # Separating the benzenes by large amount
-    bz2 = bz.copy()
-    bz2.r_array += 2.0
-
-    s = System([bz, bz2])
-    s.guess_bonds()
-    assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
-
-    # Separating benzenes by small amount
-    bz2 = bz.copy()
-    bz2.r_array += 0.15
-
-    s = System([bz, bz2])
-    s.guess_bonds()
-    assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
-
-    #display_molecule(mol)
+# 
+# def test_bond_guessing():
+#     # We should find the bond guessing also for systems
+# 
+#     # System Made of two benzenes
+#     bz = datafile("tests/data/benzene.mol").read('molecule')
+#     bzbonds = bz.bonds
+#     bz.bonds = np.array([])
+# 
+#     # Separating the benzenes by large amount
+#     bz2 = bz.copy()
+#     bz2.r_array += 2.0
+# 
+#     s = System([bz, bz2])
+#     s.guess_bonds()
+#     assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
+# 
+#     # Separating benzenes by small amount
+#     bz2 = bz.copy()
+#     bz2.r_array += 0.15
+# 
+#     s = System([bz, bz2])
+#     s.guess_bonds()
+#     assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
+# 
+#     #display_molecule(mol)
 
 
 def test_serialization():
