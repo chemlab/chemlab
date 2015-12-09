@@ -2,26 +2,38 @@ language: python
 
 python:
   - "2.7"
-  - "3.2"
+  - "3.5"
 
-virtualenv:
-  system_site_packages: true
-
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - "sudo apt-get update"
-
-  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then sudo apt-get install -qq libhdf5-serial-dev python-numpy python-scipy python-qt4 python-qt4-gl python-qt4-dev python-sip python-sip-dev python-opengl python-matplotlib; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.2 ]]; then sudo apt-get install -qq python3-pyqt4 libhdf5-serial-dev; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.2 ]]; then sudo apt-get build-dep -qq python3-numpy; fi"
-  - "pip install --upgrade pip"
+sudo: false
 
 install:
-  - "pip install -U cython"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 3.2 ]]; then pip install -U numpy h5py scipy pyopengl nose matplotlib; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install -U h5py; fi"
-  - "python setup.py build_ext --inplace"
-  - "python setup.py install"
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy h5py scipy pyopengl nose matplotlib pyqt cython
+  - source activate test-environment
+  - python build_ext --inplace
+  - python setup.py install
+
+#install:
+#  - "pip install -U cython"
+#  - "if [[ $TRAVIS_PYTHON_VERSION == 3.2 ]]; then pip install -U numpy h5py scipy pyopengl nose matplotlib; fi"
+#  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install -U h5py; fi"
+#  - "python setup.py build_ext --inplace"
+#  - "python setup.py install"
 
 script: "nosetests -a '!slow' tests.test_core tests.test_io"
