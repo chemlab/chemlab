@@ -1,4 +1,5 @@
 import numpy as np
+from six import string_types
 
 class EntityProperty(object):
     '''Main base class for ChemicalEntity property specification'''
@@ -8,7 +9,7 @@ class Attribute(EntityProperty):
     def __init__(self, shape=None, dtype=None, dim=None, alias=None):
         '''An array of values that belong to the current ChemicalEntity.'''
         
-        if not isinstance(dim, basestring):
+        if not isinstance(dim, string_types):
             raise ValueError('dim parameter is required and should be a string.')
         
         self.shape = shape
@@ -23,9 +24,9 @@ class Relation(EntityProperty):
     def __init__(self, map=None, dim=None, alias=None, shape=None):
         '''An array of values that connects items belonging to the same dimension'''
         
-        if not isinstance(dim, basestring):
+        if not isinstance(dim, string_types):
             raise ValueError('dim parameter is required and should be a string.')
-        if not isinstance(map, basestring):
+        if not isinstance(map, string_types):
             raise ValueError('map parameter is required and should be a string.')
         
         self.map=map
@@ -94,7 +95,8 @@ class InstanceArray(InstanceProperty):
         
         elif isinstance(value, np.ndarray):
             self._value = np.asarray(value, dtype=self.dtype)
-    
+        else:
+            raise ValueError("Only array and lists are supported")
 
     def reorder(self, neworder, inplace=True):
         if self.value is None:
@@ -134,7 +136,7 @@ class InstanceArray(InstanceProperty):
 class InstanceAttribute(InstanceArray):
     
     def __init__(self, name, shape=None, dtype=None, dim=None, alias=None):
-        if not isinstance(dim, basestring):
+        if not isinstance(dim, string_types):
             raise ValueError('dim parameter is required and should be a string.')
         self.name = name
         self.shape = shape
@@ -184,16 +186,16 @@ class InstanceAttribute(InstanceArray):
 class InstanceRelation(InstanceArray):
     
     def __init__(self, name, map=None, index=None, dim=None, shape=None, alias=None):
-        if not isinstance(dim, basestring):
+        if not isinstance(dim, string_types):
             raise ValueError('dim parameter is required and should be a string.')
 
-        if not isinstance(map, basestring):
+        if not isinstance(map, string_types):
             raise ValueError('map parameter is required and should be a string.')
         
-        if not isinstance(name, basestring):
+        if not isinstance(name, string_types):
             raise ValueError('name parameter should be a string')
 
-        if not isinstance(index, (list, np.ndarray)):
+        if not isinstance(index, (list, range, np.ndarray)):
             raise ValueError('index parameter should be an array-like object')
 
         if shape is not None and not isinstance(shape, tuple):
@@ -229,7 +231,7 @@ class InstanceRelation(InstanceArray):
             self.value = np.append(self.value, newrel.value, axis=0)
     
     def remap(self, from_map, to_map, inplace=True):
-        if not isinstance(from_map, (list, np.ndarray)) or not isinstance(to_map, (list, np.ndarray)):
+        if not isinstance(from_map, (list, np.ndarray, range)) or not isinstance(to_map, (list, np.ndarray, range)):
             raise ValueError('from_map and to_map should be either lists or arrays')
         
         if self.value is None:
@@ -305,13 +307,20 @@ class InstanceRelation(InstanceArray):
         if value is None:
             self._index = None
         
-        elif isinstance(value, list):
+        elif isinstance(value, (list, range)):
             self._index = np.asarray(value, dtype='int')
         
         elif isinstance(value, np.ndarray):
             self._index = np.asarray(value, dtype='int')
+        
+        else:
+            raise ValueError("Can't set index. Type not allowed {}".format(type(value)))
     
-    @InstanceArray.value.setter
+    @property
+    def value(self):
+        return super(InstanceRelation, self).value
+    
+    @value.setter
     def value(self, value):
         if value is None:
             pass

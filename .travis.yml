@@ -6,6 +6,9 @@ python:
 
 sudo: false
 
+notifications:
+    email: false
+
 install:
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -23,7 +26,7 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy h5py scipy pyopengl nose matplotlib pyqt cython
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy h5py scipy pyopengl nose matplotlib pyqt cython dask
   - source activate test-environment
   - python setup.py build_ext --inplace
   - python setup.py install

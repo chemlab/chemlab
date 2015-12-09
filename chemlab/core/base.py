@@ -194,7 +194,7 @@ class ChemicalEntity(object):
         for name, attr in self.__attributes__.items():
             
             # Copy only existing fields or attributes
-            if attr.name not in tpl.__fields__.keys() + tpl.__attributes__.keys():
+            if attr.name not in list(tpl.__fields__.keys()) + list(tpl.__attributes__.keys()):
                 continue
             
             # Concatenate fields in new, independent, attributes

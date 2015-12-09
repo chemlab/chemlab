@@ -6,7 +6,7 @@ class Trajectory(object):
     def __init__(self, coords, t=None, boxes=None):
         self._data = {}
         self.nframes = len(coords)
-        self._ignored = set(['_ignored'] + self.__dict__.keys())
+        self._ignored = set(['_ignored']) | set(self.__dict__.keys())
          
         self.coords = coords
         self.t = t if t is not None else np.arange(0, self.nframes) 

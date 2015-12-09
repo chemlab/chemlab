@@ -1,4 +1,6 @@
 """Test core types like Molecule and Atom."""
+from __future__ import division, print_function
+
 import numpy as np
 from nose.plugins.attrib import attr
 from nose.tools import assert_equals, eq_, ok_
@@ -230,7 +232,7 @@ def test_sort():
                    repetitions=[3, 3, 3])
 
     tsys.sort()
-    assert_npequal(tsys.type_array[:tsys.n_mol / 2], ['Cl'] * (tsys.n_mol / 2))
+    assert_npequal(tsys.type_array[:tsys.n_mol // 2], ['Cl'] * (tsys.n_mol // 2))
 
 
 # def test_random_box():

@@ -6,15 +6,16 @@ from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
 from .serialization import json_to_data, data_to_json
 from ..utils.pbc import periodic_distance
+from functools import reduce
 
 class Atom(ChemicalEntity):
     __dimension__ = 'atom'
     __fields__ = {
         'r_array' : Field(alias='r', shape=(3,), dtype='float'),
-        'type_array' : Field(dtype='S4', alias='type'),
+        'type_array' : Field(dtype='U4', alias='type'),
         'charge_array' : Field(dtype='float', alias='charge'),
         'atom_export' : Field(dtype=object, alias='export'),
-        'atom_name' : Field(dtype='str', alias='name')
+        'atom_name' : Field(dtype='unicode', alias='name')
     }
 
     def __init__(self, type, r_array, name=None, export=None):
@@ -51,17 +52,17 @@ class Molecule(ChemicalEntity):
     
     __attributes__ = {
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
-        'type_array' : Attribute(dtype='str', dim='atom'),
+        'type_array' : Attribute(dtype='unicode', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
-        'atom_name' : Attribute(dtype='str', dim='atom')
+        'atom_name' : Attribute(dtype='unicode', dim='atom')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
     }
     __fields__ = {
-        'molecule_name' : Field(dtype='str', alias='name'),
+        'molecule_name' : Field(dtype='unicode', alias='name'),
         'molecule_export': Field(dtype=object, alias='export')
     }
     
@@ -116,7 +117,7 @@ def make_formula(elements):
 
     for item, count in sorted(c.items()):
         if count ==1:
-            formula += item
+            formula += "{}".format(item)
         else:
             formula += "{}{}".format(item, count)
 
@@ -128,13 +129,13 @@ class System(ChemicalEntity):
     __dimension__ = 'system'
     __attributes__ = {
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
-        'type_array' : Attribute(dtype='str', dim='atom'),
+        'type_array' : Attribute(dtype='unicode', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
-        'molecule_name' : Attribute(dtype='str', dim='molecule'),
+        'molecule_name' : Attribute(dtype='unicode', dim='molecule'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
         'molecule_export' : Attribute(dtype=object, dim='molecule'),
-        'atom_name' : Attribute(dtype='str', dim='atom')
+        'atom_name' : Attribute(dtype='unicode', dim='atom')
     }
     
     __relations__ = {
