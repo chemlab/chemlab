@@ -1,4 +1,5 @@
 import numpy as np
+import six.moves
 from six import string_types
 
 class EntityProperty(object):
@@ -195,7 +196,7 @@ class InstanceRelation(InstanceArray):
         if not isinstance(name, string_types):
             raise ValueError('name parameter should be a string')
 
-        if not isinstance(index, (list, range, np.ndarray)):
+        if not isinstance(index, (list, six.moves.range, np.ndarray)):
             raise ValueError('index parameter should be an array-like object')
 
         if shape is not None and not isinstance(shape, tuple):
@@ -231,7 +232,8 @@ class InstanceRelation(InstanceArray):
             self.value = np.append(self.value, newrel.value, axis=0)
     
     def remap(self, from_map, to_map, inplace=True):
-        if not isinstance(from_map, (list, np.ndarray, range)) or not isinstance(to_map, (list, np.ndarray, range)):
+        if (not isinstance(from_map, (list, np.ndarray, six.moves.range)) or 
+            not isinstance(to_map, (list, np.ndarray, six.moves.range))):
             raise ValueError('from_map and to_map should be either lists or arrays')
         
         if self.value is None:
@@ -307,7 +309,7 @@ class InstanceRelation(InstanceArray):
         if value is None:
             self._index = None
         
-        elif isinstance(value, (list, range)):
+        elif isinstance(value, (list, six.moves.range)):
             self._index = np.asarray(value, dtype='int')
         
         elif isinstance(value, np.ndarray):

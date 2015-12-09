@@ -31,11 +31,4 @@ install:
   - python setup.py build_ext --inplace
   - python setup.py install
 
-#install:
-#  - "pip install -U cython"
-#  - "if [[ $TRAVIS_PYTHON_VERSION == 3.2 ]]; then pip install -U numpy h5py scipy pyopengl nose matplotlib; fi"
-#  - "if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install -U h5py; fi"
-#  - "python setup.py build_ext --inplace"
-#  - "python setup.py install"
-
-script: "nosetests -a '!slow' tests.test_core tests.test_io"
+script: "nosetests -a '!slow' tests.test_core tests.test_io tests.test_base"
