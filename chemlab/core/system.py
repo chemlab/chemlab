@@ -17,10 +17,12 @@ class Atom(ChemicalEntity):
         'atom_name' : Field(dtype='str', alias='name')
     }
 
-    def __init__(self, type, r_array, export=None):
+    def __init__(self, type, r_array, name=None, export=None):
         super(Atom, self).__init__()
         self.r_array = r_array
         self.type_array = type
+        if name:
+            self.atom_name = name
         self.export = export or {}
     
     @classmethod
@@ -63,11 +65,14 @@ class Molecule(ChemicalEntity):
         'molecule_export': Field(dtype=object, alias='export')
     }
     
-    def __init__(self, atoms, export=None, bonds=None):
+    def __init__(self, atoms, name=None, export=None, bonds=None):
         super(Molecule, self).__init__()
         self._from_entities(atoms, 'atom')
         if bonds:
             self.bonds = bonds
+        
+        if name:
+            self.moelcule_name = name
         
         self.export = export or {}
         self.molecule_name = make_formula(self.type_array)

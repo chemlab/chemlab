@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from chemlab.core import System, Atom, Molecule
@@ -43,10 +44,10 @@ def test_read_gromacs():
     s = df.read('system')
 
 def test_write_gromacs():
-    water = Molecule([Atom('O', [0.0, 0.0, 0.0], export={'grotype': 'OW'}),
-                      Atom('H', [0.1, 0.0, 0.0], export={'grotype': 'HW1'}),
-                      Atom('H', [-0.03333, 0.09428, 0.0], export={'grotype': 'HW2'})],
-                      export={'groname': 'SOL'})
+    water = Molecule([Atom('O', [0.0, 0.0, 0.0], name="OW"),
+                      Atom('H', [0.1, 0.0, 0.0], name='HW1'),
+                      Atom('H', [-0.03333, 0.09428, 0.0], name='HW2')],
+                      name='SOL')
 
     sys = System.empty()
     with sys.batch() as b:
@@ -63,7 +64,6 @@ def test_write_gromacs():
 
     df = datafile('/tmp/dummy.gro')
     sread = df.read('system')
-
     assert all(sread.type_array == sys.type_array)
 
 def test_read_edr():
@@ -99,8 +99,7 @@ def test_read_mol():
 
 def test_read_xtc():
     df = datafile('tests/data/trajout.xtc')
-    t, coords = df.read('trajectory')
-    box = df.read('boxes')
+    traj = df.read('trajectory')
 
 def test_read_cml():
     df = datafile('tests/data/mol.cml')
