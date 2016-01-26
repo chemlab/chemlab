@@ -1,6 +1,8 @@
 chemlab - the python chemistry package you were waiting for
 ===========================================================
 
+[![Join the chat at https://gitter.im/chemlab/chemlab](https://badges.gitter.im/chemlab/chemlab.svg)](https://gitter.im/chemlab/chemlab?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Downloads](https://img.shields.io/pypi/dm/chemlab.svg)](https://crate.io/package/chemlab)
 [![Build Status](https://travis-ci.org/chemlab/chemlab.svg?branch=master)](https://travis-ci.org/chemlab/chemlab)
 
