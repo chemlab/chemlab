@@ -1,4 +1,7 @@
-from .system import System, Molecule, Atom
+from .system import System
+from .molecule import Molecule
+from .atom import Atom
+
 from .system import (subsystem_from_molecules,
                      subsystem_from_atoms,
                      merge_systems)

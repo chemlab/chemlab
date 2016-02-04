@@ -5,7 +5,9 @@ from .base import IOHandler, FeatureNotAvailable
 
 from .gro_map import gro_to_cl
 
-from ...core.system import System, make_formula
+from ...core import System
+
+from ...utils.formula import make_formula
 from ...db import ChemlabDB
 
 

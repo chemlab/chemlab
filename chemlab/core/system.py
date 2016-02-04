@@ -1,134 +1,18 @@
 from __future__ import print_function
+
 import numpy as np
 import operator
 
+from functools import reduce
 from collections import Counter
+
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
+from .atom import Atom
+from .molecule import Molecule
 from .serialization import json_to_data, data_to_json
+
 from ..utils.pbc import periodic_distance
 from ..libs.ckdtree import cKDTree
-from functools import reduce
-
-class Atom(ChemicalEntity):
-    __dimension__ = 'atom'
-    __fields__ = {
-        'r_array' : Field(alias='r', shape=(3,), dtype='float'),
-        'type_array' : Field(dtype='U4', alias='type'),
-        'charge_array' : Field(dtype='float', alias='charge'),
-        'atom_export' : Field(dtype=object, alias='export'),
-        'atom_name' : Field(dtype='unicode', alias='name')
-    }
-
-    def __init__(self, type, r_array, name=None, export=None):
-        super(Atom, self).__init__()
-        self.r_array = r_array
-        self.type_array = type
-        if name:
-            self.atom_name = name
-        self.export = export or {}
-    
-    @classmethod
-    def from_fields(cls, **kwargs):
-        '''
-        Create an `Atom` instance from a set of fields. This is a
-        slightly faster way to initialize an Atom.
-        
-        **Example**
-
-        >>> Atom.from_fields(type='Ar',
-                             r_array=np.array([0.0, 0.0, 0.0]),
-                             mass=39.948,
-                             export={})
-        '''
-        obj = cls.__new__(cls)
-        
-        for name, field in obj.__fields__.items():
-            if name in kwargs:
-                field.value = kwargs[name]
-        
-        return obj
-
-class Molecule(ChemicalEntity):
-    __dimension__ = 'molecule'
-    
-    __attributes__ = {
-        'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
-        'type_array' : Attribute(dtype='unicode', dim='atom'),
-        'charge_array' : Attribute(dim='atom'),
-        'bond_orders' : Attribute(dtype='int', dim='bond'),
-        'atom_export' : Attribute(dtype=object, dim='atom'),
-        'atom_name' : Attribute(dtype='unicode', dim='atom'),
-        'residue_name' : Attribute(dtype='unicode', dim='atom'),
-        # 'residue_id' : Attribute(dtype='uint8', dim='atom'),
-        # 'secondary_structure' : Attribute(dtype='U2', dim='atom'),
-        # 'secondary_id' : Attribute(dtype='uint8', dim='atom')
-    }
-    __relations__ = {
-        'bonds' : Relation(map='atom', shape=(2,), dim='bond')
-    }
-    __fields__ = {
-        'molecule_name' : Field(dtype='unicode', alias='name'),
-        'molecule_export': Field(dtype=object, alias='export')
-    }
-    
-    def __init__(self, atoms, name=None, export=None, bonds=None):
-        super(Molecule, self).__init__()
-        self._from_entities(atoms, 'atom')
-        if bonds:
-            self.bonds = bonds
-        
-        if name:
-            self.moelcule_name = name
-        
-        self.export = export or {}
-        self.molecule_name = make_formula(self.type_array)
-
-    def __setattr__(self, name, value):
-        if name == 'bonds': #TODO UGLY HACK
-            bonds = self.get_attribute('bonds')
-            if len(value) == 0:
-                self.shrink_dimension(0, 'bond')
-            elif bonds.size < len(value):
-                self.expand_dimension(len(value), 'bond', relations={'bonds': value})
-            elif bonds.size > len(value):
-                self.shrink_dimension(len(value), 'bond')
-
-        super(Molecule, self).__setattr__(name, value)
-        
-    @property
-    def n_atoms(self):
-        return self.dimensions['atom']
-
-    @property
-    def n_bonds(self):
-        return self.dimensions['bond']
-    
-    def move_to(self, r):
-        '''Translate the molecule to a new position *r*.
-        '''
-        dx = r - self.r_array[0]
-        self.r_array += dx
-
-def make_formula(elements):
-    c = Counter(elements)
-    formula = ''
-    if c["C"] != 0:
-        formula += "C{}".format(c["C"])
-        del c["C"]
-
-    if c["H"] != 0:
-        formula += "H{}".format(c["H"])
-        del c["H"]
-
-    for item, count in sorted(c.items()):
-        if count ==1:
-            formula += "{}".format(item)
-        else:
-            formula += "{}{}".format(item, count)
-
-    return formula
-
-    
 
 class System(ChemicalEntity):
     __dimension__ = 'system'
@@ -142,9 +26,10 @@ class System(ChemicalEntity):
         'molecule_export' : Attribute(dtype=object, dim='molecule'),
         'atom_name' : Attribute(dtype='unicode', dim='atom'),
         'residue_name' : Attribute(dtype='unicode', dim='atom'),
-        # 'residue_id' : Attribute(dtype='uint8', dim='atom'),
-        # 'secondary_structure' : Attribute(dtype='U2', dim='atom'),
-        # 'secondary_id' : Attribute(dtype='uint8', dim='atom')
+        'residue_id' : Attribute(dtype='uint8', dim='atom'),
+        
+        'secondary_structure' : Attribute(dtype='U2', dim='residue'),
+        'secondary_id' : Attribute(dtype='uint8', dim='residue')
     }
     
     __relations__ = {
@@ -163,7 +48,8 @@ class System(ChemicalEntity):
             molecules = []
         self.dimensions = {'molecule' : len(molecules),
                            'atom': sum(m.dimensions['atom'] for m in molecules),
-                           'bond': sum(m.dimensions['bond'] for m in molecules)}
+                           'bond': sum(m.dimensions['bond'] for m in molecules),
+                           'residue': 0}
 
         if molecules:
             self._from_entities(molecules, 'molecule')

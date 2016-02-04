@@ -7,8 +7,8 @@ from nose.tools import assert_equals, eq_, ok_
 
 from chemlab.core import (System, crystal, merge_systems, random_box,
                           subsystem_from_atoms, subsystem_from_molecules,
-                          random_lattice_box)
-from chemlab.core.system import Atom, Molecule
+                          random_lattice_box, Atom, Molecule)
+
 from chemlab.table import vdw_radius
 from chemlab.io import datafile
 
@@ -29,9 +29,7 @@ class TestAtom(object):
     def test_init(self):
         a = Atom("O", [-4.99, 2.49, 0.0])
         eq_(a.type_array, 'O')
-        eq_(a.get_attribute('type_array').value, 'O')
         assert_npequal(a.r_array, [-4.99, 2.49, 0.0])
-        npeq_(a.get_attribute('r_array').value, [-4.99, 2.49, 0.0])
 
 
 class TestMolecule(object):
