@@ -54,6 +54,11 @@ class PdbIO(IOHandler):
         self.lines = [line.decode('utf-8') for line in self.fd.readlines()]
         self.atoms = []        
         self.atom_res = []
+        self._res_ids = []
+        # Holding info about beta sheets
+        self._sheets = []
+        self._helix = []
+        self._is_amino = []
         
         self._box_vectors = None
         for line in self.lines:
@@ -72,12 +77,15 @@ class PdbIO(IOHandler):
         if line[0:6] == 'ATOM  ':
             self.handle_ATOM(line)
         if line[0:6] == 'HETATM':
-            self.handle_ATOM(line)
-
+            self.handle_ATOM(line, False)
         if line[0:6] == 'CRYST1':
             self.handle_CRYST(line)
+        if line[0:6] == 'SHEET ':
+            self.handle_SHEET(line)
+        if line[0:6] == 'HELIX ':
+            self.handle_HELIX(line)
 
-    def handle_ATOM(self, line):
+    def handle_ATOM(self, line, is_aminoacid=True):
         export = {}
         
         serial = int(line[6:12])
@@ -94,14 +102,21 @@ class PdbIO(IOHandler):
         # C, N, H, S and the first is the type
         type = name[0:2].lstrip()
         export['pdb.type'] = type
-        
+
         # Normalized type                
         atom_type = line[76:78].lstrip()
         atom_type = symbols[u_symbols.index(atom_type.upper())]
         
+        # The res_id could be scrambled up
+        res_id = int(line[22:26])
+        
+        self._res_ids.append(res_id)
+        self._is_amino.append(is_aminoacid)
+        
         self.atom_res.append(resname)
+        
         # Angstrom to nanometer
-        self.atoms.append(Atom(atom_type, [x/10.0, y/10.0, z/10.0]))
+        self.atoms.append(Atom(atom_type, [x/10.0, y/10.0, z/10.0], name=name.strip()))
         
     def handle_CRYST(self, line):
         matched = re.match('(.{6})(.{9})(.{9})(.{9})(.{7})(.{7})(.{7})(.{11})(.{5})', line)
@@ -118,22 +133,38 @@ class PdbIO(IOHandler):
         self._box_vectors = np.array([[a/10, 0, 0],
                                       [0, b/10, 0],
                                       [0, 0, c/10]])
+    
+    def handle_SHEET(self, line):
+        tag = line[0:6]
+        residue_start = int(line[22:26])
+        residue_end = int(line[33:37])
+        
+        self._sheets.append((residue_start, residue_end))
+    
+    def handle_HELIX(self, line):
+        # tag = line[22:18]
+        residue_start = int(line[21:25])
+        residue_end = int(line[33:37])
+        
+        self._helix.append((residue_start, residue_end))
         
     def get_system(self):
         r_array = np.array([a.r for a in self.atoms])
         type_array = np.array([a.type for a in self.atoms])
         atom_export = np.array([a.export for a in self.atoms])
+        name = np.array([a.name for a in self.atoms])
         
         maps = { ('atom', 'molecule') : [] }
         c = count()
         
         mol_names = []
+        # Convert ids
         
-        for key, group in groupby(self.atom_res):
+        for (key, idx), group in groupby(zip(self.atom_res, self._res_ids)):
             molidx = next(c)
             maps['atom', 'molecule'].extend([molidx]* len(list(group)))
             mol_names.append(key)
-        
+
         mol_export = [{'pdb.residue': res} for res in mol_names]
             
         s =  System.from_arrays(r_array=r_array,
@@ -142,8 +173,46 @@ class PdbIO(IOHandler):
                                 atom_export=atom_export,
                                 molecule_name=mol_names,
                                 molecule_export=mol_export, 
+                                atom_name=name,
                                 box_vectors=self._box_vectors)
+                                
+        res2mol = {k: i for i, k in enumerate(np.unique(self._res_ids))}
+        i = 0
+        
+        # The default is coil
+        for j, k in enumerate(np.unique(self._res_ids)):
+            if self._is_amino[j]:
+                s.secondary_structure[j] = 'C'
+        
+        # Secondary structure information
+        for sheet in self._sheets:
+            start = res2mol[sheet[0]]
+            end = res2mol[sheet[1]] + 1
+            s.secondary_structure[start:end] = 'S'
+            s.secondary_id[start:end] = i + 1
+            i += 1
+        
+        for helix in self._helix:
+            start = res2mol[helix[0]]
+            end = res2mol[helix[1]] + 1
+            s.secondary_structure[start:end] = 'H'
+            s.secondary_id[start:end] = i + 1
+            i += 1
 
+        # We take any contiguous coil and assign an ID to them
+        ss_prev = ''
+        j_prev = 0
+        
+        # print s.secondary_structure
+        for j, ss in enumerate(s.secondary_structure):
+            if ss_prev != ss:
+
+                if ss_prev == 'C':
+                    s.secondary_id[j_prev:j] = i + 1
+                    i += 1
+                
+                ss_prev, j_prev = ss, j
+                
         return s
     
     def get_molecule(self):

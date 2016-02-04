@@ -113,9 +113,10 @@ distances::
     [ 0.1         0.09999803]
 
 Sometimes you don't want to manually input the bonds, but want to have
-them automatically generated. In this case you may use the
-:py:meth:`chemlab.core.Molecule.guess_bonds` method.
+them automatically generated. In this case you may use the function 
+:py:meth:`chemlab.core.guess_bonds` method::
 
+    >>> water.bonds = guess_bonds(water)
 
 .. _numpy.take: http://docs.scipy.org/doc/numpy/reference/generated/numpy.take.html
 
@@ -129,7 +130,7 @@ recommended) you can pass also periodic box information::
  
    >>> from chemlab.core import System
    # molecule = a list of Molecule instances
-   >>> s = System(molecules, boxsize=2.0) 
+   >>> s = System(molecules, cell_lengths=[2.0, 2.0, 2.0]) 
  
 A *System* does not directly take *Atom* instances as its constituents,
 therefore if you need to simulate a system made of single atoms (say,
@@ -150,29 +151,20 @@ relation between :py:attr:`Atom.r`, :py:attr:`Molecule.r_array` and
 
 You can preallocate a `System` by using the classmethod
 :py:meth:`System.empty <chemlab.core.System.empty>` (pretty much like
-you can preallocate numpy arrays with `np.empty` or `np.zeros`) and
-then add the molecules one by one::
+you can preallocate numpy arrays with `np.empty` or `np.zeros`) and specify 
+dimensions that this system will have::
 
-  import numpy as np
-  from chemlab.core import Atom, Molecule, System
-  from chemlab.graphics import display_system
-  
-  # Template molecule
-  wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),
-                  Atom('H', [0.00, 0.08,-0.05]),
-                  Atom('H', [0.00,-0.08,-0.05])])
-		  
-  # Initialize a system with four water molecules.    
-  s = System.empty(4, 12) # 4 molecules, 12 atoms
-  
-  for i in range(4):
-      wat.move_to(np.random.rand(3)) # randomly displace the water molecule
-      s.add(wat) # data gets copied each time
-  
-  display_system(s)
+  # This could be a way to preallocate two water molecules
+  s = System.empty(atom=6, molecules=2, bonds=4)
+  # TODO
+  s.type_array
+  s.maps
+  s.bonds  
 
-Since the data is copied, the ``wat`` molecule acts as a *template* so
-you can move it around and keep adding it to the *System*.
+Also, you can add a batch of molecules using the following code::
+  
+  with System.batch() as b:
+    b.append(mol)
 
 Preallocating and adding molecules is a pretty fast way to build a
 `System`, but the fastest way (in terms of processing time) is to
@@ -181,10 +173,8 @@ build the system by passing ready-made arrays, this is done by using
 
 Most of the :py:class:`chemlab.core.Molecule` array attributes are
 still present in :py:class:`chemlab.core.System`, including
-:py:attr:`System.bonds`; bonds between molecules are currently not
-supported and setting them will result in an unexpected behaviour.
-There is also a :py:meth:`chemlab.core.System.guess_bonds` method to
-automatically set the intramolecular bonds.
+:py:attr:`System.bonds` that can be set automatically by using the 
+:py:meth:`chemlab.core.guess_bonds` method.
 
 
 Building Systems
@@ -237,74 +227,58 @@ the crystallographic data, you can easily build a crystal::
 .. note:: If you'd like to implement a .cif file reader, you're
           welcome! Drop a patch on github.
 
-
-Manipulating Systems
-....................
-
 Selections
-~~~~~~~~~~
+..........
 
-You can manipulate systems by using some simple but flexible
-functions. It is really easy to generate a system by selecting a part
-from a bigger system, this is implemented in the functions
-:py:func:`chemlab.core.subsystem_from_atoms` and
-:py:func:`chemlab.core.subsystem_from_molecules`.
 
-Those two functions take as the first argument the original *System*, and as
-the second argument a `selection`. A `selection` is either a boolean
-array that is True when we want to select that element and False
-otherwise, or an integer array containing the elements that we want to
-select. By using those two functions we can create a subsystem by building
-those selections.
+Subsetting systems in chemlab is extremely easy, the method
+:py:meth:`chemlab.core.System.sub` takes care of that
+with a very simple interface. In the following example
+we obtain sub-molecules containing only c-alphas and oxygens from a protein::
 
-The following example shows an easy way to take the molecules that
-contain atoms in the region of space `x > 0.5` by employing
-:py:func:`subsystem_from_atoms`::
+  # TODO
+  from chemlab.dataset import example_protein
+  mol = example_protein()
+  c_alphas = mol.sub(atom_name='CA')
+  oxy = mol.sub(atom_name='O')
+
+You can combine different selection statements to perform more advanced selections.
+Another important method is :py:meth:`chemlab.core.System.where` that instead
+of returning a sub-system or a sub-molecule, will return the indices corresponding
+to the selection.
+
+Another way of making selection is by using :py:meth:`chemlab.core.System.filter`
+that will filter based on indices.
+
+Trajectories
+............
+
+A simple trajectory object can be used to access and store trajectories. 
+To load trajectory information at a certain frame into a System, 
+it is sufficient to use the method Trajectory.at in combination of System.update::
 
   import numpy as np
-  from chemlab.core import crystal, Molecule, Atom, subsystem_from_atoms
-  from chemlab.graphics import display_system
-   
-  # Template molecule
-  wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),
-   		Atom('H', [0.00, 0.08,-0.05]),
-   		Atom('H', [0.00,-0.08,-0.05])])
-   
-  s = crystal([[0.0, 0.0, 0.0]], [wat], 225,
-       cellpar = [.54, .54, .54, 90, 90, 90], # unit cell parameters
-       repetitions = [5, 5, 5]) # unit cell repetitions in each direction
-   
-  selection = s.r_array[:, 0] > 0.5
-  sub_s = subsystem_from_atoms(s, selection)
+  from chemlab.core import Trajectory
   
-  display_system(sub_s)
-
-.. image:: /_static/subsystem_from_atoms.png
-    :width: 800px
-
-It is also possible to select a subsystem by selecting specific
-molecules; in the following example we select the first 10 water
-molecules by using :py:func:`~chemlab.core.subsystem_from_molecules`::
-
-  from chemlab.core import subsystem_from_molecules
-
-  selection = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-  sub_s = subsystem_from_molecules(s, selection)
-
-.. note:: chemlab will provide other selection utilities in the
-          future, if you have a specific request, file an issue on
-          `github <https://github.com/chemlab/chemlab/issues>`_
-
-Merging systems
-~~~~~~~~~~~~~~~
+  n_frames = 10
+  n_atoms = 100
+  coords = np.random.rand(n_frames, n_atoms, 3)
+  times = np.arange(0, 1, 0.01)
+  traj = Trajectory(coords, times)
+  
+  system = System.empty(atom=n_atoms)
+  system.update(traj.at(0))
+  
+Concatenation
+.............
 
 You can also create a system by merging two different systems. In the
 following example we will see how to make a NaCl/H2O interface by
-using :py:func:`chemlab.core.merge_systems`::
+using :py:meth:`chemlab.core.System.concat`
+::
 
   import numpy as np
   from chemlab.core import Atom, Molecule, crystal
-  from chemlab.core import subsystem_from_atoms, merge_systems
   from chemlab.graphics import display_system
    
   # Make water crystal
@@ -324,102 +298,21 @@ using :py:func:`chemlab.core.merge_systems`::
         cellpar = [.54, .54, .54, 90, 90, 90],
         repetitions = [5, 5, 5])
    
-  water_half = subsystem_from_atoms(water_crystal, 
-                  water_crystal.r_array[:,0] > 1.2)
-  nacl_half = subsystem_from_atoms(nacl_crystal, 
-                  nacl_crystal.r_array[:,0] < 1.2)
+  water_half = water_crystal.filter(atom=water_crystal.r_array[:,0] > 1.2) 
+  nacl_half = nacl_crystal.filter(atom=nacl_crystal.r_array[:,0] < 1.2)
    
-  interface = merge_systems(water_half, nacl_half)
-  display_system(interface)
+  interface = water_half.concat(nacl_half)
+  interface.display(backend='povray')
 
 .. image:: /_static/merge_systems.png
     :width: 800px
 
-At the present time, the merging will avoid overlapping by creating a
-bounding box around the two systems and removing the molecules of the
-first system that are inside the second system bounding box. In the
-future there will be more clever ways to handle this overlaps.
+Sorting
+.......
 
-Removing
-~~~~~~~~
-
-There are two methods used to remove specific atoms and molecules from
-a system. :py:meth:`chemlab.core.System.remove_molecules` and
-:py:meth:`chemlab.core.System.remove_atoms`. Taking from the previous
-NaCl example, you may need to remove some excess ions to meet the
-electroneutrality condition::
-
-  # n_na and n_cl are the number of Na and Cl molecules 
-  toremove = 'Na' if n_na > n_cl else 'Cl'
-  nremove = abs(n_na - n_cl) # Number of indices to be removed
-  
-  remove_indices = (s.type_array == toremove).nonzero()[0][:nremove]
-  
-  s.remove_atoms(rem_indices)
-
-Sorting and reordering
-~~~~~~~~~~~~~~~~~~~~~~
-
-It is possible to reorder the molecules in a System by using the
-method :py:meth:`chemlab.core.System.reorder_molecules` that takes the
-new order as the first argument. Reordering can be useful for example
+It is possible to reorder the molecules or atoms in a System by using the
+method :py:meth:`chemlab.core.System.reorder`. Reordering can be useful for example
 to sort the molecules against a certain key.
 
-If you use chemlab in conjunction with GROMACS, you may use the
-:py:meth:`chemlab.core.System.sort` to sort the molecules according to 
-their molecular formulas before exporting. The topology file expect to 
-have a file with the same molecule type ordererd.
-
-Extending the base types
-------------------------
-
-.. warning:: This part of chemlab is still in draft. This first, very
-             brief implementation serves as a specification document.
-             As we collect more feedback and feature requests there
-             will be an expansion and a refinement of the extension
-             functionalities.
-
-Differents applications of chemistry may require additional data
-attached to each atom, molecule or system. For example you may need
-the velocity of the system, atomic charges or number of
-electrons. Chemlab should be able to provide a way to simply attach
-this data while retaining the selection and sorting functionalities.
-
-The management of the atomic and molecular properties within a System
-is done through specific handlers. Those handlers are called
-*attributes* and *fields*. In the following example we may see how
-it's possible to add a new field "v" to the Atom class, and
-transmit this field as a "v_array" in the Molecule and System
-class. In those cases they basically take as their argument the
-attribute/field name, the type, and a function that return the default
-value for the field/attribute::
-
-    from chemlab.core.attributes import MArrayAttr, NDArrayAttr
-    from chemlab.core.fields import AtomicField
-    
-    class MyAtom(Atom):
-        fields = Atom.fields + [AtomicField("v", 
-                                            default=lambda at: np.zeros(3, np.float))]
-
-    class MyMolecule(Molecule):
-        attributes = Molecule.attributes + [MArrayAttr("v_array", "v", np.float, 
-                                                        default=lambda mol: np.zeros((mol.n_atoms, 3), np.float))]
-
-    class MySystem(System):
-        attributes = System.attributes + [NDArrayAttr("v_array", "v_array", np.float, 3)]
-	
-Those class are ready to use. You may want to create new instances
-with the Atom.from_fields, Molecule.from_arrays and
-System.from_arrays.
-
-Once you've done your field-specific job with
-MyAtom/MyMolecule/MySystem you can convert back to a chemlab default class
-class by using the astype methods::
-
-    at = myat.astype(Atom)
-    mol = mymol.astype(Molecule)
-    sys = mysys.astype(System)
-
-..
- todo attributes doesn't sound like a right name for its purpose,
-      it will be better to use something like "arrays" or "derived_arrays".
+Display
+.......

@@ -20,7 +20,14 @@ def minimum_image(coords, pbc):
     cell, or periodic image.
     
     """
-    wrap = coords + (coords < 0.0)*pbc - (coords > pbc)*pbc
+    # This will do the broadcasting
+    coords = np.array(coords)
+    pbc = np.array(pbc)
+    
+    # For each coordinate this number represents which box we are in
+    image_number = np.floor(coords/pbc)
+    
+    wrap = coords - pbc * image_number
     return wrap
 
 

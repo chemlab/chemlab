@@ -70,6 +70,16 @@ class ChemicalEntity(object):
             prop_dict.update({v.alias : v for v in prop_dict.values() if v.alias is not None})
         
         return prop_dict[name]
+
+    def has_attribute(self, name, alias=False):
+        """Check if the entity contains the attribute *name*"""
+        prop_dict = merge_dicts(self.__attributes__,
+                                self.__fields__,
+                                self.__relations__)
+        if alias:
+            prop_dict.update({v.alias : v for v in prop_dict.values() if v.alias is not None})
+        
+        return name in prop_dict
     
     @classmethod
     def empty(cls, **kwargs):
@@ -295,7 +305,9 @@ class ChemicalEntity(object):
                 
         for name, attr in self.__attributes__.items():
             # This takes care of attributes and fields
-            attr.append(entity.get_attribute(name))
+            if entity.has_attribute(name):
+                # If possible inherit the attribute
+                attr.append(entity.get_attribute(name))
         
         for name, rel in self.__relations__.items():
             rel.append(entity.get_attribute(name))
@@ -320,6 +332,7 @@ class ChemicalEntity(object):
                 # Special case, we don't need to do anything
                 if self.dimensions[attr.dim] == 0:
                     continue
+
                 # Else, we generate a subattribute
                 mapped_index = self.maps[attr.dim, dim].value == index
                 entity.__attributes__[name] = attr.sub(mapped_index)

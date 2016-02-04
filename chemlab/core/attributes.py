@@ -157,6 +157,10 @@ class InstanceAttribute(InstanceArray):
     
     def field(self, index):
         obj = InstanceField(name=self.name, dtype=self.dtype, shape=self.shape, alias=self.alias)
+        
+        if self.value is None:
+            raise ValueError("Attribute '%s' is not initialized" % (self.name))
+        
         obj.value = self.value[index]
         return obj
     

@@ -24,8 +24,6 @@ Welcome to chemlab's documentation!
 :Downloads:
    https://chemlab.github.com/chemlab
 
-
-
 Chemlab is a library that can help the user with chemistry-relevant
 calculations using the flexibility and power of the python programming
 language. It aims to be well-designed and pythonic, taking inspiration
@@ -67,14 +65,11 @@ generate geometries. The molecular viewer is very fast (it can easily
 more information about the newest features check out the release notes
 in the :doc:`whatsnew` document.
 
-
 Chemlab is developer-friendly, it provides good documentation and has
 an easy structure to get in. Feel free to send me anything that you
 may do with chemlab, like supporting a new file format, a new graphic
-renderer, a nice example, even if you don't think it's perfect. Send an
-email to the `mailing list <mailto:python-chemlab.googlegroups.com>`_
-or file an issue on the github page to discuss any idea that comes to
-your mind. Get involved!
+renderer, a nice example, even if you don't think it's perfect. File an issue 
+on the github page to discuss any idea that comes to your mind. Get involved!
 
 .. _user-manual:
 
@@ -84,8 +79,6 @@ User Manual
 .. toctree::
    
    whatsnew
-	       
-
 
 **Table of Contents**
 

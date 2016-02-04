@@ -6,6 +6,7 @@ from collections import Counter
 from .base import ChemicalEntity, Field, Attribute, Relation, InstanceRelation
 from .serialization import json_to_data, data_to_json
 from ..utils.pbc import periodic_distance
+from ..libs.ckdtree import cKDTree
 from functools import reduce
 
 class Atom(ChemicalEntity):
@@ -56,7 +57,11 @@ class Molecule(ChemicalEntity):
         'charge_array' : Attribute(dim='atom'),
         'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
-        'atom_name' : Attribute(dtype='unicode', dim='atom')
+        'atom_name' : Attribute(dtype='unicode', dim='atom'),
+        'residue_name' : Attribute(dtype='unicode', dim='atom'),
+        # 'residue_id' : Attribute(dtype='uint8', dim='atom'),
+        # 'secondary_structure' : Attribute(dtype='U2', dim='atom'),
+        # 'secondary_id' : Attribute(dtype='uint8', dim='atom')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
@@ -135,7 +140,11 @@ class System(ChemicalEntity):
         'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
         'molecule_export' : Attribute(dtype=object, dim='molecule'),
-        'atom_name' : Attribute(dtype='unicode', dim='atom')
+        'atom_name' : Attribute(dtype='unicode', dim='atom'),
+        'residue_name' : Attribute(dtype='unicode', dim='atom'),
+        # 'residue_id' : Attribute(dtype='uint8', dim='atom'),
+        # 'secondary_structure' : Attribute(dtype='U2', dim='atom'),
+        # 'secondary_id' : Attribute(dtype='uint8', dim='atom')
     }
     
     __relations__ = {
@@ -342,7 +351,8 @@ class System(ChemicalEntity):
         return np.unique(self.maps['atom', 'molecule'].value[selection])
 
     def where(self, molecule_index=None, molecule_name=None, atom_index=None, 
-              atom_type=None, within_of=None, inplace=False):
+              atom_type=None, atom_name=None, secondary_id=None, secondary_structure=None,
+              within_of=None, inplace=False):
         """Return indices that met the conditions"""
         masks = {k: np.ones(v, dtype='bool') for k,v in self.dimensions.items()} 
         
@@ -365,6 +375,15 @@ class System(ChemicalEntity):
                 mask = self.molecule_name == molecule_name
             
             m = self._propagate_dim(mask, 'molecule')
+            masks = masks_and(masks, m)
+        
+        if atom_name is not None:
+            if isinstance(atom_name, list):
+                mask = reduce(operator.or_, [self.atom_name == m for m in atom_name])
+            else:
+                mask = self.atom_name == atom_name
+            
+            m = self._propagate_dim(mask, 'atom')
             masks = masks_and(masks, m)
         
         if within_of is not None:
@@ -400,6 +419,12 @@ class System(ChemicalEntity):
             if isinstance(atom_index, int):
                 atom_index = [atom_index]
             masks = masks_and(masks, self._propagate_dim(atom_index, 'atom'))
+        
+        if secondary_id is not None:
+            masks = masks_and(masks, self._propagate_dim(self.secondary_id == secondary_id, 'molecule'))
+        
+        if secondary_structure is not None:
+            masks = masks_and(masks, self._propagate_dim(self.secondary_structure == secondary_structure, 'molecule'))
         
         return masks
 
@@ -589,6 +614,39 @@ def merge_systems(sysa, sysb, bounding=0.2):
     
     return sysres
 
+from ..db import ChemlabDB
+cdb = ChemlabDB()
+
+masses = cdb.get("data", "massdict")
+
+# Those functions have a separate life
+def guess_bonds(r_array, type_array, threshold=0.01):
+    covalent_radii = cdb.get('data', 'covalentdict')
+    MAXRADIUS = 0.5
+    
+    # Find all the pairs
+    ck = cKDTree(r_array)
+    pairs = ck.query_pairs(MAXRADIUS)
+    
+    bonds = []
+    for i,j in pairs:
+        a, b = covalent_radii[type_array[i]], covalent_radii[type_array[j]]
+        rval = a + b
+        
+        # print(rval)
+        
+        thr_a = rval - threshold
+        thr_b = rval + threshold 
+        
+        #thr_a2 = thr_a * thr_a
+        thr_b2 = thr_b * thr_b
+        dr2  = ((r_array[i] - r_array[j])**2).sum()
+        
+        # print(dr2)
+        
+        if dr2 < thr_b2:
+            bonds.append((i, j))
+    return np.array(bonds)
 
 if __name__ == '__main__':
     test_empty() 

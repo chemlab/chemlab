@@ -6,8 +6,6 @@ import itertools
 import time
 import datetime
 
-
-
 def line(*args, **kwargs):
     just  = kwargs.get("just", "left")
     if just == "right":
@@ -16,6 +14,7 @@ def line(*args, **kwargs):
         return ' '.join(str(a).ljust(10) for a in args) + '\n'
     else:
         raise ValueError('just must be right or left')
+
 def comment(*args):
     return ';' + line(*args)
 
@@ -55,8 +54,6 @@ class InterMolecular(object):
         sigma, eps = combine_lorentz_berthelot(i.sigma, j.sigma, i.eps, j.eps)
         return PairInteraction((i, j), sigma, eps)
     
-def combine_lorentz_berthelot(sigma1, sigma2, eps1, eps2):
-    return (sigma1 + sigma2)/2, (eps1*eps2)**0.5
 
 class PairInteraction:
     def __init__(self, pair, sigma, eps):

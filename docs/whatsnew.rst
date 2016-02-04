@@ -2,6 +2,20 @@
 What's new
 ==========
 
+Version 1.0
+-----------
+    - The core model has been completely redesigned to be faster and
+      more accurate, so that it's super easy to slice and paste together your 
+      data sets. This includes a brand-new api, and some backward-incompatibility.
+
+    - New Trajectory class.
+    
+    - The notebook rendering code has moved to chemview (a sister project).
+
+    - Module for periodic boundary distance computations.
+
+    - Tests suite has been cleaned up and adjusted.
+
 Version 0.4
 -----------
 
