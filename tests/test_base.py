@@ -385,3 +385,14 @@ class TestChemicalEntity(object):
         
         assert_npequal(c.type_array, ['A', 'B', 'D', 'E', 'F', 'A', 'B', 'D', 'E', 'F'])
         assert_npequal(c.bonds, [[0, 1], [2, 3], [2, 4], [5, 6], [7, 8], [7, 9]])
+
+    def test_where(self):
+        b = B.from_arrays(type_array=['A', 'B', 'D', 'E', 'F'],
+                          bonds=[[0, 1], [2, 3], [2, 4]],
+                          maps={('x', 'a'): [0, 0, 1, 1, 1],
+                                ('y', 'a'): [0, 1, 1]})
+        
+        assert_npequal(b.sub(type_array='A').type_array, ['A'])
+        assert_npequal(b.sub(type_array=['B', 'D']).type_array, ['B', 'D'])
+        assert_npequal(b.sub(a_index=1).type_array, ['D', 'E', 'F'])
+        

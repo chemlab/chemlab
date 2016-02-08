@@ -25,11 +25,13 @@ class System(ChemicalEntity):
         'atom_export' : Attribute(dtype=object, dim='atom'),
         'molecule_export' : Attribute(dtype=object, dim='molecule'),
         'atom_name' : Attribute(dtype='unicode', dim='atom'),
-        'residue_name' : Attribute(dtype='unicode', dim='atom'),
-        'residue_id' : Attribute(dtype='uint8', dim='atom'),
         
-        'secondary_structure' : Attribute(dtype='U2', dim='residue'),
-        'secondary_id' : Attribute(dtype='uint8', dim='residue')
+        'residue_name' : Attribute(dtype='unicode', dim='residue'),
+        'residue_id' : Attribute(dtype='uint32', dim='residue'),
+        
+        'secondary_structure' : Attribute(dtype='unicode', dim='residue'),
+        'secondary_id' : Attribute(dtype='uint32', dim='residue')
+        
     }
     
     __relations__ = {
@@ -41,7 +43,7 @@ class System(ChemicalEntity):
         'box_vectors' : Field(dtype='float', shape=(3, 3))
     }
     
-    def __init__(self, molecules=None):
+    def __init__(self, molecules=None, box_vectors=None):
         super(System, self).__init__()
         
         if molecules is None:
@@ -51,9 +53,11 @@ class System(ChemicalEntity):
                            'bond': sum(m.dimensions['bond'] for m in molecules),
                            'residue': 0}
 
-        if molecules:
+        if molecules is not None:
             self._from_entities(molecules, 'molecule')
-
+        
+        if box_vectors is not None:
+            self.box_vectors = box_vectors
     
     @classmethod
     def empty(cls, **kwargs):
@@ -121,7 +125,6 @@ class System(ChemicalEntity):
         # TODO: UGLY/HACK Retrocompatibility
         if name == 'bonds': #TODO UGLY HACK
             bonds = self.get_attribute('bonds')
-            map_ = self.maps['bond', 'molecule']
             
             if bonds.size < len(value):
                 # We have to infer for each bond which molecule it is
@@ -236,11 +239,9 @@ class System(ChemicalEntity):
         '''
         return np.unique(self.maps['atom', 'molecule'].value[selection])
 
-    def where(self, molecule_index=None, molecule_name=None, atom_index=None, 
-              atom_type=None, atom_name=None, secondary_id=None, secondary_structure=None,
-              within_of=None, inplace=False):
+    def where(self, within_of=None, inplace=False, **kwargs):
         """Return indices that met the conditions"""
-        masks = {k: np.ones(v, dtype='bool') for k,v in self.dimensions.items()} 
+        masks = super(System, self).where(inplace=inplace, **kwargs)
         
         def index_to_mask(index, n):
             val = np.zeros(n, dtype='bool')
@@ -249,28 +250,6 @@ class System(ChemicalEntity):
         
         def masks_and(dict1, dict2):
             return {k: dict1[k] & index_to_mask(dict2[k], len(dict1[k])) for k in dict1 }
-            
-        if molecule_index is not None:
-            m = self._propagate_dim(molecule_index, 'molecule')
-            masks = masks_and(masks, m)
-        
-        if molecule_name is not None:
-            if isinstance(molecule_name, list):
-                mask = reduce(operator.or_, [self.molecule_name == m for m in molecule_name])
-            else:
-                mask = self.molecule_name == molecule_name
-            
-            m = self._propagate_dim(mask, 'molecule')
-            masks = masks_and(masks, m)
-        
-        if atom_name is not None:
-            if isinstance(atom_name, list):
-                mask = reduce(operator.or_, [self.atom_name == m for m in atom_name])
-            else:
-                mask = self.atom_name == atom_name
-            
-            m = self._propagate_dim(mask, 'atom')
-            masks = masks_and(masks, m)
         
         if within_of is not None:
             if self.box_vectors is None:
@@ -292,33 +271,8 @@ class System(ChemicalEntity):
             m = self._propagate_dim(atoms, 'atom')
             masks = masks_and(masks, m)
         
-        if atom_type is not None:
-            if isinstance(atom_type, list):
-                mask = reduce(operator.or_, [self.type_array == a for a in atom_type])
-            else:
-                mask = self.type_array == atom_type
-            
-            m = self._propagate_dim(mask, 'atom')
-            masks = masks_and(masks, m)
-        
-        if atom_index is not None:
-            if isinstance(atom_index, int):
-                atom_index = [atom_index]
-            masks = masks_and(masks, self._propagate_dim(atom_index, 'atom'))
-        
-        if secondary_id is not None:
-            masks = masks_and(masks, self._propagate_dim(self.secondary_id == secondary_id, 'molecule'))
-        
-        if secondary_structure is not None:
-            masks = masks_and(masks, self._propagate_dim(self.secondary_structure == secondary_structure, 'molecule'))
-        
         return masks
 
-    def sub(self, inplace=False, **kwargs):
-        """Return a subsystem where the conditions are met"""
-        filter_ = self.where(**kwargs)
-        return self.subindex(filter_, inplace)
-        
     def display(self, backend='chemview', **kwargs):
         if backend == 'chemview':
             from ..notebook import display_system

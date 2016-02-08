@@ -20,11 +20,16 @@ class Molecule(ChemicalEntity):
         'r_array' : Attribute(shape=(3,), dtype='float', dim='atom', alias="coords"),
         'type_array' : Attribute(dtype='unicode', dim='atom'),
         'charge_array' : Attribute(dim='atom'),
-        'bond_orders' : Attribute(dtype='int', dim='bond'),
         'atom_export' : Attribute(dtype=object, dim='atom'),
         'atom_name' : Attribute(dtype='unicode', dim='atom'),
-        'residue_name' : Attribute(dtype='unicode', dim='atom'),
-        'residue_id' : Attribute(dtype='uint8', dim='atom'),
+        
+        'bond_orders' : Attribute(dtype='int', dim='bond'),
+        
+        'residue_name' : Attribute(dtype='unicode', dim='residue'),
+        'residue_id' : Attribute(dtype='uint32', dim='residue'),
+        
+        'secondary_structure' : Attribute(dtype='unicode', dim='residue'),
+        'secondary_id' : Attribute(dtype='uint32', dim='residue')
     }
     __relations__ = {
         'bonds' : Relation(map='atom', shape=(2,), dim='bond')
@@ -72,18 +77,25 @@ class Molecule(ChemicalEntity):
         dx = r - self.r_array[0]
         self.r_array += dx
 
-# Those functions have a separate life
-def guess_bonds(r_array, type_array):
-    covalent_radii = cdb.get('data', 'covalentdict')
-    MAXRADIUS = 0.3
+
+def guess_bonds(r_array, type_array, threshold=0.1, maxradius=0.3, radii_dict=None):
+    '''Detect bonds given the coordinates (r_array) and types of the 
+    atoms involved (type_array), based on their covalent radii.
+    
+    To fine-tune the detection, it is possible to set a **threshold** and a 
+    maximum search radius **maxradius**, and the radii lookup **radii_dict**.
+    '''
+    if radii_dict is None:
+        covalent_radii = cdb.get('data', 'covalentdict')
+    else:
+        covalent_radii = radii_dict
     
     # Find all the pairs
     ck = cKDTree(r_array)
-    pairs = ck.query_pairs(MAXRADIUS)
+    pairs = ck.query_pairs(maxradius)
     
     bonds = []
     for i,j in pairs:
-        threshold = 0.01
         a, b = covalent_radii[type_array[i]], covalent_radii[type_array[j]]
         rval = a + b
         

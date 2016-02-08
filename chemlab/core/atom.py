@@ -8,10 +8,7 @@ class Atom(ChemicalEntity):
         'type_array' : Field(dtype='U4', alias='type'),
         'charge_array' : Field(dtype='float', alias='charge'),
         'atom_export' : Field(dtype=object, alias='export'),
-        'atom_name' : Field(dtype='unicode', alias='name'),
-        'residue_name': Field(dtype='unicode'),
-        'residue_id': Field(dtype='uint8'),
-        
+        'atom_name' : Field(dtype='unicode', alias='name')
     }
 
     def __init__(self, type, r_array, name=None, export=None):

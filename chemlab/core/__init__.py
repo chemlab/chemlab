@@ -1,5 +1,5 @@
 from .system import System
-from .molecule import Molecule
+from .molecule import Molecule, guess_bonds
 from .atom import Atom
 
 from .system import (subsystem_from_molecules,

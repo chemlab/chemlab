@@ -2,6 +2,9 @@
 from ..db import ChemlabDB
 from ..core import System, Molecule, Atom
 from ..table import atomic_no, atomic_weight
+
+from .energy import lorentz_berthelot as combine_lorentz_berthelot
+
 import itertools
 import time
 import datetime

@@ -4,6 +4,7 @@ Base classes
 from __future__ import print_function
 import numpy as np
 import collections
+import operator
 
 from itertools import islice
 from contextlib import contextmanager
@@ -63,11 +64,15 @@ class ChemicalEntity(object):
             super(ChemicalEntity, self).__setattr__(name, value)
     
     def get_attribute(self, name, alias=False):
+        
         prop_dict = merge_dicts(self.__attributes__,
                                 self.__fields__,
                                 self.__relations__)
         if alias:
             prop_dict.update({v.alias : v for v in prop_dict.values() if v.alias is not None})
+        
+        if name not in prop_dict:
+            raise KeyError('Attribute "{}" not present in class "{}"'.format(name, type(self)))
         
         return prop_dict[name]
 
@@ -110,14 +115,23 @@ class ChemicalEntity(object):
     def from_json(cls, string):
         """Create a ChemicalEntity from a json string 
         """
-        return cls.from_dict(json_to_data(string))
+        exp_dict = json_to_data(string)
+        version = exp_dict.get('version', 0)
+        if version == 0:
+            return cls.from_dict(exp_dict)
+        elif version == 1:
+            return cls.from_dict(exp_dict)
+        else:
+            raise ValueError("Version %d not supported" % version)
     
     def to_json(self):
         """Return a json string representing the ChemicalEntity. This is
         useful for serialization.
 
         """
-        return data_to_json(self.to_dict())
+        exp_dict = self.to_dict()
+        exp_dict['version'] = 1
+        return data_to_json(exp_dict)
     
     def copy(self):
         """Create a copy of this ChemicalEntity
@@ -153,6 +167,7 @@ class ChemicalEntity(object):
             # We only update existing attributes
             if k in allowed_attrs:
                 setattr(self, k, dictionary[k])
+        return self
         
     def initialize_empty(self, **kwargs):
         self.dimensions.update(kwargs)
@@ -200,13 +215,12 @@ class ChemicalEntity(object):
                 self.maps[dim, newdim] = subattr_map
                 
                 self.dimensions[dim] = sum(e.dimensions[dim] for e in entities)
-        
+
         for name, attr in self.__attributes__.items():
-            
             # Copy only existing fields or attributes
-            if attr.name not in list(tpl.__fields__.keys()) + list(tpl.__attributes__.keys()):
+            if not tpl.has_attribute(name):
                 continue
-            
+
             # Concatenate fields in new, independent, attributes
             child_attr = [e.get_attribute(attr.name) for e in entities]
             if attr.dim == newdim:
@@ -216,14 +230,21 @@ class ChemicalEntity(object):
                 child_attr = [e.get_attribute(attr.name) for e in entities]
                 self.__attributes__[name] = concatenate_attributes(child_attr)
 
-        # Concatenate relations as well
+        # Concatenate relations
         for name, attr in self.__relations__.items():
             if newdim in attr.map:
                 self.__relations__[name].index = range(self.dimensions[newdim])
             else:
                 child_rel = [e.get_attribute(attr.name) for e in entities]
                 self.__relations__[name] = concatenate_relations(child_rel)
-
+                
+        
+        # Concatenate maps and create a new attr in parent class
+        for (from_, to_), attr in tpl.maps.items():
+            child_rel = [e.maps[from_, to_] for e in entities]
+            self.maps[from_, to_] = concatenate_relations(child_rel)
+        
+        
     @classmethod
     def _attr_by_dimension(cls, dim):
         return [name for name, attr in merge_dicts(cls.__attributes__, cls.__relations__).items() if attr.dim == dim]
@@ -269,6 +290,10 @@ class ChemicalEntity(object):
         
         # Initialize attributes
         for k in kwargs:
+            
+            # Ignore attributes that are not present
+            if not obj.has_attribute(k):
+                continue
             attr = obj.get_attribute(k)
             if isinstance(attr, (InstanceAttribute, InstanceField)):
                 attr.value = kwargs[k]
@@ -430,6 +455,7 @@ class ChemicalEntity(object):
                                   propagate=False,
                                   inplace=True)
 
+    #TODO: invert newdim and dimension
     def expand_dimension(self, newdim, dimension, maps={}, relations={}):
         ''' When we expand we need to provide new maps and relations as those
         can't be inferred '''
@@ -544,6 +570,72 @@ class ChemicalEntity(object):
         
         return obj
     
+    def where(self, inplace=False, **kwargs):
+        """Return indices over every dimension that met the conditions. 
+        
+        Condition syntax:
+        
+        *attribute* = value
+        
+        Return indices that satisfy the condition where the attribute is equal
+        to the value
+        
+        e.g. type_array = 'H'
+        
+        *attribute* = list(value1, value2)
+        
+        Return indices that satisfy the condition where the attribute is equal 
+        to any of the value in the list.
+        
+        e.g. type_array = ['H', 'O']
+        
+        *dimension_index* = value: int
+        *dimension_index* = value: list(int)
+        
+        Return only elements that correspond to the index in the specified dimension:
+        
+        atom_index = 0
+        atom_index = [0, 1]
+        
+        
+        """
+        masks = {k: np.ones(v, dtype='bool') for k,v in self.dimensions.items()} 
+        
+        def index_to_mask(index, n):
+            val = np.zeros(n, dtype='bool')
+            val[index] = True
+            return val
+        
+        def masks_and(dict1, dict2):
+            return {k: dict1[k] & index_to_mask(dict2[k], len(dict1[k])) for k in dict1 }
+        
+        for key in kwargs:
+            value = kwargs[key]
+            if key.endswith('_index'):
+                if isinstance(value, int):
+                    value = [value]
+                
+                dim = key[:-len('_index')]
+                m = self._propagate_dim(value, dim)
+                masks = masks_and(masks, m)
+            else:
+                attribute = self.get_attribute(key)
+                
+                if isinstance(value, list):
+                    mask = reduce(operator.or_, [attribute.value == m for m in value])
+                else:
+                    mask = attribute.value == value
+            
+                m = self._propagate_dim(mask, attribute.dim)
+                masks = masks_and(masks, m)
+        
+        return masks
+    
+    def sub(self, inplace=False, **kwargs):
+        """Return a entity where the conditions are met"""
+        filter_ = self.where(**kwargs)
+        return self.subindex(filter_, inplace)
+        
     def is_empty(self):
         return sum(self.dimensions.values()) == 0
     

@@ -26,12 +26,13 @@ def test_read_pdb():
 def test_read_pdb_secondary():
     system = datafile('tests/data/pdb1g8p.ent', format='pdb').read('system')
     # assert np.all(system.secondary_structure[106:109] == 'S')
-    eq_(system.sub(secondary_id=1).molecule_name[0], 'VAL')
-    assert_npequal(system.sub(secondary_id=1).molecule_name, ['VAL', 'VAL', 'ASP', 'LEU'])
+    
+    eq_(system.sub(secondary_id=1).residue_name[0], 'VAL')
+    assert_npequal(system.sub(secondary_id=1).residue_name, ['VAL', 'VAL', 'ASP', 'LEU'])
     
     helices = system.sub(secondary_structure='H')
     helix = helices.sub(secondary_id=helices.secondary_id[0])
-    assert_npequal(helix.molecule_name, ['PRO', 'PHE', 'SER', 'ALA', "ILE"])
+    assert_npequal(helix.residue_name, ['PRO', 'PHE', 'SER', 'ALA', "ILE"])
     
     
 

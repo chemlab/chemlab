@@ -154,32 +154,31 @@ class PdbIO(IOHandler):
         atom_export = np.array([a.export for a in self.atoms])
         name = np.array([a.name for a in self.atoms])
         
-        maps = { ('atom', 'molecule') : [] }
+        maps = { ('atom', 'residue') : [] }
         c = count()
         
-        mol_names = []
+        residue_names = []
         # Convert ids
         
         for (key, idx), group in groupby(zip(self.atom_res, self._res_ids)):
             molidx = next(c)
-            maps['atom', 'molecule'].extend([molidx]* len(list(group)))
-            mol_names.append(key)
+            maps['atom', 'residue'].extend([molidx]* len(list(group)))
+            residue_names.append(key)
 
-        mol_export = [{'pdb.residue': res} for res in mol_names]
-            
-        s =  System.from_arrays(r_array=r_array,
-                                type_array=type_array,
-                                maps=maps,
-                                atom_export=atom_export,
-                                molecule_name=mol_names,
-                                molecule_export=mol_export, 
-                                atom_name=name,
-                                box_vectors=self._box_vectors)
-                                
+        s =  Molecule.from_arrays(r_array=r_array,
+                                  type_array=type_array,
+                                  maps=maps,
+                                  atom_export=atom_export,
+                                  residue_name=residue_names,
+                                  atom_name=name)
+                                # box_vectors=self._box_vectors
+        
         res2mol = {k: i for i, k in enumerate(np.unique(self._res_ids))}
         i = 0
         
         # The default is coil
+        n_residue = len(res2mol)
+        
         for j, k in enumerate(np.unique(self._res_ids)):
             if self._is_amino[j]:
                 s.secondary_structure[j] = 'C'
@@ -206,14 +205,13 @@ class PdbIO(IOHandler):
         # print s.secondary_structure
         for j, ss in enumerate(s.secondary_structure):
             if ss_prev != ss:
-
                 if ss_prev == 'C':
                     s.secondary_id[j_prev:j] = i + 1
                     i += 1
                 
                 ss_prev, j_prev = ss, j
-                
-        return s
+        
+        return System([s], box_vectors=self._box_vectors)
     
     def get_molecule(self):
         m = Molecule(self.atoms)

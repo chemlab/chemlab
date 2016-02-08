@@ -80,4 +80,4 @@ class LocalDB(AbstractDB):
                 
         fd = open(towrite, 'w')
         
-        fd.write(value.tojson())
+        fd.write(value.to_json())

@@ -1,6 +1,9 @@
 '''Molecular Dynamics tests with uff'''
 import numpy as np
+
 from chemlab.core import *
+from chemlab.md.analysis import rdf
+
 from chemlab.md.potential import ForceGenerator, InterMolecular, IntraMolecular, to_top
 from nose.tools import eq_
 
@@ -35,13 +38,13 @@ def test_from_dict():
                         "HW1" : {"q" : 1, "sigma": 0.2, "eps": 0.3, "type": "H"},
                         "HW2" : {"q" : 1, "sigma": 0.2, "eps": 0.3, "type": "H"}},
 
-        "bonded" : {'SOL' : { 'particles': ['OW', 'HW1', 'HW2'], 
+        "bonded" : {'SOL' : { 'atoms': ['OW', 'HW1', 'HW2'], 
                               'bonds': [{ 'between': (0, 1), 'r' : 0.2, 'k': 0.1 }, 
                                         { 'between': (0, 1), 'r' : 0.2, 'k': 0.1 }],
                               'angles': [{'between': (1, 0, 2), 'theta' : 90, 'k': 0.1}]
                             },
-                    'NA' :  { 'particles' : ['Na'] },
-                    'CL' :  { 'particles' : ['Cl'] },
+                    'NA' :  { 'atoms' : ['Na'] },
+                    'CL' :  { 'atoms' : ['Cl'] },
                    }
     }
     
@@ -54,15 +57,23 @@ def test_from_dict():
     s = System([na, na, cl, cl, water, water])
     p = ForceGenerator(spec)
     
-    print to_top(s, p)
+    print(p.intermolecular.particles)
+    to_top(s, p)
 
-# def test_uff():
-#     # Test a thing with one bond, like H2
-#     
-#     mol = Molecule([Atom('H', [0.0, 0.0, 0.0]), Atom('H', [0.3, 0.0, 0.0])])
-#     mol.bonds = np.array([[0, 1]])
-# 
-#     # Calculate the energy
-#     en = calculate_energy(mol.r_array, ['H_', 'H_'], bonds=mol.bonds)
-#     print(en)
+def test_rdf():
+    system = datafile("tests/data/rdf/cry.gro").read('system')
+    # Fix for this particular system water.gro
+    #system.r_array += system.box_vectors[0,0]/2
     
+    gro_rdf = np.loadtxt("tests/data/rdf/rdf.xvg", skiprows=13,unpack=True)
+    #nbins = len(gro_rdf[0])
+    size = system.box_vectors[0,0]/2
+    
+    rdf_ =rdf(system.r_array[system.type_array == 'Cl'],
+              system.r_array[system.type_array == 'Li'],
+              binsize=0.002,
+              cutoff=size,
+              periodic = system.box_vectors)
+    
+    mse = ((rdf_[1] - gro_rdf[1, :-2])**2).mean()
+    assert mse < 1.0

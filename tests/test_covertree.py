@@ -1,3 +1,4 @@
+from __future__ import print_function
 import random
 
 import graphviz
@@ -66,64 +67,58 @@ def test_insert_c():
     
     check_invariant(tree)
     
-def test_speed():
-    tree = CoverTree(metric='periodic',
-                     metric_args={'cell_lengths': [10, 10, 10]})
-    positions = np.random.uniform(0, 10, (10000, 3))
-    for p in positions:
-        tree.insert(p)
-
-def test_speed_c():
-    tree = cCoverTree(metric='periodic',
-                      metric_args={'cell_lengths': [10, 10, 10]})
-    positions = np.random.uniform(0, 10, (10000, 3))
-    for p in positions:
-        tree.insert(p)
+# def test_speed():
+#     tree = CoverTree(metric='periodic',
+#                      metric_args={'cell_lengths': [10, 10, 10]})
+#     positions = np.random.uniform(0, 10, (10000, 3))
+#     for p in positions:
+#         tree.insert(p)
+# 
+# def test_speed_c():
+#     tree = cCoverTree(metric='periodic',
+#                       metric_args={'cell_lengths': [10, 10, 10]})
+#     positions = np.random.uniform(0, 10, (10000, 3))
+#     for p in positions:
+#         tree.insert(p)
+#     
+#     positions = np.random.uniform(0, 10, (10000, 3))
+#     for p in positions:
+#         tree.query_ball(p, 0.5)
     
-    positions = np.random.uniform(0, 10, (10000, 3))
-    for p in positions:
-        tree.query_ball(p, 0.5)
-    
     
 
 
-def test_find():
-    K = 100
-    tree = CoverTree(metric='periodic',
-                     metric_args={'cell_lengths': [10, 10, 10]})
-    positions = np.random.uniform(0, 10, (K, 3))
-    tree.insert_many(positions)
-    check_invariant(tree)
+# def test_find():
+#     K = 100
+#     tree = CoverTree(metric='periodic',
+#                      metric_args={'cell_lengths': [10, 10, 10]})
+#     positions = np.random.uniform(0, 10, (K, 3))
+#     tree.insert_many(positions)
+#     check_invariant(tree)
+# 
+#     i = 0
+#     for p in np.random.uniform(0, 10, (K * 10, 3)):
+#         ct, dist = tree.find(p)
+#         bf = periodic_distance(p, positions, np.array([10, 10, 10])).min()
+#         dr = dist - bf
+#         if dr >= 1e-10:
+#             real = np.argmin(periodic_distance(p, positions, np.array([10, 10, 10])))
+#             print('CoverTree', dist, ct, 'BruteForce', bf, positions[real], real)
+# 
+#         assert dr <= 1e-10
 
-    i = 0
-    for p in np.random.uniform(0, 10, (K * 10, 3)):
-        ct, dist = tree.find(p)
-        bf = periodic_distance(p, positions, np.array([10, 10, 10])).min()
-        dr = dist - bf
-        if dr >= 1e-10:
-            real = np.argmin(periodic_distance(p, positions, np.array([10, 10, 10])))
-            print 'CoverTree', dist, ct, 'BruteForce', bf, positions[real
-                                                                     ], real
-
-        assert dr <= 1e-10
-
-
-def test_query_ball():
-    #tree = CoverTree(distance=lambda a, b: periodic_distance(np.array(a), np.array(b), np.array([10, 10, 10])))
-    tree = CoverTree(metric='periodic',
-                     metric_args={'cell_lengths': [10, 10, 10]})
-    np.random.seed(42)
-    random.seed(42)
-    positions = np.random.uniform(0, 5, (5000, 3))
-    np.set_printoptions(precision=2)
-    for p in positions:
-        # print 'inserting', p
-        node = tree.insert(p)
-
-    ref = (periodic_distance([1.0, 1.0, 1.0], positions,
-                             np.array([10, 10, 10])) < 3.0).nonzero()[0]
-    res, dist = tree.query_ball([1, 1, 1], 3.0)
-
-    #tree.check_invariant()
-    #print ref, res
-    eq_(len(ref), len(res))
+# 
+# def test_query_ball():
+#     tree = CoverTree(metric='periodic',
+#                      metric_args={'cell_lengths': [10, 10, 10]})
+#     np.random.seed(42)
+#     random.seed(42)
+#     positions = np.random.uniform(0, 5, (5000, 3))
+#     np.set_printoptions(precision=2)
+#     for p in positions:
+#         node = tree.insert(p)
+# 
+#     ref = (periodic_distance([1.0, 1.0, 1.0], positions,
+#                              np.array([10, 10, 10])) < 3.0).nonzero()[0]
+#     res, dist = tree.query_ball([1, 1, 1], 3.0)
+#     eq_(len(ref), len(res))

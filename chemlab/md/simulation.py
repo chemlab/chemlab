@@ -60,9 +60,12 @@ def to_mdp(simulation):
         r += "annealing-time = {}\n".format(" ".join(str(a[0] * 1000) for a in annealing))
         r += "annealing-temp = {}\n".format(" ".join(str(a[1]) for a in annealing)) 
     
-    r += 'pcoupl = {}\n'.format(simulation.barostat)
-    r += 'compressibility = 4.5e-5\n'
-    r += 'ref_p = {}\n'.format(simulation.pressure)
+    if simulation.pressure is None:
+        r += 'pcoupl = {}\n'.format('no')
+    else:
+        r += 'pcoupl = {}\n'.format(simulation.barostat)
+        r += 'compressibility = 4.5e-5\n'
+        r += 'ref_p = {}\n'.format(simulation.pressure)
     
     r += 'constraints = {}\n'.format(simulation.constraints)
     

@@ -186,7 +186,7 @@ class TestWhere(object):
             maps=
             {('atom', 'molecule'): [0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6]})
 
-        idx = self.s.where(atom_type='O')
+        idx = self.s.where(type_array='O')
         assert_npequal(idx['atom'],
                        [False, False, True, False, False, True, False, False,
                         True, False, False, False, False])
@@ -199,7 +199,7 @@ class TestWhere(object):
             maps=
             {('atom', 'molecule'): [0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6]})
 
-        idx = self.s.where(atom_type=['Na', 'Cl'])
+        idx = self.s.where(type_array=['Na', 'Cl'])
         assert_npequal(idx['atom'],
                        [True, True, False, False, False, False, False, False,
                         False, False, False, True, True])
@@ -326,34 +326,16 @@ def test_bond_orders():
 
     s.bonds = np.array([[0, 1], [0, 2], [3, 4], [3, 5]])
     assert_npequal(s.bond_orders, np.array([2, 0, 0, 0]))
-
-# 
-# def test_bond_guessing():
-#     # We should find the bond guessing also for systems
-# 
-#     # System Made of two benzenes
-#     bz = datafile("tests/data/benzene.mol").read('molecule')
-#     bzbonds = bz.bonds
-#     bz.bonds = np.array([])
-# 
-#     # Separating the benzenes by large amount
-#     bz2 = bz.copy()
-#     bz2.r_array += 2.0
-# 
-#     s = System([bz, bz2])
-#     s.guess_bonds()
-#     assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
-# 
-#     # Separating benzenes by small amount
-#     bz2 = bz.copy()
-#     bz2.r_array += 0.15
-# 
-#     s = System([bz, bz2])
-#     s.guess_bonds()
-#     assert_eqbonds(s.bonds, np.concatenate((bzbonds, bzbonds + 6)))
-# 
-#     #display_molecule(mol)
-
+        
+def test_residue():
+    
+    m = Molecule.from_arrays(type_array=['H', 'H', 'H', 'O', 'O'], 
+                             residue_name=['VAL', 'ALA'],
+                             maps={('atom', 'residue'): [0, 0, 0, 1, 1]})
+    assert_npequal(m.sub(residue_index=0).type_array, ['H', 'H', 'H'])
+    
+    s = System([m, m])
+    assert_npequal(s.maps['atom', 'residue'].value, [0, 0, 0, 1, 1, 2, 2, 2, 3, 3])
 
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
