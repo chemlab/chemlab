@@ -6,7 +6,9 @@ import numpy as np
 import collections
 import operator
 
+
 from itertools import islice
+from functools import reduce
 from contextlib import contextmanager
 from collections import defaultdict
 from .attributes import (InstanceField, InstanceArray, 
