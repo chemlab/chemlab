@@ -1,6 +1,6 @@
 from chemlab.table import *
 from nose.tools import eq_
-from testtools import feq_, npeq_
+from .testtools import feq_, npeq_
 
 def test_atomic_no():
     eq_(atomic_no('H'), 1)

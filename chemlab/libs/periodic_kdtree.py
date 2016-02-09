@@ -19,7 +19,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     m = len(x)
     
     xs_to_try = [real_x]
-    for i in xrange(m):
+    for i in range(m):
         if bounds[i] > 0.0:
             disp = np.zeros(m)
             disp[i] = bounds[i]

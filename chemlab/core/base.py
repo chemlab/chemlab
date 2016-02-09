@@ -163,7 +163,7 @@ class ChemicalEntity(object):
     
     def update(self, dictionary):
         """Update the current chemical entity from a dictionary of attributes"""
-        allowed_attrs = self.__attributes__.keys()
+        allowed_attrs = list(self.__attributes__.keys())
         allowed_attrs += [a.alias for a in self.__attributes__.values()]
         for k in dictionary:
             # We only update existing attributes
