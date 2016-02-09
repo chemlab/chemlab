@@ -337,6 +337,32 @@ def test_residue():
     s = System([m, m])
     assert_npequal(s.maps['atom', 'residue'].value, [0, 0, 0, 1, 1, 2, 2, 2, 3, 3])
 
+def test_query():
+    type_array = ['Cl', 'Cl', 'O', 'H', 'H', 'O', 'H', 'H', 'Na', 'Na']
+    maps = {('atom', 'molecule'): [0, 1, 2, 2, 2, 3, 3, 3, 4, 5]}
+    s = System.from_arrays(type_array = type_array, maps=maps)
+    
+    assert_npequal(s.where(type_array=['Na', 'Cl'])['atom'], 
+              [True, True, False, False, False, False, False, False, True, True])
+    
+    assert_npequal(s.where(type_array='Cl')['atom'], 
+              [True, True, False, False, False, False, False, False, False, False])
+    
+    # We move the Cl away
+    cl = s.where(type_array='Cl')['atom']
+    s.r_array[cl.nonzero()[0]] = [1, 0, 0]
+    s.box_vectors = np.diag([3, 3, 3])
+    
+    assert_npequal(s.where(type_array=['H', 'O'], within_of=(0.2, [8, 9]))['atom'],
+             [False, False, True, True, True, True, True, True, False, False])
+
+    assert_npequal(s.where(type_array=['H', 'O'], within_of=(0.2, 8))['atom'],
+             [False, False, True, True, True, True, True, True, False, False])
+
+    assert_npequal(s.where(type_array=['H', 'O'], within_of=(0.2, [8]))['atom'],
+             [False, False, True, True, True, True, True, True, False, False])
+    
+
 def test_serialization():
     cl = Molecule([Atom.from_fields(type='Cl', r=[0.0, 0.0, 0.0])])
     jsonstr = cl.to_json()

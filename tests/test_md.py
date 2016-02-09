@@ -2,6 +2,7 @@
 import numpy as np
 
 from chemlab.core import *
+from chemlab.io import datafile
 from chemlab.md.analysis import rdf
 
 from chemlab.md.potential import ForceGenerator, InterMolecular, IntraMolecular, to_top
@@ -48,16 +49,16 @@ def test_from_dict():
                    }
     }
     
-    na = Molecule.from_arrays(type_array=['Na'], molecule_name='NA')
-    cl = Molecule.from_arrays(type_array=['Cl'], molecule_name='CL')
+    na = Molecule.from_arrays(type_array=['Na'], molecule_name='NA', atom_name=['Na'])
+    cl = Molecule.from_arrays(type_array=['Cl'], molecule_name='CL', atom_name=['Cl'])
     water = Molecule.from_arrays(type_array=['O', 'H', 'H'], 
                                  molecule_name='SOL',
+                                 atom_name=['OW', 'HW1', 'HW2'],
                                  bonds=[[0, 1], [0, 2]])
 
     s = System([na, na, cl, cl, water, water])
     p = ForceGenerator(spec)
     
-    print(p.intermolecular.particles)
     to_top(s, p)
 
 def test_rdf():
