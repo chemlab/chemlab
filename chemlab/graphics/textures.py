@@ -1,6 +1,8 @@
 """Texture data structures
 """
 from __future__ import print_function
+
+import numpy as np
 from OpenGL.GL import *
 
 class Texture(object):
@@ -27,4 +29,4 @@ class Texture(object):
         glTexParameteri(self.kind, par, value)
 
     def delete(self):
-        glDeleteTextures(1, self.id)
+        glDeleteTextures(1, np.array(self.id))
