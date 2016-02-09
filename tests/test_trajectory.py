@@ -1,6 +1,11 @@
+from __future__ import print_function
+
 import numpy as np
-from testtools import npeq_
+
+from .testtools import npeq_
+
 from chemlab.core import Trajectory, System
+
 np.random.seed(42)
 
 def test_init():    
@@ -26,12 +31,6 @@ def test_map():
     traj = Trajectory(coords, t)
     
     summed_coords = traj.map(np.sum, attributes="coords")
-    print np.array(list(summed_coords))
-
-def test_rolling_func():
-    pass
-    # summed_coords = traj.rolling(np.sum, attributes="coords")
-
 
 def test_offload():
     from chemlab.io import datafile

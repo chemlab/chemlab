@@ -6,7 +6,7 @@ import numpy as np
 from chemlab.utils.pbc import distance_matrix, minimum_image, noperiodic
 from chemlab.utils.geometry import cartesian_to_spherical
 from chemlab.utils.neighbors import count_neighbors, nearest_neighbors
-from testtools import npeq_
+from .testtools import npeq_
 
 import time
 
