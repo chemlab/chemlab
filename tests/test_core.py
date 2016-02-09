@@ -379,4 +379,4 @@ def test_serialization():
                    repetitions=[3, 3, 3])
     jsonstr = tsys.to_json()
 
-    eq_(System.from_json(jsonstr).to_json(), jsonstr)
+    npeq_(System.from_json(jsonstr).r_array, tsys.r_array)
