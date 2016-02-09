@@ -10,6 +10,8 @@ from chemlab.core import System
 from nose.tools import assert_raises
 from nose.plugins.attrib import attr
 
+from .testtools import npeq_
+
 @attr('slow')
 def test_cir():
     db = CirDB()
@@ -18,21 +20,22 @@ def test_cir():
 def test_local():
     db = ChemlabDB()
     bz = db.get("molecule", "example.norbornene")
+    pre_dict = bz.to_dict()
 
-    pre_string = bz.to_json()
     db = LocalDB("/tmp/testdb/")
     db.store("molecule", 'norbornene', bz, nowarn=True)
     
-    post_string = db.get('molecule', 'norbornene').to_json()
-    assert pre_string == post_string
+    post_dict = db.get('molecule', 'norbornene').to_dict()
+    
+    npeq_(pre_dict['r_array'], post_dict['r_array'])
     
     # Do the same thing for a system of 3 norbornenes
     s = System([bz.copy() for i in range(3)])
-    pre_string = s.to_json()
+    pre_dict = s.to_dict()
     db.store("system", 'norbornene-3', s, nowarn=True)
-    post_string = db.get('system', 'norbornene-3').to_json()
+    post_dict = db.get('system', 'norbornene-3').to_dict()
     
-    assert pre_string == post_string
+    npeq_(pre_dict['r_array'], post_dict['r_array'])
     
     
 def test_rcsb():
