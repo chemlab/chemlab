@@ -1,7 +1,6 @@
 from __future__ import print_function
 import random
 
-import graphviz
 import numpy as np
 from nose.tools import assert_raises, eq_, ok_
 

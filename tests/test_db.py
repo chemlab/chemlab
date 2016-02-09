@@ -5,7 +5,6 @@ from chemlab.db import RcsbDB
 from chemlab.db import ChemlabDB
 from chemlab.db.base import EntryNotFound
 
-from chemlab.graphics import display_molecule
 from chemlab.core import System
 
 from nose.tools import assert_raises
