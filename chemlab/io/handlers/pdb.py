@@ -187,7 +187,7 @@ class PdbIO(IOHandler):
         for sheet in self._sheets:
             start = res2mol[sheet[0]]
             end = res2mol[sheet[1]] + 1
-            s.secondary_structure[start:end] = 'S'
+            s.secondary_structure[start:end] = 'E'
             s.secondary_id[start:end] = i + 1
             i += 1
         

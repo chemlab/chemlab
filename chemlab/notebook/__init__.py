@@ -21,7 +21,9 @@ def download_molecule(name):
 def display_molecule(molecule, highlight=None, **kwargs):
     topology = {
         'atom_types': molecule.type_array,
-        'bonds': molecule.bonds
+        'bonds': molecule.bonds,
+        'atom_names': molecule.atom_name,
+        'secondary_structure': molecule.secondary_structure
     }
 
     mv = MolecularViewer(molecule.r_array.astype('float32'), topology)
@@ -35,6 +37,8 @@ def display_molecule(molecule, highlight=None, **kwargs):
             mv.points(highlight=highlight)
     elif kind == 'ball_and_sticks':
         mv.ball_and_sticks()
+    elif kind == 'cartoon':
+        mv.cartoon()
     else:
         raise ValueError("kind {} not found".format(kind))
     
