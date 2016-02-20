@@ -25,7 +25,7 @@ setup(
     ext_modules = ext_modules,
     include_dirs = [np.get_include()],
     install_requires = ['dask', 'toolz', 'cython', 'six', 
-                        'numpy', 'scipy', 'matplotlib', 'hdf5py'],
+                        'numpy', 'scipy', 'matplotlib', 'h5py'],
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.graphics.postprocessing.shaders': ['*.vert', '*.frag'],
