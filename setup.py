@@ -19,12 +19,13 @@ ext_modules = [Extension('chemlab.libs.ckdtree', ['chemlab/libs/ckdtree.pyx']),
 
 setup(
     name = "chemlab",
-    version = "0.4.1",
+    version = "1.0b1",
     packages = find_packages(),
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules,
     include_dirs = [np.get_include()],
-    install_requires = ['dask', 'multipledispatch', 'toolz'],
+    install_requires = ['dask', 'toolz', 'cython', 'six', 
+                        'numpy', 'scipy', 'matplotlib', 'hdf5py'],
     package_data = {'': ['distribute_setup.py', '*.rst', '*.txt'],
                     'chemlab.graphics.renderers.shaders': ['*.vert', '*.frag'],
                     'chemlab.graphics.postprocessing.shaders': ['*.vert', '*.frag'],
@@ -60,7 +61,7 @@ setup(
                    'Topic :: Scientific/Engineering :: Physics',
                    'Topic :: Multimedia :: Graphics :: Viewers',
                    'Programming Language :: Python :: 2.7'],
-    license = "LGPL if parts using PyQt (chemlab.graphics and chemlab.mviewer packages), GPL3 if the PyQt parts are included.",
+    license = "LGPL(no PyQt), GPL3(with PyQt)",
     keywords = "chemistry molecular_viewer",
     url = "https://chemlab.github.com/chemlab"
 )
