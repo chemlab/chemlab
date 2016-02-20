@@ -24,6 +24,7 @@ script: nosetests tests
 deploy:
   provider: pypi
   user: gabriele.lanaro
+  distributions: "sdist bdist_wheel"
   password:
     secure: RZiBFc7a7uAmxYJh5vXoP3eGBFNG9NiAApfWzc3O6b4WyTEFZ2NZUSlfcCghXwSs8Ydjy9herWbAxYGSkXZoM6KsX1B9RmFhcMiwb9nlnlsRFdUsqLuVpPXFZnHgsDxIzV/stNUd6sEBl4M+JgXg7JcSMxsdMcH7EDBfQ5WRFaI=
   on:
