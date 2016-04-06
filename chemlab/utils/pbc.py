@@ -104,6 +104,11 @@ def distance_matrix(a, b, periodic):
     return periodic_distance(a, b, periodic)
 
 def periodic_distance(a, b, periodic):
+    '''
+    Periodic distance between two arrays. Periodic is a 3
+    dimensional array containing the 3 box sizes.
+
+    '''
     a = np.array(a)
     b = np.array(b)
     periodic = np.array(periodic)

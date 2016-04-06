@@ -49,7 +49,7 @@ class Molecule(ChemicalEntity):
             self.molecule_name = name
         
         self.export = export or {}
-        self.molecule_name = make_formula(self.type_array)
+        self.molecule_name = name or make_formula(self.type_array)
 
     def __setattr__(self, name, value):
         if name == 'bonds': #TODO UGLY HACK
@@ -99,15 +99,15 @@ def guess_bonds(r_array, type_array, threshold=0.1, maxradius=0.3, radii_dict=No
         a, b = covalent_radii[type_array[i]], covalent_radii[type_array[j]]
         rval = a + b
         
-
         thr_a = rval - threshold
         thr_b = rval + threshold 
         
-        #thr_a2 = thr_a * thr_a
-        thr_b2 = thr_b * thr_b
-        dr2  = ((r_array[i] - r_array[j])**2).sum()
+        thr_a2 = thr_a**2
+        thr_b2 = thr_b**2
         
-        if dr2 < thr_b2:
+        dr2  = ((r_array[i] - r_array[j])**2).sum()
+        # print(thr_a, dr2**0.5, thr_b)
+        if thr_a2 < dr2 < thr_b2:
             bonds.append((i, j))
     return np.array(bonds)
     

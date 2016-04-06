@@ -196,9 +196,15 @@ def write_gro(sys, fd):
         raise Exception('Gromacs exporter need box_vectors'
                         'information System.box_vectors')
 
-    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0, 0],
+    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0, 0],
                                                       sys.box_vectors[1, 1],
-                                                      sys.box_vectors[2, 2]))
+                                                      sys.box_vectors[2, 2],
+                                                      sys.box_vectors[0, 1],
+                                                      sys.box_vectors[0, 2],
+                                                      sys.box_vectors[1, 0],
+                                                      sys.box_vectors[1, 2],
+                                                      sys.box_vectors[2, 0],
+                                                      sys.box_vectors[2, 1]))
 
     #for line in lines:
     #    print line
