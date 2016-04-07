@@ -7,29 +7,39 @@ from chemlab.md.analysis import rdf
 
 from chemlab.md.potential import ForceGenerator, InterMolecular, IntraMolecular, to_top
 from nose.tools import eq_
+from chemlab.md.interactions import Coulomb, LennardJones
 
-stretch_k_ij = {
-    ('H_','H_') : 1.0
-}
-
-bond_r_ij = {
-    ('H_','H_') : 0.354 + 0.354,
-}
-
-def calculate_energy(r_array, mdtype_array, bonds):
-    r_ij = bond_r_ij
-    k_ij = stretch_k_ij
+def test_energy_calc():
     
-    en = 0
-    # Bond stretching part
-    for i_1, i_2 in bonds:
-        t_1 = mdtype_array[i_1]
-        t_2 = mdtype_array[i_2]
-        r = np.linalg.norm(r_array[i_1] - r_array[i_2])
-        en += 0.5 * k_ij[(t_1, t_2)] * (r - r_ij[(t_1, t_2)])
+    # How do you calculate energy?
+    particles1 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    types1 = ["Li", "Cl", "Cl"]
     
-    return en
+    particles2 = [[1, 1, 1]]
+    types2 = ["Li"]
+    
+    coulomb = Coulomb({"Li" : 1, "Cl": -1})
+    result = coulomb.interaction(particles1, types1, particles2, types2)
+    print(result)
+    
+    lj = LennardJones({ "Li": { "sigma": 0.2, "eps": 0.3 },
+                        "Cl": { "sigma": 0.2, "eps": 0.3 }})
+    
+    result = lj.interaction(particles1, types1, particles2, types2)
+    print(result)
 
+def test_energy_calc_speed():
+    lj = LennardJones({ "Li": { "sigma": 0.2, "eps": 0.3 },
+                        "Cl": { "sigma": 0.2, "eps": 0.3 }})
+    particles1 = np.random.rand(10000, 3)
+    particles2 = np.random.rand(10000, 3)
+    types1 = ["Li"] * 1000 
+    types2 = ["Cl"] * 1000
+    
+    result = lj.interaction(particles1, types1, particles2, types2)
+    # print(result)
+
+    
 def test_from_dict():
     # Define a new potential, the format is python dictionary or json
     spec = {
