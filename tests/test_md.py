@@ -1,4 +1,5 @@
 '''Molecular Dynamics tests with uff'''
+from __future__ import print_function
 import numpy as np
 
 from chemlab.core import *
@@ -8,6 +9,8 @@ from chemlab.md.analysis import rdf
 from chemlab.md.potential import ForceGenerator, InterMolecular, IntraMolecular, to_top
 from nose.tools import eq_
 from chemlab.md.interactions import Coulomb, LennardJones
+from chemlab.md.ewald import Ewald
+from chemlab.utils.pbc import minimum_image
 
 def test_energy_calc():
     
@@ -28,17 +31,67 @@ def test_energy_calc():
     result = lj.interaction(particles1, types1, particles2, types2)
     print(result)
 
-def test_energy_calc_speed():
-    lj = LennardJones({ "Li": { "sigma": 0.2, "eps": 0.3 },
-                        "Cl": { "sigma": 0.2, "eps": 0.3 }})
-    particles1 = np.random.rand(10000, 3)
-    particles2 = np.random.rand(10000, 3)
-    types1 = ["Li"] * 1000 
-    types2 = ["Cl"] * 1000
+def test_ewald():
+    particles1 = [[0.0, 0, 0], [0.5, 0.5, 0.5]]
+    types1 = ["Li", "Cl"]
+    box = [1.0, 1.0, 1.0]
     
-    result = lj.interaction(particles1, types1, particles2, types2)
-    # print(result)
+    li = Molecule([Atom('Li', [0, 0, 0], name='Li+')])
+    cl = Molecule([Atom('Cl', [0, 0, 0], name='Cl-')])
 
+    cell_par = 0.5
+    rocksalt = crystal([[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]], # Fractional Positions
+            [li, cl], # Molecules
+            225, # Space Group
+            cellpar = [cell_par, cell_par, cell_par, 90, 90, 90], # unit cell parameters
+            repetitions = [1, 1, 1]) # unit cell repetitions in each direction
+    
+    particles1 = rocksalt.r_array
+    types1 = rocksalt.type_array.astype("S2")
+    box = np.diagonal(rocksalt.box_vectors)
+    
+    # for k_max in (2, 3, 4, 5, 6):
+    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=0.9, alpha=(3.6/0.9)**0.5, kmax=7)
+    result = ewald.real(particles1, types1, particles1, types1, box)
+    
+    # Value by direct sum should be: -242.798432912
+    print("Real", result)
+    result = ewald.reciprocal(particles1, types1, particles1, types1, box)
+    print("Reciprocal", result)
+    print("Whole", ewald.interaction(particles1, types1, particles1, types1, box) / 2)
+
+def test_ewald_wurtzite():
+    particles1 = [[0.0, 0, 0], [0.5, 0.5, 0.5]]
+    types1 = ["Li", "Cl"]
+    box = [1.0, 1.0, 1.0]
+    
+    li = Molecule([Atom('Li', [0, 0, 0], name='Li+')])
+    cl = Molecule([Atom('Cl', [0, 0, 0], name='Cl-')])
+
+    cell_param = 0.29
+    box = crystal([[2/3., 1/3., 0.0], [2/3., 1/3., 3/8.]], # Fractional Positions
+                [li,  cl], # Molecules
+                186, # Space Group
+                cellpar = [cell_param * 1., cell_param * 1., cell_param * 2. * (2/3.)**0.5, 90, 90, 120], # unit cell parameters
+                repetitions = [1, 1, 1]) # unit cell repetitions in each direction
+    straight_box = np.diag(np.diagonal(box.box_vectors))
+    box.box_vectors = straight_box
+    box.r_array = minimum_image(box.r_array + cell_param/2, np.diagonal(box.box_vectors))
+
+    particles1 = box.r_array
+    types1 = box.type_array.astype("S2")
+    box = np.diagonal(box.box_vectors)
+    
+    # for k_max in (2, 3, 4, 5, 6):
+    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=0.9, alpha=(3.2/0.9)**0.5, kmax=7)
+    result = ewald.real(particles1, types1, particles1, types1, box)
+    
+    # Value by direct sum should be: -242.798432912
+    print("Real", result)
+    result = ewald.reciprocal(particles1, types1, particles1, types1, box)
+    print("Reciprocal", result)
+    print("Dipole", ewald.dipole_correction(particles1, types1, box) / 4)
+    print("Whole", ewald.interaction(particles1, types1, particles1, types1, box) / 2)
     
 def test_from_dict():
     # Define a new potential, the format is python dictionary or json
