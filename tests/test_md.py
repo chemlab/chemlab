@@ -68,7 +68,17 @@ def test_energy_calc():
     result = tf.interaction(particles1, types1, particles2, types2)
     print(result) # should be 1408.55893904
     
-    
+ROCKSALT_M = 1.748
+WURTZ_M = 1.638
+
+from chemlab.md.energy import F
+def madelung(r, M):
+    return F * M / r
+
+def rmin(box):
+    D = box.r_array[np.newaxis] - box.r_array[:, np.newaxis]
+    D = (D**2).sum(axis=-1)**0.5
+    return D[np.triu_indices(D.shape[0], 1)].min()
     
 def test_ewald():
     particles1 = [[0.0, 0, 0], [0.5, 0.5, 0.5]]
@@ -78,7 +88,7 @@ def test_ewald():
     li = Molecule([Atom('Li', [0, 0, 0], name='Li+')])
     cl = Molecule([Atom('Cl', [0, 0, 0], name='Cl-')])
 
-    cell_par = 0.5
+    cell_par = 2.0
     rocksalt = crystal([[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]], # Fractional Positions
             [li, cl], # Molecules
             225, # Space Group
@@ -90,15 +100,17 @@ def test_ewald():
     box = np.diagonal(rocksalt.box_vectors)
     
     # for k_max in (2, 3, 4, 5, 6):
-    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=0.9, alpha=(3.6/0.9)**0.5, kmax=7)
+    rcut = cell_par * 4
+    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=rcut, alpha=(3.6/0.9)**0.5, kmax=10)
     result = ewald.real(particles1, types1, particles1, types1, box)
-    
-    # Value by direct sum should be: -242.798432912
+
     print("Real", result)
     result = ewald.reciprocal(particles1, types1, particles1, types1, box)
     print("Reciprocal", result)
     print("Whole", ewald.interaction(particles1, types1, particles1, types1, box) / 2)
 
+    print("Madelung", madelung(rmin(rocksalt), ROCKSALT_M)/2)
+    
 def test_ewald_wurtzite():
     particles1 = [[0.0, 0, 0], [0.5, 0.5, 0.5]]
     types1 = ["Li", "Cl"]
@@ -107,30 +119,40 @@ def test_ewald_wurtzite():
     li = Molecule([Atom('Li', [0, 0, 0], name='Li+')])
     cl = Molecule([Atom('Cl', [0, 0, 0], name='Cl-')])
 
-    cell_param = 0.29
-    box = crystal([[2/3., 1/3., 0.0], [2/3., 1/3., 3/8.]], # Fractional Positions
+    cell_param = 0.45
+    wurtz = crystal([[2/3., 1/3., 0.0], [2/3., 1/3., 3/8.]], # Fractional Positions
                 [li,  cl], # Molecules
                 186, # Space Group
                 cellpar = [cell_param * 1., cell_param * 1., cell_param * 2. * (2/3.)**0.5, 90, 90, 120], # unit cell parameters
                 repetitions = [1, 1, 1]) # unit cell repetitions in each direction
-    straight_box = np.diag(np.diagonal(box.box_vectors))
-    box.box_vectors = straight_box
-    box.r_array = minimum_image(box.r_array + cell_param/2, np.diagonal(box.box_vectors))
+    
+    # Volume is the same
+    a, b, c = wurtz.box_vectors
+    # 
+    # print("Volume 1", np.dot(a, np.cross(b, c)))
+    # print("Volume 2", np.prod(np.diagonal(wurtz.box_vectors)))
 
-    particles1 = box.r_array
-    types1 = box.type_array.astype("S2")
-    box = np.diagonal(box.box_vectors)
+    # straight_box = np.diag(np.diagonal(wurtz.box_vectors))
+    # wurtz.box_vectors = straight_box
+    # wurtz.r_array = minimum_image(wurtz.r_array + cell_param/2, np.diagonal(wurtz.box_vectors))
+
+    particles1 = wurtz.r_array
+    types1 = wurtz.type_array.astype("S2")
+    # box = np.diagonal(wurtz.box_vectors)
+    box = wurtz.box_vectors
     
     # for k_max in (2, 3, 4, 5, 6):
-    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=0.9, alpha=(3.2/0.9)**0.5, kmax=7)
+    rcut = cell_param * 4
+    ewald = Ewald({"Li": 1, "Cl": -1}, rcut=rcut, alpha=(3.6/0.9)**0.5, kmax=10)
     result = ewald.real(particles1, types1, particles1, types1, box)
     
-    # Value by direct sum should be: -242.798432912
-    print("Real", result)
-    result = ewald.reciprocal(particles1, types1, particles1, types1, box)
-    print("Reciprocal", result)
-    print("Dipole", ewald.dipole_correction(particles1, types1, box) / 4)
+    
+    # print("Real", result)
+    # result = ewald.reciprocal(particles1, types1, particles1, types1, box)
+    # print("Reciprocal", result)
+    # print("Dipole", ewald.dipole_correction(particles1, types1, box) / 4)
     print("Whole", ewald.interaction(particles1, types1, particles1, types1, box) / 2)
+    print("Madelung", madelung(rmin(wurtz), WURTZ_M)/2)
     
 def test_from_dict():
     # Define a new potential, the format is python dictionary or json
