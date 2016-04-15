@@ -104,7 +104,8 @@ def parse_gro_lines(lines):
             datalist.append((molidx, moltyp, attyp, rx, ry, rz))
         else:
             # This is the box size
-            a, b, c = [float(f) for f in fields]
+            stuff  = [float(f) for f in fields]
+            a,b,c = stuff[0], stuff[1], stuff[2]
             box_vectors = np.array([[a, 0, 0], [0, b, 0], [0, 0, c]])
             break
 

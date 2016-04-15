@@ -4,10 +4,23 @@ import math
 import numba as nb
 
 from .interactions import _dist, _str_dict_to_htable, vectorized_hash, F
+from .energy import  tosi_fumi
 
+@nb.jit
+def reciprocal_vectors(box_vectors):
+    a, b, c = box_vectors
+    norm = a.dot(np.cross(b, c))
+    u = 2 * np.pi * np.cross(b,c)/norm
+    v = 2 * np.pi * np.cross(c,a)/norm
+    w = 2 * np.pi * np.cross(a,b)/norm
+    return np.array([u, v, w])
 
 @nb.jit(nopython=True)
 def _real(coords1, charges1, coords2, charges2, rcut, alpha, box):
+    """Calculate ewald real part. Box has to be a cuboidal box you should
+    transform any other box shape to a cuboidal box before using this.
+    
+    """
     n = coords1.shape[0]
     m = coords2.shape[0]
     # This is helpful to add the correct number of boxes
@@ -37,6 +50,10 @@ def _real(coords1, charges1, coords2, charges2, rcut, alpha, box):
 
 @nb.jit(nopython=True)
 def _reciprocal(coords1, charges1, coords2, charges2, kmax, alpha, box):
+    """Calculate ewald reciprocal part. Box has to be a cuboidal box you should
+    transform any other box shape to a cuboidal box before using this.
+    
+    """
     n = coords1.shape[0]
     m = coords2.shape[0]
     result = np.zeros(n)
@@ -86,13 +103,15 @@ class Ewald(object):
         self.kmax = kmax if kmax is not None else 7
 
     def _preproc(self, coords1, types1, coords2, types2, box):
+        if box.shape != (3,):
+            raise ValueError("Box shape should be (3,)")
         coords1 = np.array(coords1, dtype='float64')
         coords2 = np.array(coords2, dtype='float64')
         box = np.array(box, dtype='float64')
 
         # We basically hash the values
-        types1_int = vectorized_hash(np.array(types1))
-        types2_int = vectorized_hash(np.array(types2))
+        types1_int = vectorized_hash(np.array(types1, dtype=np.str_))
+        types2_int = vectorized_hash(np.array(types2, dtype=np.str_))
 
         charges1 = self._table.map(types1_int)
         charges2 = self._table.map(types2_int)
@@ -112,7 +131,7 @@ class Ewald(object):
         return self.real(coords2, types2, coords2, types2, box) + self.reciprocal(coords1, types1, coords2, types2, box)
 
     def dipole_correction(self, coords1, types1, box):
-        types1_int = vectorized_hash(np.array(types1))
+        types1_int = vectorized_hash(np.array(types1, np.str_))
         charges1 = self._table.map(types1_int)
         
         dipole = (coords1 * charges1[:, np.newaxis]).sum(axis=0)

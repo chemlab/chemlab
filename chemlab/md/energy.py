@@ -2,6 +2,7 @@
 Calculate potential energy terms under different potentials
 '''
 import numpy as np
+import numba as nb
 # Electric conversion factor
 F = 138.935485
 
@@ -24,12 +25,13 @@ def tosi_fumi_B(beta, b, sigma, alpha):
     return beta * b * np.exp((sigma[0] + sigma[1]) * alpha)
 
 
+@nb.jit
 def tosi_fumi_repulsive(r, B, alpha):
     return B * np.exp(- alpha * r)
 
-
+@nb.jit
 def tosi_fumi(r, B, C, D, alpha):
-    return tosi_fumi_repulsive(r, B, alpha) - C / r ** 6 + D / r ** 8
+    return tosi_fumi_repulsive(r, B, alpha) - C / r ** 6 - D / r ** 8
 
 
 def lorentz_berthelot(sigma1, sigma2, eps1, eps2):

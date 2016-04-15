@@ -2,30 +2,31 @@ import numpy as np
 import dask.array as da
 from collections import Sequence
 
+
 def minimum_image(coords, pbc):
     """
     Wraps a vector collection of atom positions into the central periodic
     image or primary simulation cell.
-    
+
     Parameters
     ----------
     pos : :class:`numpy.ndarray`, (Nx3)
     Vector collection of atom positions.
-    
+
     Returns
     -------
     wrap : :class:`numpy.ndarray`, (Nx3)
     Returns atomic positions wrapped into the primary simulation
     cell, or periodic image.
-    
+
     """
     # This will do the broadcasting
     coords = np.array(coords)
     pbc = np.array(pbc)
-    
+
     # For each coordinate this number represents which box we are in
-    image_number = np.floor(coords/pbc)
-    
+    image_number = np.floor(coords / pbc)
+
     wrap = coords - pbc * image_number
     return wrap
 
@@ -38,14 +39,14 @@ def noperiodic(r_array, periodic, reference=None):
        ----------
        r_array : :class:`numpy.ndarray`, (Nx3)
        Array of 3D coordinates.
-       
+
        periodic: :class:`numpy.ndarray`, (3)
        Periodic boundary dimensions.
 
        reference: ``None`` or :class:`numpy.ndarray` (3)
        The points will be moved to be in the periodic image centered on the reference. 
        If None, the first point will be taken as a reference
-    
+
        Returns
        -------
 
@@ -65,13 +66,13 @@ def noperiodic(r_array, periodic, reference=None):
         center = r_array[0]
     else:
         center = reference
-    
+
     # Find the displacements
     dr = (center - r_array)
     drsign = np.sign(dr)
 
     # Move things when the displacement is more than half the box size
-    tomove = np.abs(dr) >= periodic/2.0
+    tomove = np.abs(dr) >= periodic / 2.0
     r_array[tomove] += (drsign * periodic)[tomove]
     return r_array
 
@@ -103,6 +104,7 @@ def distance_matrix(a, b, periodic):
     b = b[:, np.newaxis]
     return periodic_distance(a, b, periodic)
 
+
 def periodic_distance(a, b, periodic):
     '''
     Periodic distance between two arrays. Periodic is a 3
@@ -112,7 +114,7 @@ def periodic_distance(a, b, periodic):
     a = np.array(a)
     b = np.array(b)
     periodic = np.array(periodic)
-    
+
     delta = np.abs(a - b)
     delta = np.where(delta > 0.5 * periodic, periodic - delta, delta)
     return np.sqrt((delta ** 2).sum(axis=-1))
@@ -121,15 +123,15 @@ def periodic_distance(a, b, periodic):
 def geometric_center(coords, periodic):
     '''Geometric center taking into account periodic boundaries'''
     max_vals = periodic
-    theta = 2*np.pi*(coords / max_vals)
-    eps = np.cos(theta) * max_vals/(2*np.pi)
-    zeta = np.sin(theta) * max_vals/(2*np.pi)
+    theta = 2 * np.pi * (coords / max_vals)
+    eps = np.cos(theta) * max_vals / (2 * np.pi)
+    zeta = np.sin(theta) * max_vals / (2 * np.pi)
 
     eps_avg = eps.sum(axis=0)
     zeta_avg = zeta.sum(axis=0)
     theta_avg = np.arctan2(-zeta_avg, -eps_avg) + np.pi
 
-    return theta_avg * max_vals /(2*np.pi)
+    return theta_avg * max_vals / (2 * np.pi)
 
 
 def radius_of_gyration(coords, periodic):
@@ -137,4 +139,21 @@ def radius_of_gyration(coords, periodic):
 
     '''
     gc = geometric_center(coords, periodic)
-    return (periodic_distance(coords, gc, periodic)**2).sum()/len(coords)
+    return (periodic_distance(coords, gc, periodic) ** 2).sum() / len(coords)
+
+
+def fractional_coordinates(xyz, box_vectors):
+    T = np.linalg.inv(box_vectors)
+    return T.T.dot(xyz.T).T
+
+
+def cell_coordinates(fractional, box_vectors):
+    return box_vectors.T.dot(fractional.T).T
+
+
+def general_periodic_distance(a, b, box_vectors):
+    frac = fractional_coordinates(b - a, box_vectors)
+    delta = np.abs(frac)
+    periodic = 1.0
+    delta = np.where(delta > 0.5 * periodic, periodic - delta, delta)
+    return np.linalg.norm(cell_coordinates(delta, box_vectors))

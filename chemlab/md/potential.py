@@ -85,18 +85,17 @@ class InterMolecular(object):
 
 class PairInteraction:
 
-    def __init__(self, pair, sigma, eps):
+    def __init__(self, pair, sigma=None, eps=None):
         self.pair = pair
-        self.sigma = sigma
-        self.eps = eps
+        self.sigma, self.eps = combine_lorentz_berthelot(pair[0].sigma, pair[1].sigma, pair[0].eps, pair[1].eps)
 
     @property
     def c6(self):
-        return (self.pair[0].c6 * self.pair[1].c6) ** 0.5
+        return 4.0 * self.eps * self.sigma ** 6
 
     @property
     def c12(self):
-        return (self.pair[0].c12 * self.pair[1].c12) ** 0.5
+        return 4.0 * self.eps * self.sigma ** 12
 
     def f(self, x):
         return 1.0/x

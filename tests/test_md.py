@@ -1,6 +1,7 @@
 '''Molecular Dynamics tests with uff'''
 from __future__ import print_function
 import numpy as np
+import pint
 
 from chemlab.core import *
 from chemlab.io import datafile
@@ -8,10 +9,37 @@ from chemlab.md.analysis import rdf
 
 from chemlab.md.potential import ForceGenerator, InterMolecular, IntraMolecular, to_top
 from nose.tools import eq_
-from chemlab.md.interactions import Coulomb, LennardJones
+from chemlab.md.interactions import Coulomb, LennardJones, TosiFumi
 from chemlab.md.ewald import Ewald
 from chemlab.utils.pbc import minimum_image
+units = pint.UnitRegistry()
+c_unit = 1e-19 * units.joule * units.angstrom**6
+d_unit = 1e-19 * units.joule * units.angstrom**8
 
+tosi_fumi_spec = {
+    ('Li', 'Cl') : {
+        "sigma" :  [0.816 * units.angstrom, 1.585 * units.angstrom],
+        "q" : [1, -1],
+        'valence': [2, 8],
+        "C": [0.073 * c_unit, 2.0 * c_unit, 111.0 * c_unit],
+        "D": [0.03 * d_unit, 2.4 * d_unit, 223.0 * d_unit],
+        "b": 0.338e-12 * units.erg,
+        "alpha" : 2.92 / units.angstrom
+    },
+}
+
+def fix_units(spec):
+    spec = spec.copy()
+    N_A = units.avogadro_number
+    kj_mol = units.kilojoule / units.mole
+    spec["sigma"] = [v.to(units.nanometer).magnitude for v in spec["sigma"]]
+    spec["C"] = [(N_A * v).to(kj_mol * units.nanometer ** 6).magnitude for v in spec["C"]]
+    spec["D"] = [(N_A * v).to(kj_mol * units.nanometer ** 8).magnitude for v in spec["D"]]
+    spec["b"] = (N_A * spec["b"]).to(kj_mol).magnitude
+    spec["alpha"] = spec["alpha"].to(1 / units.nanometer).magnitude
+    
+    return spec
+    
 def test_energy_calc():
     
     # How do you calculate energy?
@@ -30,7 +58,18 @@ def test_energy_calc():
     
     result = lj.interaction(particles1, types1, particles2, types2)
     print(result)
-
+    
+    particles1 = [[0, 0, 0]]
+    types1 = ["Li"]
+    particles2 = [[0.10, 0, 0]]
+    types2 = ["Cl"]
+    
+    tf = TosiFumi({k: fix_units(spec) for k, spec in tosi_fumi_spec.items()})
+    result = tf.interaction(particles1, types1, particles2, types2)
+    print(result) # should be 1408.55893904
+    
+    
+    
 def test_ewald():
     particles1 = [[0.0, 0, 0], [0.5, 0.5, 0.5]]
     types1 = ["Li", "Cl"]
