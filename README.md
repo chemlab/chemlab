@@ -61,4 +61,4 @@ Go to http://github.com/chemlab/chemlab or send an email to python-chemlab@googl
 License
 -------
 
-chemlab is released under the GNU LGPL license if the PyQt parts are omitted (such as chemlab.graphics and chemlab.mviewer packages) or the GNU GPL3 license otherwise. See lgpl.txt and gpl.txt files attached.
+chemlab is released under the GNU GPL3 or GNU LGPL license if the PyQt parts are omitted (such as chemlab.graphics and chemlab.mviewer packages) and the chemlab.core.crystal package is omitted as well. See lgpl.txt and gpl.txt files attached.
