@@ -17,7 +17,7 @@ The typical approach when developing a graphics application is to
 create a :py:class:`~chemlab.graphics.QtViewer` instance and add 3D
 features to it::
 
->>> from chemlab.graphics import QtViewer
+>>> from chemlab.graphics.qt import QtViewer
 >>> v = QtViewer()
 
 now let's define a molecule. We can use the `chemlab.db` module to get a
@@ -77,7 +77,7 @@ writing other renderers. TriangleRenderer works like this:
 you pass the vertices, normals and colors of the triangles and it will
 display a set of triangles in the world::
 
-    from chemlab.graphics import QtViewer
+    from chemlab.graphics.qt import QtViewer
     from chemlab.graphics.renderers import TriangleRenderer
     from chemlab.graphics.colors import green
     import numpy as np
@@ -143,7 +143,7 @@ the protein `3ZJE
 load it into chemlab and display it using a simple Van der Waals
 representation::
 
-    from chemlab.graphics import QtViewer
+    from chemlab.graphics.qt import QtViewer
     from chemlab.graphics.renderers import AtomRenderer
     from chemlab.io import datafile
 
@@ -242,7 +242,7 @@ We want to do the rendering of this molecule using a space fill
 representation, this can be achieved by using the AtomRenderer, which
 will render each atom as a sphere with its Van Der Waals radius::
 
-    from chemlab.graphics import QtViewer
+    from chemlab.graphics.qt import QtViewer
     from chemlab.graphics.renderers import AtomRenderer
     
     v = QtViewer()
@@ -289,7 +289,7 @@ we call ``v.widget.initializeGL()`` in place of ``v.show()`` and for
 each molecule we add an AtomRenderer and adjust the camera::
 
     from chemlab.db import CirDB
-    from chemlab.graphics import QtViewer
+    from chemlab.graphics.qt import QtViewer
     from chemlab.graphics.renderers import AtomRenderer
     from chemlab.graphics.postprocessing import FXAAEffect, SSAOEffect
      
@@ -352,7 +352,7 @@ straight from `Wikipedia <http://en.wikipedia.org/wiki/Tetrahedron>`_::
 We can quickly verify if this is correcty by using a
 :py:class:`~chemlab.graphics.renderers.PointRenderer`::
    
-    from chemlab.graphics import QtViewer
+    from chemlab.graphics.qt import QtViewer
     from chemlab.graphics.renderers import PointRenderer
     from chemlab.graphics.colors import black, green, blue, red
 
@@ -511,4 +511,3 @@ To demostrate let's draw a grid of 125 tetrahedra::
 If you had any problem with the tutorial or you want to implement
 other kind of renderers don't exitate to contact me. The full code of
 this tutorial is in `chemlab/examples/tetrahedra_tutorial.py`.
-

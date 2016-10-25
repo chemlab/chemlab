@@ -1,5 +1,5 @@
 from chemlab.db import CirDB
-from chemlab.graphics import QtViewer
+from chemlab.graphics.qt import QtViewer
 from chemlab.graphics.renderers import AtomRenderer
 from chemlab.graphics.postprocessing import FXAAEffect, SSAOEffect
 

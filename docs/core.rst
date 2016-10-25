@@ -208,7 +208,7 @@ atomic coordinates and the space group information. If you have
 the crystallographic data, you can easily build a crystal::
 
   from chemlab.core import Atom, Molecule, crystal
-  from chemlab.graphics import display_system
+  from chemlab.graphics.qt import display_system
   
   # Molecule templates
   na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])
@@ -279,7 +279,7 @@ using :py:meth:`chemlab.core.System.concat`
 
   import numpy as np
   from chemlab.core import Atom, Molecule, crystal
-  from chemlab.graphics import display_system
+  from chemlab.graphics.qt import display_system
    
   # Make water crystal
   wat = Molecule([Atom('O', [0.00, 0.00, 0.01]),

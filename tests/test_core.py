@@ -12,7 +12,7 @@ from chemlab.core import (System, crystal, merge_systems, random_box,
 from chemlab.table import vdw_radius
 from chemlab.io import datafile
 
-#from chemlab.graphics import display_system
+#from chemlab.graphics.qt import display_system
 from .testtools import assert_allclose, assert_eqbonds, assert_npequal, npeq_
 
 

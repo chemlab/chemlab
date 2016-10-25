@@ -1,1 +1,0 @@
-from chemview import MolecularViewer

@@ -1,6 +1,6 @@
 import numpy as np
 from chemlab.core import Atom, Molecule, System
-from chemlab.graphics import display_system
+from chemlab.graphics.qt import display_system
 
 # Spacing between two grid points
 spacing = 0.3

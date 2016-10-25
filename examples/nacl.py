@@ -1,5 +1,5 @@
 from chemlab.core import Atom, Molecule, crystal
-from chemlab.graphics import display_system
+from chemlab.graphics.qt import display_system
 
 # Molecule templates
 na = Molecule([Atom('Na', [0.0, 0.0, 0.0])])

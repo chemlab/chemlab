@@ -1,10 +1,10 @@
 package:
   name: chemlab
-  version: 1.0b1
+  version: 1.1
 
 source:
   git_url: https://github.com/chemlab/chemlab.git
-  git_tag: v1.0b1
+  git_tag: v1.1
 
 requirements:
   build:
@@ -12,20 +12,25 @@ requirements:
     - setuptools
     - cython
     - numpy
+    - h5py
+    - matplotlib
+    - scipy
+    - toolz
+    - dask
+    - pyqt ==4.11.3
 
   run:
     - python
+    - h5py
     - notebook
     - numpy
     - scipy
-    - pyqt
+    - pyqt ==4.11.3
     - pyopengl
-    - cclib # No Python3
     - chemview
     - cython
     - six
     - dask
-    - h5py
 
 test:
   imports:

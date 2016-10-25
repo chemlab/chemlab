@@ -45,7 +45,7 @@ class QtViewer(QMainWindow):
     
     In this example we can draw 3 blue dots and some overlay text::
 
-        from chemlab.graphics import QtViewer
+        from chemlab.graphics.qt import QtViewer
         from chemlab.graphics.renderers import PointRenderer
         from chemlab.graphics.uis import TextUI
          
@@ -93,7 +93,7 @@ class QtViewer(QMainWindow):
         
         This is a typical way to perform an animation, just::
         
-            from chemlab.graphics import QtViewer
+            from chemlab.graphics.qt import QtViewer
             from chemlab.graphics.renderers import SphereRenderer
             
             v = QtViewer()
@@ -195,7 +195,7 @@ class QtViewer(QMainWindow):
         
         The usage is as following::
         
-            from chemlab.graphics import QtViewer
+            from chemlab.graphics.qt import QtViewer
             from chemlab.graphics.postprocessing import SSAOEffect
             
             v = QtViewer()
@@ -253,4 +253,3 @@ class QtViewer(QMainWindow):
 
 if __name__ == '__main__':
     QtViewer().run()
-

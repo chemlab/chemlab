@@ -4,7 +4,7 @@ v2 = np.array([-1.0, 0.0, -1.0/np.sqrt(2)])
 v3 = np.array([0.0, 1.0, 1.0/np.sqrt(2)])
 v4 = np.array([0.0, -1.0, 1.0/np.sqrt(2)])
 
-from chemlab.graphics import QtViewer
+from chemlab.graphics.qt import QtViewer
 from chemlab.graphics.renderers import PointRenderer
 from chemlab.graphics.colors import black, green, blue, red
 

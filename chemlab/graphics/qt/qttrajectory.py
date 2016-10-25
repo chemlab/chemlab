@@ -7,7 +7,7 @@ import os
 from .qtviewer import app
 from .qchemlabwidget import QChemlabWidget
 
-from .. import resources
+from ... import resources
 
 import numpy as np
 
@@ -260,7 +260,7 @@ class QtTrajectoryViewer(QMainWindow):
     Below is an example taken from the function
     :py:func:`chemlab.graphics.display_trajectory`::
     
-        from chemlab.graphics import QtTrajectoryViewer
+        from chemlab.graphics.qt import QtTrajectoryViewer
         
         # sys = some System
         # coords_list = some list of atomic coordinates

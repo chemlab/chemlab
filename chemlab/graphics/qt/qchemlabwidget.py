@@ -12,9 +12,9 @@ from PyQt4.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GL.framebufferobjects import *
 
-from .camera import Camera
-from .textures import Texture
-from . import colors
+from ..camera import Camera
+from ..textures import Texture
+from .. import colors
 
 DEFAULT_FRAMEBUFFER = 0
 
@@ -32,7 +32,7 @@ class QChemlabWidget(QGLWidget):
     To attach a renderer to QChemlabWidget you can simply append it
     to the ``renderers`` attribute::
 
-        from chemlab.graphics import QChemlabWidget
+        from chemlab.graphics.qt import QChemlabWidget
         from chemlab.graphics.renderers import SphereRenderer
 
         widget = QChemlabWidget()
@@ -42,7 +42,7 @@ class QChemlabWidget(QGLWidget):
     elements, for example some text. This is done in a way similar to
     renderers::
 
-        from chemlab.graphics import QChemlabWidget
+        from chemlab.graphics.qt import QChemlabWidget
         from chemlab.graphics.uis import TextUI
 
         widget = QChemlabWidget()

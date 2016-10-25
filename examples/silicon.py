@@ -1,5 +1,5 @@
 from chemlab.core import Atom, Molecule, crystal,System
-from chemlab.graphics import QtViewer
+from chemlab.graphics.qt import QtViewer
 from chemlab.graphics.renderers import BallAndStickRenderer
 import numpy as np
 

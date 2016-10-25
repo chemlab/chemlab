@@ -48,7 +48,7 @@ def view(args):
 
 # def view(args):
 #     from chemlab.io import datafile
-#     from chemlab.graphics import display_system, display_trajectory
+#     from chemlab.graphics.qt import display_system, display_trajectory
 #     from chemlab.core import subsystem_from_molecules
 #     import numpy as np
 
