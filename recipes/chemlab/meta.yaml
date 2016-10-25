@@ -17,6 +17,7 @@ requirements:
     - scipy
     - toolz
     - dask
+    - nose
     - pyqt ==4.11.3
 
   run:
