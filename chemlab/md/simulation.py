@@ -1,4 +1,5 @@
-
+import warnings
+import itertools
 class Simulation(object):
     
     def __init__(self, system, potential, length=1.0, integrator='md', dt=2e-6, dt_io=2e-4, 
@@ -41,10 +42,23 @@ def to_mdp(simulation):
     r += 'nstenergy = {:d}\n'.format(int(dt_io / dt))
     r += 'nstxtcout = {:d}\n'.format(int(dt_io / dt))
     
-    r += 'vdwtype = Cut-off\n'
+    if simulation.potential.intermolecular.type == 'custom':
+            
+        vdwtype = coulombtype = 'user'
+        if simulation.pme:
+            coulombtype = 'pme-user'
+        
+        r += 'energygrps = {}\n'.format(" ".join(simulation.potential.intermolecular.particles))
+        r += 'energygrp-table = {}\n'.format(" ".join(itertools.chain(*simulation.potential.intermolecular.special_pairs)))
+    else:
+        vdwtype = 'Cut-off'
+        coulombtype = "pme" if simulation.pme else "Cut-off"
+    
+    r += 'vdwtype = {}\n'.format(vdwtype)
+    
     r += 'rlist = {:f}\n'.format(simulation.cutoff)
     
-    r += 'coulombtype = {}\n'.format("pme" if simulation.pme else "Cut-off")
+    r += 'coulombtype = {}\n'.format(coulombtype)
     r += 'rcoulomb = {:f}\n'.format(simulation.cutoff)
     r += 'rvdw = {:f}\n'.format(simulation.cutoff)
     r += 'tcoupl = v-rescale\n'

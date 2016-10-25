@@ -3,14 +3,9 @@ from ..db import CirDB
 from ..io import datafile
 from ..core import System, Molecule
 
-from chemview import MolecularViewer, enable_notebook, TrajectoryControls
+from chemview import MolecularViewer, TrajectoryControls
 from IPython.display import display
 from six.moves.urllib.request import urlretrieve
-
-_state = {'chemview_initialized' : False}
-if not _state['chemview_initialized']:
-    enable_notebook()
-    _state['chemview_initialized'] = True
 
 def download_molecule(name):
     "Fetch a molecule from the web by its common name"

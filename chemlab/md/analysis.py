@@ -56,6 +56,20 @@ def rdf(coords_a, coords_b, binsize=0.002,
     width = cutoff/binsize + 1
     return bin_edges[0:width], hist[0:width]
 
+def running_coordination_number(coordinates_a, coordinates_b, periodic, 
+                                binsize=0.002, cutoff=1.5):
+    """This is the cumulative radial distribution 
+    function, also called running coordination number"""
+    x, y = rdf(coordinates_a,
+               coordinates_b,
+               periodic=periodic,
+               normalize=False,
+               binsize=binsize,
+               cutoff=cutoff)
+    y = y.astype('float32') / len(coordinates_a)
+    y = np.cumsum(y)
+    return x, y
+
 def rdf_multi(frames_a, frames_b, sel_a, sel_b,
               periodic, binsize=0.002):
 

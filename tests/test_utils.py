@@ -6,6 +6,7 @@ import numpy as np
 from chemlab.utils.pbc import distance_matrix, minimum_image, noperiodic
 from chemlab.utils.geometry import cartesian_to_spherical
 from chemlab.utils.neighbors import count_neighbors, nearest_neighbors
+from chemlab.utils.numbaz import Int32HashTable
 from .testtools import npeq_
 
 import time
@@ -74,3 +75,11 @@ def test_neighbors():
 
     npeq_(c[0], close)
     npeq_(c[1], [close[1]])
+
+def test_hashtable():
+    
+    ht = Int32HashTable(16)
+    ht.push(0, 1)
+    ht.push(1, 2)
+    
+    npeq_(ht.map(np.array([0, 1, 1, 1, 0, 0, 1])), [1, 2, 2, 2, 1, 1, 2])

@@ -11,8 +11,9 @@ from .atom import Atom
 from .molecule import Molecule
 from .serialization import json_to_data, data_to_json
 
-from ..utils.pbc import periodic_distance
+from ..utils.pbc import periodic_distance, minimum_image
 from ..libs.ckdtree import cKDTree
+from ..graphics import Scene
 
 class System(ChemicalEntity):
     __dimension__ = 'system'
@@ -192,6 +193,15 @@ class System(ChemicalEntity):
     def add(self, molecule):
         self.add_entity(molecule, Molecule)
     
+    def minimum_image(self):
+        """Align the system according to the minimum image convention"""
+        if self.box_vectors is None:
+            raise ValueError('No periodic vectors defined')
+        else:
+            self.r_array = minimum_image(self.r_array, self.box_vectors.diagonal())
+        
+        return self
+        
     def reorder_molecules(self, new_order):
         """Reorder the molecules in the system according to
         *new_order*.
@@ -280,21 +290,27 @@ class System(ChemicalEntity):
             return mv
         
         if backend == 'povray':
-            from ..graphics import Scene
             from chemview.render import render_povray
-            from chemview.utils import get_atom_color
             
-            scene = Scene()
-            scene.add_representation('points', {'coordinates' : self.r_array,
-                                                'sizes': [1] * self.n_atoms,
-                                                'colors': [get_atom_color(t) for t in self.type_array]})
+            scene = self.scene()
             extra_opts = {}
             if "radiosity" in kwargs:
                 extra_opts.update({'radiosity' : kwargs['radiosity']})
             
             scene.camera.autozoom(self.r_array)
-            return render_povray(scene.to_dict(), extra_opts=extra_opts)
-            
+            filename = kwargs.get('filename', 'ipython')
+            return render_povray(scene.to_dict(), filename=filename, extra_opts=extra_opts)
+        else:
+            raise ValueError("Backend not supported: {}".format(backend))
+    
+    def scene(self):
+        from chemview.utils import get_atom_color
+        scene = Scene()
+        scene.add_representation('points', {'coordinates' : self.r_array,
+                                            'sizes': [1] * self.n_atoms,
+                                            'colors': [get_atom_color(t) for t in self.type_array]})
+        return scene
+    
     def sort(self):
         self.reorder_dimension(np.argsort(self.molecule_name), 'molecule')
 

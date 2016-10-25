@@ -104,7 +104,8 @@ def parse_gro_lines(lines):
             datalist.append((molidx, moltyp, attyp, rx, ry, rz))
         else:
             # This is the box size
-            a, b, c = [float(f) for f in fields]
+            stuff  = [float(f) for f in fields]
+            a,b,c = stuff[0], stuff[1], stuff[2]
             box_vectors = np.array([[a, 0, 0], [0, b, 0], [0, 0, c]])
             break
 
@@ -133,8 +134,8 @@ def parse_gro_lines(lines):
     # Gromacs Defaults to Unknown Atom type
     
     # We need to parse the gromacs type in some way...
-    grotype_array = [re.sub('[0-9]+$', '', g) for g in grotype_array]
-    type_array = np.array([gro_to_cl.get(g, "Unknown") for g in grotype_array])
+    # grotype_array = [re.sub('[0-9+-]+$', '', g) for g in grotype_array]
+    type_array = np.array([gro_to_cl.get(re.sub('[0-9+-]+$','', g), "Unknown") for g in grotype_array])
 
     # Molecular Formula Arrays
     mol_formula = []
@@ -196,9 +197,15 @@ def write_gro(sys, fd):
         raise Exception('Gromacs exporter need box_vectors'
                         'information System.box_vectors')
 
-    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0, 0],
+    lines.append('{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}'.format(sys.box_vectors[0, 0],
                                                       sys.box_vectors[1, 1],
-                                                      sys.box_vectors[2, 2]))
+                                                      sys.box_vectors[2, 2],
+                                                      sys.box_vectors[0, 1],
+                                                      sys.box_vectors[0, 2],
+                                                      sys.box_vectors[1, 0],
+                                                      sys.box_vectors[1, 2],
+                                                      sys.box_vectors[2, 0],
+                                                      sys.box_vectors[2, 1]))
 
     #for line in lines:
     #    print line
