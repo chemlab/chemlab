@@ -86,4 +86,8 @@ def center_of_mass(r_array, m_array):
 
     '''
     return np.average(r_array, axis=0, weights=m_array)
-    
+
+def dipole_moment(r_array, charge_array):
+    '''Return the dipole moment of a neutral system.
+    '''
+    return np.sum(r_array * charge_array[:, np.newaxis], axis=0)

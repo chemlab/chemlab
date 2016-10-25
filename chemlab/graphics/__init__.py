@@ -9,6 +9,7 @@ from .uis import TextUI
 
 import numpy as np
 from .postprocessing import FXAAEffect, SSAOEffect, GammaCorrectionEffect
+import uuid
 
 class Scene(object):
     
@@ -17,7 +18,8 @@ class Scene(object):
         self.camera = Camera()
     
     def add_representation(self, rep, args):
-        self._dict["representations"].append({'type' : 'points', 
+        self._dict["representations"].append({'rep_type' : rep,
+                                              'rep_id': uuid.uuid1().hex,
                                               'options' : args})
         
     def to_dict(self):

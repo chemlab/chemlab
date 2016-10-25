@@ -134,8 +134,8 @@ def parse_gro_lines(lines):
     # Gromacs Defaults to Unknown Atom type
     
     # We need to parse the gromacs type in some way...
-    grotype_array = [re.sub('[0-9]+$', '', g) for g in grotype_array]
-    type_array = np.array([gro_to_cl.get(g, "Unknown") for g in grotype_array])
+    # grotype_array = [re.sub('[0-9+-]+$', '', g) for g in grotype_array]
+    type_array = np.array([gro_to_cl.get(re.sub('[0-9+-]+$','', g), "Unknown") for g in grotype_array])
 
     # Molecular Formula Arrays
     mol_formula = []

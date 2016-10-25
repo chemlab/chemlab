@@ -96,7 +96,7 @@ def _reciprocal(coords1, charges1, coords2, charges2, kmax, kappa, box):
     for i in range(n):
         q_i = charges1[i]
         r_i = coords1[i]
-
+        
         for j in range(m):
             q_j = charges2[j]
             r_j = coords2[j]
@@ -104,7 +104,7 @@ def _reciprocal(coords1, charges1, coords2, charges2, kmax, kappa, box):
             r_ij = _dist(r_i, r_j)
             if r_ij < 1e-10:
                 need_self[i] = 1
-
+        
             for k_i in range(-kmax, kmax + 1):
                 for k_j in range(-kmax, kmax + 1):
                     for k_k in range(-kmax, kmax + 1):
@@ -119,10 +119,13 @@ def _reciprocal(coords1, charges1, coords2, charges2, kmax, kappa, box):
                                       4.0 * np.pi ** 2 / k_sq *
                                       math.exp(-k_sq / (4.0 * kappa ** 2)) *
                                       math.cos(np.dot(k, r_i - r_j)))
-    
+        
     # Self-energy correction
-    result -= 2 * (need_self * kappa * charges1 ** 2) / (np.pi**0.5)
-    return result
+    # I had to do some FUCKED UP stuff because NUMBA SUCKS BALLS and 
+    # breaks compatibility with simple expressions such as that one
+    # apparently doing result -= something is too hard in numba
+    self_energy = 2 * (need_self * kappa * charges1 ** 2) / (np.pi**0.5)
+    return result - self_energy
 
 
 class Ewald(object):
