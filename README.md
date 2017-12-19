@@ -1,6 +1,7 @@
 chemlab - the python chemistry package you were waiting for
 ===========================================================
 
+
 [![Join the chat at https://gitter.im/chemlab/chemlab](https://badges.gitter.im/chemlab/chemlab.svg)](https://gitter.im/chemlab/chemlab?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Downloads](https://img.shields.io/pypi/dm/chemlab.svg)](https://crate.io/package/chemlab)
@@ -14,11 +15,19 @@ chemlab - the python chemistry package you were waiting for
 - Docs: http://chemlab.rtfd.org
 - Github: http://github.com/chemlab/chemlab
 
+Project status
+--------------
+
+chemlab is not being maintained anymore, if you would like to adopt chemlab, send an email @gabrielelanaro!
+
+Description
+-----------
 chemlab is a python library and a set of utilities built to ease the
 life of the computational chemist. It takes inspiration from other
 python scientific library such as numpy, scipy and matplotlib, and aims
 to bring a consistent and simple API by following the python
 guidelines.
+
 
 
 Computational and theoretical chemistry is a huge field, and providing
