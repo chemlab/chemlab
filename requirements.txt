@@ -2,6 +2,6 @@ PyOpenGL==3.0.2
 argparse==1.2.1
 distribute==0.6.24
 nose==1.2.1
-numpy==1.7.0
+numpy==1.22.0
 wsgiref==0.1.2
 Cython==0.16
